@@ -22,54 +22,37 @@ export const Footer = () => {
                   <div className="w-full lg:w-4/12 px-2 mb-4 lg:mb-0">
                      <h5 className="text-sm font-semibold mb-3 text-foreground">Stay Connected</h5>
                      <div className="grid grid-rows-2 grid-cols-2 gap-2">
-                        <Button
-                           size="sm"
-                           variant="outline"
-                           type="button"
-                           onClick={() => window.open("https://twitter.com/hedera", "_blank")}
+                        <a
+                           target="_blank"
+                           href="https://twitter.com/hedera"
+                           className="underline text-muted-foreground hover:text-primary transition-colors text-sm"
                         >
-                           <i className="fab fa-x-twitter mr-1" />
-                        </Button>
-                        <Button
-                           size="sm"
-                           type="button"
-                           variant="outline"
-                           onClick={() =>
-                              window.open(
-                                 "https://github.com/hashgraph/hedera-accelerator-rwa-re-ui",
-                                 "_blank",
-                              )
-                           }
-                        >
-                           <i className="fab fa-github mr-1" />
-                           GitHub - UI
-                        </Button>
-                        <Button
-                           size="sm"
-                           type="button"
-                           variant="outline"
-                           onClick={() =>
-                              window.open("https://discord.com/invite/E7Hhx2adVF", "_blank")
-                           }
-                        >
-                           <i className="fab fa-discord mr-1" />
-                           Discord
-                        </Button>
+                           X
+                        </a>
 
-                        <Button
-                           size="sm"
-                           type="button"
-                           variant="outline"
-                           onClick={() =>
-                              window.open(
-                                 "https://github.com/hashgraph/hedera-accelerator-rwa-defi-be",
-                                 "_blank",
-                              )
-                           }
+                        <a
+                           target="_blank"
+                           href="https://github.com/hashgraph/hedera-accelerator-rwa-re-ui"
+                           className="underline text-muted-foreground hover:text-primary transition-colors text-sm"
                         >
-                           <i className="fab fa-github mr-1" />
-                           GitHub - BE
-                        </Button>
+                           GitHub - Frontend
+                        </a>
+
+                        <a
+                           target="_blank"
+                           href="https://github.com/hashgraph/hedera-accelerator-rwa-re-ui"
+                           className="underline text-muted-foreground hover:text-primary transition-colors text-sm"
+                        >
+                           Discord
+                        </a>
+
+                        <a
+                           target="_blank"
+                           href="https://github.com/hashgraph/hedera-accelerator-rwa-defi-be"
+                           className="underline text-muted-foreground hover:text-primary transition-colors text-sm"
+                        >
+                           GitHub - Smart Contracts
+                        </a>
                      </div>
                   </div>
 
@@ -98,7 +81,7 @@ export const Footer = () => {
                            <a
                               target="_blank"
                               href="https://hedera.com"
-                              className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                              className="underline text-muted-foreground hover:text-primary transition-colors text-sm"
                            >
                               About Hedera
                            </a>
@@ -107,7 +90,7 @@ export const Footer = () => {
                            <a
                               target="_blank"
                               href="https://docs.hedera.com"
-                              className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                              className="underline text-muted-foreground hover:text-primary transition-colors text-sm"
                            >
                               Documentation
                            </a>
@@ -116,7 +99,7 @@ export const Footer = () => {
                            <a
                               target="_blank"
                               href="https://github.com/hashgraph/hedera-accelerator-rwa-re-ui/blob/main/LICENSE"
-                              className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                              className="underline text-muted-foreground hover:text-primary transition-colors text-sm"
                            >
                               License
                            </a>
@@ -125,7 +108,7 @@ export const Footer = () => {
                            <a
                               target="_blank"
                               href="http://hashgraph.com/"
-                              className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                              className="underline text-muted-foreground hover:text-primary transition-colors text-sm"
                            >
                               Terms of Use
                            </a>
@@ -134,7 +117,7 @@ export const Footer = () => {
                            <a
                               target="_blank"
                               href="http://hashgraph.com/"
-                              className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                              className="underline text-muted-foreground hover:text-primary transition-colors text-sm"
                            >
                               Privacy Policy
                            </a>

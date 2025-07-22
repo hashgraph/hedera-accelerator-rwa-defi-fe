@@ -34,6 +34,7 @@ import { useSlicesData } from "./useSlicesData";
 import { useState } from "react";
 import { useChain, useReadContract } from "@buidlerlabs/hashgraph-react-wallets";
 import { Log } from "viem";
+import { useTokenPermitSignature } from "./useTokenPermitSignature";
 
 export function useCreateSlice(sliceAddress?: `0x${string}`) {
    const { writeContract } = useWriteContract();
@@ -41,9 +42,8 @@ export function useCreateSlice(sliceAddress?: `0x${string}`) {
    const { executeTransaction } = useExecuteTransaction();
    const { uploadImage } = useUploadImageToIpfs();
    const { data: evmAddress } = useEvmAddress();
-   const { data: chainData } = useChain();
-   const { readContract } = useReadContract();
    const { slices } = useSlicesData();
+   const { getPermitSignature } = useTokenPermitSignature();
    const [ipfsHashUploadingInProgress, setIpfsHashUploadingInProgress] = useState(false);
 
    const approvalsInBatch = async (
@@ -426,82 +426,6 @@ export function useCreateSlice(sliceAddress?: `0x${string}`) {
       });
    };
 
-   const generateTokenSignature = async (
-      tokenAddress: `0x${string}`,
-      aToken: `0x${string}`,
-      amount: number,
-   ) => {
-      const tokenName = (await readContract({
-         abi: tokenAbi,
-         functionName: "name",
-         address: tokenAddress,
-         args: [],
-      })) as string;
-      const tokenDecimals = (await readContract({
-         abi: tokenAbi,
-         functionName: "decimals",
-         address: tokenAddress,
-         args: [],
-      })) as string;
-
-      const amountInWei =
-         typeof amount === "bigint" ? amount : ethers.parseUnits(amount.toString(), tokenDecimals);
-
-      const nonce = await readContract({
-         address: tokenAddress,
-         abi: tokenVotesAbi,
-         functionName: "nonces",
-         args: [evmAddress],
-      });
-
-      const domain: TypedDataDomain = {
-         name: tokenName,
-         version: "1",
-         chainId: chainData.chain.id,
-         verifyingContract: tokenAddress,
-      };
-
-      const types = {
-         Permit: [
-            { name: "owner", type: "address" },
-            { name: "spender", type: "address" },
-            { name: "value", type: "uint256" },
-            { name: "nonce", type: "uint256" },
-            { name: "deadline", type: "uint256" },
-         ],
-      };
-
-      const deadline = Math.floor(Date.now() / 1000 + 600);
-
-      const message = {
-         owner: evmAddress,
-         spender: sliceAddress,
-         value: String(amountInWei),
-         nonce: String(nonce),
-         deadline: deadline,
-      };
-
-      if (!window.ethereum) {
-         throw new Error("Ethereum provider not found");
-      }
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-
-      const signatureHash = await signer.signTypedData(domain, types, message);
-
-      const { v, r, s } = ethers.Signature.from(signatureHash);
-
-      return {
-         aToken,
-         tokenAddress,
-         amount: amountInWei,
-         deadline: BigInt(deadline),
-         v,
-         r,
-         s,
-      };
-   };
-
    const depositInBatchWithPermit = useMutation<
       unknown,
       unknown,
@@ -537,11 +461,11 @@ export function useCreateSlice(sliceAddress?: `0x${string}`) {
    ) => {
       const signatures = await Promise.all(
          tokensData.map(({ tokenAddress, aToken, amount }) =>
-            generateTokenSignature(tokenAddress, aToken, amount),
+            getPermitSignature(tokenAddress, amount, aToken),
          ),
       );
 
-      const aTokens = signatures.map((sig) => sig.aToken);
+      const aTokens = signatures.map((sig) => sig.spender);
       const amounts = signatures.map((sig) => sig.amount);
       const deadlines = signatures.map((sig) => sig.deadline);
       const vs = signatures.map((sig) => sig.v);

@@ -170,7 +170,7 @@ export function AddBuildingTokenLiquidityForm({ buildingAddress }: Props) {
       if (!calculatedAmounts) return "Add Liquidity";
 
       const tokenAFormatted = formatAmount(calculatedAmounts.tokenARequired, 18);
-      const tokenBFormatted = formatAmount(calculatedAmounts.tokenBRequired, 6);
+      const tokenBFormatted = formatAmount(calculatedAmounts.tokenBRequired, 18);
 
       return `Add Liquidity (${parseFloat(tokenAFormatted).toFixed(2)} Token A + ${parseFloat(tokenBFormatted).toFixed(2)} USDC)`;
    };

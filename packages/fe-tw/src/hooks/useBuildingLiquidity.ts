@@ -6,7 +6,7 @@ import {
    MetamaskConnector,
 } from "@buidlerlabs/hashgraph-react-wallets/connectors";
 import { ContractId } from "@hashgraph/sdk";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 
@@ -22,6 +22,7 @@ import { TransactionExtended } from "@/types/common";
 import { UNISWAP_ROUTER_ADDRESS, UNISWAP_FACTORY_ADDRESS } from "@/services/contracts/addresses";
 import { uniswapRouterAbi } from "@/services/contracts/abi/uniswapRouterAbi";
 import { ethers } from "ethers";
+import { useTokenPermitSignature } from "./useTokenPermitSignature";
 
 type HederaWriteContractResult =
    | string
@@ -72,6 +73,8 @@ export function useBuildingLiquidity() {
    const [txHash, setTxHash] = useState<TransactionExtended>();
    const [txError, setTxError] = useState<string>();
    const [pairCheckParams, setPairCheckParams] = useState<PairCheckParams | null>(null);
+
+   const { getPermitSignature } = useTokenPermitSignature();
 
    async function checkPairExists(tokenAAddress: string, tokenBAddress: string): Promise<PairInfo> {
       const pairAddress = (await readContract({
@@ -265,34 +268,64 @@ export function useBuildingLiquidity() {
          const { calculatedAmounts } = pairCheckResult;
          const deadline = Math.floor(Date.now() / 1000) + 300; // 5 minutes
 
-         (await writeContract({
-            contractId: ContractId.fromSolidityAddress(tokenAAddress as `0x${string}`),
-            abi: tokenAbi,
-            functionName: "approve",
-            args: [UNISWAP_ROUTER_ADDRESS, calculatedAmounts.tokenARequired],
-         })) as HederaWriteContractResult;
+         const [signatureTokenB, signatureTokenA] = await Promise.all([
+            getPermitSignature(
+               tokenBAddress as `0x${string}`,
+               calculatedAmounts.tokenBRequired,
+               UNISWAP_ROUTER_ADDRESS,
+               deadline,
+            ),
+            getPermitSignature(
+               tokenAAddress as `0x${string}`,
+               calculatedAmounts.tokenARequired,
+               UNISWAP_ROUTER_ADDRESS,
+               deadline,
+            ),
+         ]);
 
-         (await writeContract({
-            contractId: ContractId.fromSolidityAddress(tokenBAddress as `0x${string}`),
-            abi: tokenAbi,
-            functionName: "approve",
-            args: [UNISWAP_ROUTER_ADDRESS, calculatedAmounts.tokenBRequired],
-         })) as HederaWriteContractResult;
+         // (await writeContract({
+         //    contractId: ContractId.fromSolidityAddress(tokenAAddress as `0x${string}`),
+         //    abi: tokenAbi,
+         //    functionName: "approve",
+         //    args: [UNISWAP_ROUTER_ADDRESS, calculatedAmounts.tokenARequired],
+         // })) as HederaWriteContractResult;
+
+         // (await writeContract({
+         //    contractId: ContractId.fromSolidityAddress(tokenBAddress as `0x${string}`),
+         //    abi: tokenAbi,
+         //    functionName: "approve",
+         //    args: [UNISWAP_ROUTER_ADDRESS, calculatedAmounts.tokenBRequired],
+         // })) as HederaWriteContractResult;
+
+         console.log("Debug values:", {
+            tokenAAddress,
+            tokenBAddress,
+            evmAddress,
+            UNISWAP_ROUTER_ADDRESS,
+            calculatedAmounts,
+            signatureTokenA,
+            signatureTokenB,
+         });
 
          const tx = await executeTransaction(() =>
             writeContract({
                contractId: ContractId.fromSolidityAddress(UNISWAP_ROUTER_ADDRESS),
                abi: uniswapRouterAbi,
-               functionName: "addLiquidity",
+               functionName: "addLiquidityWithPermit",
                args: [
-                  tokenAAddress,
-                  tokenBAddress,
-                  calculatedAmounts.tokenARequired,
-                  calculatedAmounts.tokenBRequired,
-                  calculatedAmounts.tokenAMin,
-                  calculatedAmounts.tokenBMin,
-                  evmAddress,
-                  deadline,
+                  {
+                     tokenA: tokenAAddress,
+                     tokenB: tokenBAddress,
+                     amountADesired: signatureTokenA.amount,
+                     amountBDesired: signatureTokenB.amount,
+                     amountAMin: calculatedAmounts.tokenAMin,
+                     amountBMin: calculatedAmounts.tokenBMin,
+                     to: evmAddress,
+                     deadline: signatureTokenA.deadline,
+                     v: [signatureTokenA.v, signatureTokenB.v],
+                     r: [signatureTokenA.r, signatureTokenB.r],
+                     s: [signatureTokenA.s, signatureTokenB.s],
+                  },
                ],
             }),
          );
@@ -306,6 +339,11 @@ export function useBuildingLiquidity() {
          setIsAddingLiquidity(false);
       }
    }
+
+   useEffect(() => {
+      window.ethers = ethers;
+      window.abi = uniswapRouterAbi;
+   }, []);
 
    return {
       isAddingLiquidity,

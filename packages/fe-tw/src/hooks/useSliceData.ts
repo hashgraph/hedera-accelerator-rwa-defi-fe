@@ -72,7 +72,7 @@ export const useSliceData = (
    });
 
    const { data: sliceBuildingsDetails } = useQuery({
-      queryKey: ["sliceBuildingsDetails", sliceBuildings.map((b) => b.buildingAddress)],
+      queryKey: ["sliceBuildingsDetails", sliceBuildings.map((b) => b?.buildingAddress)],
       queryFn: async () => {
          const buildings = await Promise.all(
             sliceBuildings.map((b) => readBuildingDetails(b.buildingAddress)),

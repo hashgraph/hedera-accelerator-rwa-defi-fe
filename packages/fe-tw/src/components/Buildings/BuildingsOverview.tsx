@@ -1,10 +1,8 @@
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { fetchJsonFromIpfs } from "@/services/ipfsService";
-import {
-   convertBuildingNFTsData,
-   readBuildingsList,
-} from "@/services/buildingService";
+import { convertBuildingNFTsData, readBuildingsList } from "@/services/buildingService";
+import Image from "next/image";
 
 export async function BuildingsOverview() {
    const buildings = await readBuildingsList();
@@ -51,9 +49,11 @@ export async function BuildingsOverview() {
             >
                <Link href={`/building/${building.id}`}>
                   <>
-                     <img
+                     <Image
                         src={building.imageUrl ?? "assets/dome.jpeg"}
                         alt={building.title ?? "Building Image"}
+                        width={300}
+                        height={300}
                         className="w-full h-32 object-cover rounded-t-md mb-3 top-0"
                      />
                      <CardContent>
