@@ -138,7 +138,7 @@ export function Navbar() {
                      </NavigationMenuContent>
                   </NavigationMenuItem>
                   <NavigationMenuItem>
-                     <Link href="/faq" legacyBehavior>
+                     <Link href="/faq">
                         <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                            FAQ
                         </NavigationMenuLink>
@@ -181,7 +181,7 @@ export function Navbar() {
                   </NavigationMenuItem>
 
                   <NavigationMenuItem>
-                     <Link href="/trade" legacyBehavior>
+                     <Link href="/trade">
                         <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                            Trade
                         </NavigationMenuLink>

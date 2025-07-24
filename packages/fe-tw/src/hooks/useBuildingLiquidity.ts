@@ -283,30 +283,6 @@ export function useBuildingLiquidity() {
             ),
          ]);
 
-         // (await writeContract({
-         //    contractId: ContractId.fromSolidityAddress(tokenAAddress as `0x${string}`),
-         //    abi: tokenAbi,
-         //    functionName: "approve",
-         //    args: [UNISWAP_ROUTER_ADDRESS, calculatedAmounts.tokenARequired],
-         // })) as HederaWriteContractResult;
-
-         // (await writeContract({
-         //    contractId: ContractId.fromSolidityAddress(tokenBAddress as `0x${string}`),
-         //    abi: tokenAbi,
-         //    functionName: "approve",
-         //    args: [UNISWAP_ROUTER_ADDRESS, calculatedAmounts.tokenBRequired],
-         // })) as HederaWriteContractResult;
-
-         console.log("Debug values:", {
-            tokenAAddress,
-            tokenBAddress,
-            evmAddress,
-            UNISWAP_ROUTER_ADDRESS,
-            calculatedAmounts,
-            signatureTokenA,
-            signatureTokenB,
-         });
-
          const tx = await executeTransaction(() =>
             writeContract({
                contractId: ContractId.fromSolidityAddress(UNISWAP_ROUTER_ADDRESS),
@@ -339,11 +315,6 @@ export function useBuildingLiquidity() {
          setIsAddingLiquidity(false);
       }
    }
-
-   useEffect(() => {
-      window.ethers = ethers;
-      window.abi = uniswapRouterAbi;
-   }, []);
 
    return {
       isAddingLiquidity,
