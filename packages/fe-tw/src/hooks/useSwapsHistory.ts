@@ -7,15 +7,20 @@ import {
 } from "@/services/contracts/addresses";
 import { watchContractEvent } from "@/services/contracts/watchContractEvent";
 import type { SwapTradeItem } from "@/types/erc3643/types";
-import { DEFAULT_TOKEN_DECIMALS, useEvmAddress } from "@buidlerlabs/hashgraph-react-wallets";
+import {
+   DEFAULT_TOKEN_DECIMALS,
+   useEvmAddress,
+   useReadContract,
+} from "@buidlerlabs/hashgraph-react-wallets";
 import { useQuery } from "@tanstack/react-query";
 import { ethers, ZeroAddress } from "ethers";
 import { useEffect, useState } from "react";
 import { uniswapFactoryAbi } from "@/services/contracts/abi/uniswapFactoryAbi";
 import { uniswapPairAbi } from "@/services/contracts/abi/uniswapPairAbi";
-import { readContract } from "@/services/contracts/readContract";
 import { type Log, QueryKeys } from "@/types/queries";
 import { tokens } from "@/consts/tokens";
+import { useTokenInfo } from "./useTokenInfo";
+import { readContract as oldReadContract } from "@/services/contracts/readContract";
 
 const filterSwapHistoryItems = (swapItems: Log[], trader: `0x${string}`) => {
    return swapItems
@@ -29,7 +34,7 @@ const filterSwapHistoryItems = (swapItems: Log[], trader: `0x${string}`) => {
 };
 
 export const readUniswapPairs = (tokenAAddress: `0x${string}`, tokenBAddress: `0x${string}`) =>
-   readContract({
+   oldReadContract({
       address: UNISWAP_FACTORY_ADDRESS,
       abi: uniswapFactoryAbi,
       functionName: "getPair",
@@ -46,42 +51,77 @@ export const useSwapsHistory = (
       SwapTradeItem[]
    >([]);
    const [uniswapExchangeHistory, setUniswapExchangeHistory] = useState<SwapTradeItem[]>([]);
+   const { readContract } = useReadContract();
 
    const { data: pairAddressData } = useQuery({
-      queryKey: [QueryKeys.ReadUniswapPairs],
+      queryKey: [
+         QueryKeys.ReadUniswapPairs,
+         selectedTokensPair?.tokenA,
+         selectedTokensPair?.tokenB,
+      ],
       refetchInterval: 10000,
       enabled:
          !!selectedTokensPair?.tokenA &&
-         !!selectedTokensPair.tokenB &&
-         selectedTokensPair.tokenA !== ZeroAddress &&
-         selectedTokensPair.tokenB !== ZeroAddress,
-      queryFn: () => {
-         return readUniswapPairs(selectedTokensPair?.tokenA!, selectedTokensPair?.tokenB!);
+         !!selectedTokensPair?.tokenB &&
+         selectedTokensPair?.tokenA !== ZeroAddress &&
+         selectedTokensPair?.tokenB !== ZeroAddress,
+      queryFn: async () => {
+         const pairAddress = (await readContract({
+            address: UNISWAP_FACTORY_ADDRESS,
+            abi: uniswapFactoryAbi,
+            functionName: "getPair",
+            args: [selectedTokensPair.tokenA, selectedTokensPair.tokenB],
+         })) as `0x${string}`;
+
+         const [token0, token1] = (await Promise.all([
+            readContract({
+               address: pairAddress,
+               abi: uniswapPairAbi,
+               functionName: "token0",
+            }),
+            readContract({
+               address: pairAddress,
+               abi: uniswapPairAbi,
+               functionName: "token1",
+            }),
+         ])) as `0x${string}`[];
+
+         return {
+            pairAddress,
+            token0,
+            token1,
+         };
       },
    });
+
+   const token0Info = useTokenInfo(pairAddressData?.token0);
+   const token1Info = useTokenInfo(pairAddressData?.token1);
+
    const { data: evmAddress } = useEvmAddress();
 
    useEffect(() => {
-      if (!!pairAddressData?.[0] && pairAddressData[0] !== ZeroAddress) {
+      if (
+         Boolean(pairAddressData?.pairAddress) &&
+         pairAddressData?.pairAddress !== ethers.ZeroAddress
+      ) {
          const unwatch = watchContractEvent({
-            address: pairAddressData[0] as `0x${string}`,
+            address: pairAddressData?.pairAddress,
             abi: uniswapPairAbi,
             eventName: "Swap",
             onLogs: (data) => {
                setUniswapExchangeHistory(
                   data.map((log, logId) => ({
-                     tokenA: log.args[0],
-                     tokenB: log.args[5],
-                     tokenAAmount: ethers.formatUnits(log.args[1], 18).toString(),
-                     tokenBAmount: ethers
-                        .formatUnits(
-                           log.args[4],
-                           selectedTokensPair.tokenB ===
-                              tokens.find((tok) => tok.symbol === "USDC")?.address
-                              ? 6
-                              : 18,
-                        )
-                        .toString(),
+                     isSell: log.args[1] !== BigInt(0),
+                     tokenA: token0Info.symbol,
+                     tokenB: token1Info.symbol,
+                     tokenAAmount:
+                        log.args[1] !== BigInt(0)
+                           ? ethers.formatUnits(log.args[1], token0Info.decimals).toString()
+                           : ethers.formatUnits(log.args[3], token0Info.decimals).toString(),
+                     tokenBAmount:
+                        log.args[2] !== BigInt(0)
+                           ? ethers.formatUnits(log.args[2], 6).toString()
+                           : ethers.formatUnits(log.args[4], 6).toString(),
                      id: logId.toString(),
                   })),
                );
@@ -92,7 +132,7 @@ export const useSwapsHistory = (
             unwatch();
          };
       }
-   }, [pairAddressData, buildingTokenDecimals]);
+   }, [pairAddressData]);
 
    useEffect(() => {
       const unwatch = watchContractEvent({
@@ -112,11 +152,11 @@ export const useSwapsHistory = (
       };
    }, []);
 
-   useEffect(() => {
-      if (selectedTokensPair?.tokenA && selectedTokensPair?.tokenB) {
-         setUniswapExchangeHistory([]);
-      }
-   }, [selectedTokensPair?.tokenA, selectedTokensPair?.tokenB]);
+   // useEffect(() => {
+   //    if (selectedTokensPair?.tokenA && selectedTokensPair?.tokenB) {
+   //       setUniswapExchangeHistory([]);
+   //    }
+   // }, [selectedTokensPair?.tokenA, selectedTokensPair?.tokenB]);
 
    return { oneSidedExchangeSwapsHistory, uniswapExchangeHistory };
 };

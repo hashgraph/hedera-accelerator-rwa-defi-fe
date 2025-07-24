@@ -240,6 +240,7 @@ export type SwapTradeItem = {
    tokenAAmount: string;
    tokenBAmount: string;
    id?: string;
+   isSell?: boolean;
 };
 
 export type SwapLiquidityPair = {

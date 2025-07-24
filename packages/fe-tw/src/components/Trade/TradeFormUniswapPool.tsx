@@ -16,7 +16,7 @@ import {
    SelectTrigger,
    SelectValue,
 } from "@/components/ui/select";
-import { ChartCandlestick, TrendingUp } from "lucide-react";
+import { ChartCandlestick, TrendingUp, ArrowUpDown } from "lucide-react";
 import { useUniswapTradeSwaps } from "@/hooks/useUniswapTradeSwaps";
 import { oneHourTimePeriod } from "@/consts/trade";
 import { USDC_ADDRESS } from "@/services/contracts/addresses";
@@ -181,7 +181,7 @@ export default function TradeFormUniswapPool({
                   autoRevertsAfter: Yup.string(),
                })}
             >
-               {({ values, handleSubmit, setFieldValue, getFieldProps }) => (
+               {({ values, handleSubmit, setFieldValue, getFieldProps, setValues }) => (
                   <Form onSubmit={handleSubmit} className="space-y-4">
                      <h1 className="text-2xl font-bold mb-4">
                         {displayOnBuildingPage
@@ -212,18 +212,39 @@ export default function TradeFormUniswapPool({
                                     value: USDC_ADDRESS,
                                     label: "USDC",
                                  },
-                              ]
-                                 .filter((token) => token.value !== values.tokenB)
-                                 .map((building) => (
-                                    <SelectItem
-                                       key={building.value}
-                                       value={building.value as `0x${string}`}
-                                    >
-                                       {building.label} ({building.value})
-                                    </SelectItem>
-                                 ))}
+                              ].map((building) => (
+                                 <SelectItem
+                                    key={building.value}
+                                    value={building.value as `0x${string}`}
+                                 >
+                                    {building.label} ({building.value})
+                                 </SelectItem>
+                              ))}
                            </SelectContent>
                         </Select>
+                     </div>
+                     <div className="flex justify-center -my-2">
+                        <Button
+                           type="button"
+                           variant="outline"
+                           size="sm"
+                           className="rounded-full p-2 h-10 w-10 border-2 hover:bg-indigo-50 transition-colors"
+                           onClick={() => {
+                              setValues({
+                                 ...values,
+                                 tokenA: values.tokenB,
+                                 tokenB: values.tokenA,
+                              });
+
+                              onTokensPairSelected(
+                                 values.tokenB! as `0x${string}`,
+                                 values.tokenA! as `0x${string}`,
+                              );
+                           }}
+                           disabled={!values.tokenA && !values.tokenB}
+                        >
+                           <ArrowUpDown className="h-4 w-4" />
+                        </Button>
                      </div>
                      <div>
                         <Label htmlFor="tokenBSelect">Select token B</Label>
@@ -245,16 +266,11 @@ export default function TradeFormUniswapPool({
                                     value: USDC_ADDRESS,
                                     label: "USDC",
                                  },
-                              ]
-                                 .filter((token) => token.value !== values.tokenA)
-                                 .map((token) => (
-                                    <SelectItem
-                                       key={token.value}
-                                       value={token.value as `0x${string}`}
-                                    >
-                                       {token.label} ({token.value})
-                                    </SelectItem>
-                                 ))}
+                              ].map((token) => (
+                                 <SelectItem key={token.value} value={token.value as `0x${string}`}>
+                                    {token.label} ({token.value})
+                                 </SelectItem>
+                              ))}
                            </SelectContent>
                         </Select>
                      </div>
