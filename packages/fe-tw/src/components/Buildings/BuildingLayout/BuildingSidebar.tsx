@@ -36,7 +36,7 @@ import {
    ClipboardCheck,
 } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { MouseEvent, useEffect, useState } from "react";
 
 const UNPROTECTED_BUILDING_NAV_ITEMS = [
@@ -61,6 +61,7 @@ export const ERC3643_NAV_ITEMS = [{ title: "Compliances", href: "compliances", i
 
 export function BuildingSidebar() {
    const { id } = useParams();
+   const pathname = usePathname();
    const { identityData } = useIdentity(id as string);
    const [isModalOpened, setIsModalOpened] = useState(false);
    const [isIdentityNotDeployedModalOpened, setIsIdentityNotDeployedModalOpened] = useState(false);
@@ -84,7 +85,15 @@ export function BuildingSidebar() {
                <SidebarMenu>
                   {UNPROTECTED_BUILDING_NAV_ITEMS.map((item) => (
                      <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton className="text-sm" asChild>
+                        <SidebarMenuButton
+                           className="text-sm"
+                           asChild
+                           isActive={
+                              item.href === ""
+                                 ? !pathname.includes(`${id}/`)
+                                 : pathname.includes(item.href)
+                           }
+                        >
                            <Link href={`/building/${id}/${item.href}`}>
                               <item.icon />
                               <span>{item.title}</span>
@@ -107,7 +116,11 @@ export function BuildingSidebar() {
                   <SidebarMenuSub>
                      {PROTECTED_BUILDING_NAV_ITEMS.map((item) => (
                         <SidebarMenuSubItem key={item.title}>
-                           <SidebarMenuButton className="text-md" asChild>
+                           <SidebarMenuButton
+                              className="text-md"
+                              asChild
+                              isActive={pathname.includes(item.href)}
+                           >
                               <Link
                                  href={`/building/${id}/${item.href}`}
                                  onClick={(e) => handleItemClick(e)}
