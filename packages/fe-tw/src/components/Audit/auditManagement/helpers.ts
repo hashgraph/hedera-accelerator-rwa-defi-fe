@@ -1,28 +1,19 @@
 import * as Yup from "yup";
 
 export interface AuditFormValues {
-   // Audit Company Information
-   companyName?: string;
-   auditorName?: string;
-
-   // Audit Details
-   auditDate?: string;
-   auditType?: string;
-   auditReferenceId?: string;
-   auditValidityFrom?: string;
-   auditValidityTo?: string;
-
-   // Summary Information
-   overallConditionRating?: string;
-   immediateActionRequired?: string;
-   nextRecommendedAuditDate?: string;
-
-   // Document Upload
+   companyName: string;
+   auditorName: string;
+   auditDate: string;
+   auditType: string;
+   auditReferenceId: string;
+   auditValidityFrom: string;
+   auditValidityTo: string;
+   overallConditionRating: string;
+   immediateActionRequired: string;
+   nextRecommendedAuditDate: string;
    auditReportFile?: File | null;
    auditReportIpfsId?: string;
-
-   // Additional Notes
-   notes?: string;
+   notes: string;
 }
 
 export const validationSchema = Yup.object({
@@ -85,3 +76,19 @@ export const immediateActionOptions = [
    { value: "yes", label: "Yes" },
    { value: "no", label: "No" },
 ];
+
+export const getInitialValues = (audit: AuditFormValues) => ({
+   companyName: audit?.companyName || "",
+   auditorName: audit?.auditorName || "",
+   auditDate: audit?.auditDate || "",
+   auditType: audit?.auditType || "",
+   auditReferenceId: audit?.auditReferenceId || "",
+   auditValidityFrom: audit?.auditValidityFrom || "",
+   auditValidityTo: audit?.auditValidityTo || "",
+   overallConditionRating: audit?.overallConditionRating || "",
+   immediateActionRequired: audit?.immediateActionRequired || "no",
+   nextRecommendedAuditDate: audit?.nextRecommendedAuditDate || "",
+   auditReportFile: null,
+   auditReportIpfsId: audit?.auditReportIpfsId || "",
+   notes: audit?.notes || "",
+});

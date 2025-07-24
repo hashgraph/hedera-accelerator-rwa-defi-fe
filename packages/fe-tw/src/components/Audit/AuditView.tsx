@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Calendar, CheckCircle, XCircle, Search, ExternalLink } from "lucide-react";
+import { Calendar, CheckCircle, XCircle, Search, ExternalLink, Pencil } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
    Table,
@@ -21,10 +21,12 @@ import {
 } from "@/components/ui/pagination";
 import { Badge } from "@/components/ui/badge";
 import { useBuildingAudit } from "@/hooks/useBuildingAudit";
-import { format } from "date-fns";
-import { capitalize, map } from "lodash";
+import { format, isAfter } from "date-fns";
+import { capitalize, filter, includes, map } from "lodash";
 import Link from "next/link";
 import { clsx as cx } from "clsx";
+import { useEvmAddress } from "@buidlerlabs/hashgraph-react-wallets";
+import { Button } from "../ui/button";
 
 type AuditViewProps = {
    buildingId: string;
@@ -47,16 +49,21 @@ const RATING_TO_COLOR: Record<string, "green" | "blue" | "yellow" | "red" | "gra
    default: "gray",
 };
 
-export function AuditView({ buildingId, buildingAddress }: AuditViewProps) {
+export function AuditView({ buildingAddress }: AuditViewProps) {
+   const { data: evmAddress } = useEvmAddress();
    const [filterText, setFilterText] = useState("");
    const [currentPage, setCurrentPage] = useState(1);
    const itemsPerPage = 10;
 
-   const { auditRecords, auditRecordsLoading } = useBuildingAudit(buildingAddress);
+   const {
+      auditRecords: auditData = [],
+      auditRecordsLoading,
+      auditors,
+   } = useBuildingAudit(buildingAddress);
 
-   const auditData = map(auditRecords?.recordDetails, (record) => record.ipfsInfo);
+   const isCurrentUserAuditor = includes(auditors, evmAddress);
 
-   const filteredAudits = auditData.filter((audit) => {
+   const filteredAudits = auditData?.filter((audit) => {
       const searchLower = filterText.toLowerCase();
       return (
          audit.companyName?.toLowerCase().includes(searchLower) ||
@@ -80,6 +87,16 @@ export function AuditView({ buildingId, buildingAddress }: AuditViewProps) {
       return <div className="text-center">Loading audit records...</div>;
    }
 
+   const deriveRecordStatus = (record: (typeof auditData)[number]) => {
+      if (record.revoked) {
+         return "Revoked";
+      } else if (isAfter(new Date(record.auditValidityTo), new Date())) {
+         return "Outdated";
+      } else {
+         return "Active";
+      }
+   };
+
    return (
       <div>
          <div className="relative w-80">
@@ -99,6 +116,7 @@ export function AuditView({ buildingId, buildingAddress }: AuditViewProps) {
                      <TableHead>Company</TableHead>
                      <TableHead>Auditor</TableHead>
                      <TableHead>Type</TableHead>
+                     <TableHead>Status</TableHead>
                      <TableHead>Reference ID</TableHead>
                      <TableHead>Audit Date</TableHead>
                      <TableHead>Validity</TableHead>
@@ -106,6 +124,7 @@ export function AuditView({ buildingId, buildingAddress }: AuditViewProps) {
                      <TableHead>Action Required</TableHead>
                      <TableHead>Next Audit</TableHead>
                      <TableHead>Audit file</TableHead>
+                     {isCurrentUserAuditor && <TableHead>Actions</TableHead>}
                   </TableRow>
                </TableHeader>
                <TableBody>
@@ -120,6 +139,9 @@ export function AuditView({ buildingId, buildingAddress }: AuditViewProps) {
                               <Badge color={TYPE_TO_COLOR[audit.auditType]} variant="outline">
                                  {capitalize(audit.auditType) || "N/A"}
                               </Badge>
+                           </TableCell>
+                           <TableCell className="font-semibold">
+                              {deriveRecordStatus(audit)}
                            </TableCell>
                            <TableCell className="font-mono text-sm">
                               {audit.auditReferenceId || "N/A"}
@@ -172,11 +194,23 @@ export function AuditView({ buildingId, buildingAddress }: AuditViewProps) {
                               <Link
                                  className="font-medium underline flex gap-1 text-indigo-700 items-center"
                                  target="_blank"
-                                 href={audit.auditReportIpfsUrl}
+                                 href={audit.auditReportIpfsUrl!}
                               >
                                  View <ExternalLink size={16} />
                               </Link>
                            </TableCell>
+                           {isCurrentUserAuditor && (
+                              <TableCell>
+                                 <Button variant="outline" size="sm">
+                                    <Link
+                                       className="flex items-center gap-1"
+                                       href={`/building/${buildingAddress}/audit/${audit.recordId}`}
+                                    >
+                                       <Pencil /> Edit
+                                    </Link>
+                                 </Button>
+                              </TableCell>
+                           )}
                         </TableRow>
                      ))
                   ) : (

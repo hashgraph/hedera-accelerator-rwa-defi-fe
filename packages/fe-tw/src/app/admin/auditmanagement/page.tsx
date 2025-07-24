@@ -1,4 +1,4 @@
-import { AuditManagementForm } from "@/components/Admin/auditManagement";
+import { AuditManagementForm } from "@/components/Audit/auditManagement";
 
 export default function AuditManagementPage() {
    return (
