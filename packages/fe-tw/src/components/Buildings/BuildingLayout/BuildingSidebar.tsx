@@ -18,6 +18,11 @@ import {
    SidebarMenuSubItem,
    useSidebar,
 } from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useBuildingInfo } from "@/hooks/useBuildingInfo";
+import { useBuildingOwner } from "@/hooks/useBuildingOwner";
+import { useTokenInfo } from "@/hooks/useTokenInfo";
+import { useEvmAddress } from "@buidlerlabs/hashgraph-react-wallets";
 import {
    Blocks,
    BookOpenCheck,
@@ -34,6 +39,7 @@ import {
    ShieldCheck,
    FileCheck2,
    ClipboardCheck,
+   Loader,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
@@ -46,25 +52,40 @@ const UNPROTECTED_BUILDING_NAV_ITEMS = [
 ];
 
 export const PROTECTED_BUILDING_NAV_ITEMS = [
+   { title: "Trade", href: "trade", icon: ChartCandlestick },
+];
+
+const ADVANCED_NAV_ITEMS = [
    { title: "Staking", href: "staking", icon: Blocks },
    { title: "Proposals", href: "proposals", icon: Vote },
    { title: "Slices", href: "slices", icon: Slice },
-   { title: "Payments", href: "payments", icon: HandCoins },
-   { title: "Expenses", href: "expenses", icon: ReceiptText },
-
-   { title: "Mint", href: "mint", icon: CoinsIcon },
-   { title: "Trade", href: "trade", icon: ChartCandlestick },
-   { title: "Liquidity", href: "liquidity", icon: Droplet },
 ];
 
-export const ERC3643_NAV_ITEMS = [{ title: "Compliances", href: "compliances", icon: FileCheck2 }];
+export const OWNER_NAV_ITEMS = [
+   { title: "Payments", href: "payments", icon: HandCoins },
+   { title: "Expenses", href: "expenses", icon: ReceiptText },
+   { title: "Mint", href: "mint", icon: CoinsIcon },
+   { title: "Liquidity", href: "liquidity", icon: Droplet },
+   { title: "Compliances", href: "compliances", icon: FileCheck2 },
+];
 
 export function BuildingSidebar() {
    const { id } = useParams();
    const pathname = usePathname();
-   const { identityData } = useIdentity(id as string);
+   const { identityData, isLoading: isIdentityLoading } = useIdentity(id as string);
+   const { data: evmAddress } = useEvmAddress();
+   const {
+      tokenAddress,
+      buildingOwnerAddress,
+      isLoading: isBuildingInfoLoading,
+   } = useBuildingInfo(id as `0x${string}`);
+   const { balanceOf, isLoading: isTokenInfoLoading } = useTokenInfo(tokenAddress);
+
    const [isModalOpened, setIsModalOpened] = useState(false);
    const [isIdentityNotDeployedModalOpened, setIsIdentityNotDeployedModalOpened] = useState(false);
+
+   const isOwner = buildingOwnerAddress === evmAddress;
+   const hasTokens = balanceOf !== BigInt(0);
 
    const handleItemClick = (e: MouseEvent<HTMLAnchorElement>) => {
       if (!identityData.isDeployed) {
@@ -104,11 +125,9 @@ export function BuildingSidebar() {
                </SidebarMenu>
             </SidebarGroup>
             <SidebarGroup>
-               <SidebarGroupLabel>Identity Required</SidebarGroupLabel>
+               <SidebarGroupLabel>Invest</SidebarGroupLabel>
                <SidebarGroupAction>
-                  {identityData.isIdentityRegistered ? (
-                     <ShieldCheck className="text-indigo-400" />
-                  ) : (
+                  {!isIdentityLoading && !identityData.isIdentityRegistered && (
                      <ShieldAlert className="text-orange-600" />
                   )}
                </SidebarGroupAction>
@@ -134,23 +153,67 @@ export function BuildingSidebar() {
                   </SidebarMenuSub>
                </SidebarGroupContent>
             </SidebarGroup>
-            <SidebarGroup>
-               <SidebarGroupLabel>ERC-3643</SidebarGroupLabel>
-               <SidebarGroupContent>
-                  <SidebarMenu>
-                     {ERC3643_NAV_ITEMS.map((item) => (
-                        <SidebarMenuItem key={item.title}>
-                           <SidebarMenuButton className="text-sm" asChild>
-                              <Link href={`/building/${id}/${item.href}`}>
-                                 <item.icon />
-                                 <span>{item.title}</span>
-                              </Link>
-                           </SidebarMenuButton>
-                        </SidebarMenuItem>
-                     ))}
-                  </SidebarMenu>
-               </SidebarGroupContent>
-            </SidebarGroup>
+            {isTokenInfoLoading || isBuildingInfoLoading ? (
+               <div className="space-y-2 ml-5">
+                  <Skeleton className="h-4 w-[150px]" />
+                  <Skeleton className="h-4 w-[50px] ml-5" />
+               </div>
+            ) : (
+               <>
+                  {hasTokens && (
+                     <SidebarGroup>
+                        <SidebarGroupLabel>Advanced</SidebarGroupLabel>
+                        <SidebarGroupAction>
+                           {!identityData.isIdentityRegistered && (
+                              <ShieldAlert className="text-orange-600" />
+                           )}
+                        </SidebarGroupAction>
+                        <SidebarGroupContent>
+                           <SidebarMenuSub>
+                              {ADVANCED_NAV_ITEMS.map((item) => (
+                                 <SidebarMenuSubItem key={item.title}>
+                                    <SidebarMenuButton
+                                       className="text-md"
+                                       asChild
+                                       isActive={pathname.includes(item.href)}
+                                    >
+                                       <Link
+                                          href={`/building/${id}/${item.href}`}
+                                          onClick={(e) => handleItemClick(e)}
+                                       >
+                                          <item.icon />
+                                          <span>{item.title}</span>
+                                       </Link>
+                                    </SidebarMenuButton>
+                                 </SidebarMenuSubItem>
+                              ))}
+                           </SidebarMenuSub>
+                        </SidebarGroupContent>
+                     </SidebarGroup>
+                  )}
+                  {isOwner && (
+                     <SidebarGroup>
+                        <SidebarGroupLabel>Owner</SidebarGroupLabel>
+                        <SidebarGroupContent>
+                           <SidebarMenuSub>
+                              <SidebarMenu>
+                                 {OWNER_NAV_ITEMS.map((item) => (
+                                    <SidebarMenuItem key={item.title}>
+                                       <SidebarMenuButton className="text-sm" asChild>
+                                          <Link href={`/building/${id}/${item.href}`}>
+                                             <item.icon />
+                                             <span>{item.title}</span>
+                                          </Link>
+                                       </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                 ))}
+                              </SidebarMenu>
+                           </SidebarMenuSub>
+                        </SidebarGroupContent>
+                     </SidebarGroup>
+                  )}
+               </>
+            )}
          </SidebarContent>
 
          <RegisterIdentityModal

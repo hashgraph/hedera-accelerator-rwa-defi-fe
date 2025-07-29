@@ -122,7 +122,7 @@ export function Navbar() {
             <NavigationMenu>
                <NavigationMenuList className="gap-3">
                   <NavigationMenuItem>
-                     <NavigationMenuTrigger>Explorer</NavigationMenuTrigger>
+                     <NavigationMenuTrigger>Invest</NavigationMenuTrigger>
                      <NavigationMenuContent asChild data-state="open">
                         <ul className="grid w-[400px] gap-2 p-1 md:w-[300px] md:grid-cols-1 lg:w-[400px]">
                            <ListItem icon={<Radar />} title="Featured" href="/explorer">
@@ -138,41 +138,28 @@ export function Navbar() {
                      </NavigationMenuContent>
                   </NavigationMenuItem>
                   <NavigationMenuItem>
-                     <Link href="/faq">
-                        <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                           FAQ
-                        </NavigationMenuLink>
-                     </Link>
-                  </NavigationMenuItem>
-                  <NavigationMenuItem>
                      <NavigationMenuTrigger className={navigationMenuTriggerStyle()}>
-                        Admin
+                        Create
                      </NavigationMenuTrigger>
                      <NavigationMenuContent asChild data-state="open">
                         <ul className="grid w-[400px] gap-2 p-1 md:w-[300px] md:grid-cols-1 lg:w-[400px]">
                            <ListItem
                               icon={<Building />}
-                              title="Building Management"
+                              title="Building"
                               href="/admin/buildingmanagement"
                            >
                               Create and manage buildings
                            </ListItem>
-                           <ListItem
-                              icon={<Slice />}
-                              title="Slice Management"
-                              href="/admin/slicemanagement"
-                           >
+                           <ListItem icon={<Slice />} title="Slice" href="/admin/slicemanagement">
                               Create and manage slices
                            </ListItem>
-                           {/* ----- ADDED ITEM 1 ----- */}
                            <ListItem
                               icon={<FileStack />}
-                              title="Audit Management"
+                              title="Audit"
                               href="/admin/auditmanagement"
                            >
                               Create and Manage Audit
                            </ListItem>
-                           {/* ----- ADDED ITEM 2 ----- */}
                            <ListItem icon={<Coins />} title="Get Demo USDC" href="/admin/demo-usdc">
                               Mint test USDC tokens for development and testing.
                            </ListItem>
@@ -184,6 +171,14 @@ export function Navbar() {
                      <Link href="/trade">
                         <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                            Trade
+                        </NavigationMenuLink>
+                     </Link>
+                  </NavigationMenuItem>
+
+                  <NavigationMenuItem>
+                     <Link href="/faq">
+                        <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                           FAQ
                         </NavigationMenuLink>
                      </Link>
                   </NavigationMenuItem>

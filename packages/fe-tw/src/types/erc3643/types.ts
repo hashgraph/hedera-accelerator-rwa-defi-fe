@@ -117,6 +117,7 @@ export type BuildingNFTData = {
    purchasedAt: number;
    attributes: BuildingNFTAttribute[];
    cope?: CopeData;
+   owner?: `0x${string}`;
 };
 
 export type BuildingERCToken = {

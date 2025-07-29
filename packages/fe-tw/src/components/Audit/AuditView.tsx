@@ -99,14 +99,23 @@ export function AuditView({ buildingAddress }: AuditViewProps) {
 
    return (
       <div>
-         <div className="relative w-80">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <Input
-               placeholder="Search by company, auditor, type, or reference..."
-               value={filterText}
-               onChange={(e) => handleFilterChange(e.target.value)}
-               className="pl-10"
-            />
+         <div className="flex">
+            <div className="relative w-80">
+               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+               <Input
+                  placeholder="Search by company, auditor, type, or reference..."
+                  value={filterText}
+                  onChange={(e) => handleFilterChange(e.target.value)}
+                  className="pl-10"
+               />
+            </div>
+            {isCurrentUserAuditor && (
+               <div className="ml-auto">
+                  <Link href={`audit/create`}>
+                     <Button>Add Audit</Button>
+                  </Link>
+               </div>
+            )}
          </div>
 
          <div className="border rounded-lg mt-4">

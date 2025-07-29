@@ -24,6 +24,7 @@ import { getTokenDecimals } from "@/services/erc20Service";
 import { tryCatch } from "@/services/tryCatch";
 import type { TradeFormPayload } from "@/types/erc3643/types";
 import { TxResultToastView } from "../CommonViews/TxResultView";
+import { useQueryClient } from "@tanstack/react-query";
 
 type Props = {
    buildingTokenOptions: { tokenAddress: `0x${string}`; tokenName: string }[];
@@ -43,6 +44,7 @@ export default function TradeFormUniswapPool({
    displayOnBuildingPage,
    onTokensPairSelected,
 }: Props) {
+   const queryClient = useQueryClient();
    const { handleSwap, getAmountsOut, giveAllowance } = useUniswapTradeSwaps();
    const [isLoading, setIsLoading] = useState(false);
    const [swapTokensAmountOutput, setSwapTokensAmountOutput] = useState<{
@@ -128,6 +130,8 @@ export default function TradeFormUniswapPool({
                outputAmounts[1],
                Number(tokenBDecimals![0]),
             );
+
+            queryClient.invalidateQueries({ queryKey: ["TOKEN_INFO"] });
 
             toast.success(
                <TxResultToastView

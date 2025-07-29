@@ -12,7 +12,7 @@ import { CoinsIcon } from "lucide-react";
 import { USDC_ADDRESS } from "@/services/contracts/addresses";
 import { TransactionExtended } from "@/types/common";
 
-const MINT_AMOUNT = 1000;
+const MINT_AMOUNT = 10000;
 const DECIMALS = 6;
 
 export const MintUSDCButton = () => {

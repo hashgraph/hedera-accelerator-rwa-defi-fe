@@ -43,7 +43,6 @@ interface IProps {
 export function AuditManagementForm({ buildingAddress, recordId }: IProps) {
    const isEdit = Boolean(buildingAddress) && Boolean(recordId);
    const { data: evmAddress } = useEvmAddress();
-   const { buildings } = useBuildings();
    const [selectedBuildingAddress, setSelectedBuildingAddress] = useState(buildingAddress ?? null);
    const [uploadingFile, setUploadingFile] = useState(false);
    const {
@@ -211,41 +210,11 @@ export function AuditManagementForm({ buildingAddress, recordId }: IProps) {
                      dirty,
                   }) => (
                      <Form onSubmit={handleSubmit} className="flex flex-col p-6">
-                        <div className="w-full">
-                           <Label htmlFor="buildingAddress">
-                              Pick a Building
-                              <span className="text-red-500">*</span>
-                           </Label>
-                           <Select
-                              disabled={isEdit}
-                              name="buildingAddress"
-                              onValueChange={(value) =>
-                                 setSelectedBuildingAddress(value as `0x${string}`)
-                              }
-                              value={String(selectedBuildingAddress)}
-                           >
-                              <SelectTrigger className="w-full mt-1">
-                                 <SelectValue placeholder="Choose building" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                 {buildings?.map((building) => (
-                                    <SelectItem
-                                       key={building.address}
-                                       value={building.address as string}
-                                    >
-                                       {building.title} ({building.address})
-                                    </SelectItem>
-                                 ))}
-                              </SelectContent>
-                           </Select>
-                        </div>
-
                         {buildingDetailsLoaded && (
                            <>
                               {!isUserAuditor ? (
                                  <div>
-                                    <div className="flex flex-col gap-4 mt-4">
-                                       <Separator className="my-4" />
+                                    <div className="flex flex-col gap-4">
                                        <div className="text-center py-8">
                                           <p className="text-lg text-gray-600">
                                              You are not eligible to perform an audit.
@@ -254,9 +223,7 @@ export function AuditManagementForm({ buildingAddress, recordId }: IProps) {
                                     </div>
                                  </div>
                               ) : (
-                                 <div className="flex flex-col gap-4 mt-4">
-                                    <Separator className="my-4" />
-
+                                 <div className="flex flex-col gap-4">
                                     <div className="space-y-4">
                                        <h3 className="text-lg font-semibold text-indigo-900">
                                           Audit Company Information

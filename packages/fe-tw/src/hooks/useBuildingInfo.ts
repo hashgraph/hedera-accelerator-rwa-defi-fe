@@ -8,8 +8,12 @@ import { getTokenBalanceOf, getTokenDecimals } from "@/services/erc20Service";
 import { QueryKeys } from "@/types/queries";
 import { readUniswapPairs } from "@/hooks/useSwapsHistory";
 import { USDC_ADDRESS } from "@/services/contracts/addresses";
+import { useBuildingOwner } from "./useBuildingOwner";
 
 export const useBuildingInfo = (id?: string) => {
+   const { buildingOwnerAddress, isLoading: buildingOwnerLoading } = useBuildingOwner(
+      id as `0x${string}`,
+   );
    const { data: evmAddress } = useEvmAddress();
 
    const { data: buildingDetails, isLoading: buildingLoading } = useQuery({
@@ -54,9 +58,10 @@ export const useBuildingInfo = (id?: string) => {
 
    return {
       ...buildingDetails,
+      buildingOwnerAddress,
       tokenAmountMinted,
       liquidityPairAddress: pairAddressData?.[0],
-      isLoading: buildingLoading || tokenLoading || pairInfoLoading,
+      isLoading: buildingLoading || tokenLoading || pairInfoLoading || buildingOwnerLoading,
    };
 };
 

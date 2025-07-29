@@ -77,6 +77,7 @@ export const convertBuildingNFTsData = (buildingNFTsData: BuildingNFTData[]): Bu
       allocation: data.allocation,
       purchasedAt: data.purchasedAt,
       address: data.address,
+      owner: data.owner,
       info: {
          financial: buildingFinancialMock,
          demographics: !data.attributes
