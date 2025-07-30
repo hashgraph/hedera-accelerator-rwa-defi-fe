@@ -40,12 +40,6 @@ import { sliceRebalanceSchema } from "./helpers";
 import { DepositToSliceForm } from "../Admin/sliceManagement/DepositToSliceForm";
 import SliceDepositChart from "./SliceDepositChart";
 import { cx } from "class-variance-authority";
-import { ethers, SignatureLike } from "ethers";
-import { tokenVotesAbi } from "@/services/contracts/abi/tokenVotesAbi";
-import useWriteContract from "@/hooks/useWriteContract";
-import { ContractId } from "@hashgraph/sdk";
-import { map } from "lodash";
-import { sliceAbi } from "@/services/contracts/abi/sliceAbi";
 import { USDC_ADDRESS } from "@/services/contracts/addresses";
 import { readBuildingDetails } from "@/services/buildingService";
 import { basicVaultAbi } from "@/services/contracts/abi/basicVaultAbi";
@@ -216,6 +210,9 @@ export function SliceDetailPage({ slice, buildingId, isInBuildingContext = false
       slice.address,
       buildingsInfo,
    );
+
+   const data = useTokenInfo(slice.address);
+
    const { data: evmAddress } = useEvmAddress();
    const { rebalanceSliceMutation, addAllocationsToSliceMutation, depositWithPermits } =
       useCreateSlice(slice.address);

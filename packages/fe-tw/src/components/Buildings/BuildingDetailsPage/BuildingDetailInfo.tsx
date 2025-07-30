@@ -1,14 +1,34 @@
+"use client";
 import { useTreasuryData } from "@/components/Payments/hooks";
+import { useStaking } from "@/components/Staking/hooks";
 import { useBuildingInfo } from "@/hooks/useBuildingInfo";
 import { useTokenInfo } from "@/hooks/useTokenInfo";
 import type { BuildingInfo } from "@/types/erc3643/types";
+import { isNumber, map, zipObject } from "lodash";
 import { useParams } from "next/navigation";
+
+const ScientificNotation = ({ value }: { value: number }) => {
+   if (value < 1_000_000_000) {
+      return <span>{value.toLocaleString()}</span>;
+   }
+
+   const exponentialStr = value.toExponential(2);
+   const [coefficient, exponent] = exponentialStr.split("e");
+   const exp = parseInt(exponent, 10);
+
+   return (
+      <span>
+         {coefficient} × 10<sup>{exp}</sup>
+      </span>
+   );
+};
 
 export const BuildingDetailInfo = (props: BuildingInfo) => {
    const { id } = useParams();
    const { tokenAddress, treasuryAddress } = useBuildingInfo(id as string);
    const { tokenPriceInUSDC, totalSupply, balanceOf, isLoading } = useTokenInfo(tokenAddress);
    const { reserve } = useTreasuryData(treasuryAddress, id as string);
+   const { userStakedTokens, aTokenBalance } = useStaking({ buildingId: id as string });
 
    if (isLoading) {
       return null;
@@ -23,14 +43,34 @@ export const BuildingDetailInfo = (props: BuildingInfo) => {
             </article>
 
             <div className="grid grid-cols-2 gap-2 mt-4">
+               <span className="font-semibold text-sm">Tokens owned:</span>
+               <span className="text-sm">
+                  <ScientificNotation value={Number(balanceOf)} />
+               </span>
                <span className="font-semibold text-sm">Percentage owned of Overall property:</span>
                <span className="text-sm">
                   {balanceOf === BigInt(0)
                      ? 0
                      : ((Number(balanceOf) / Number(totalSupply)) * 100).toFixed(2)}
-                  %
+                  % &nbsp;
                </span>
-               {tokenPriceInUSDC !== 0 && (
+               {isNumber(userStakedTokens) && Number(userStakedTokens) > 0 && (
+                  <>
+                     <span className="font-semibold text-sm">Total tokens staked:</span>
+                     <span className="text-sm">
+                        <ScientificNotation value={userStakedTokens} />
+                     </span>
+                  </>
+               )}
+               {isNumber(aTokenBalance) && Number(aTokenBalance) > 0 && (
+                  <>
+                     <span className="font-semibold text-sm">Total aTokens owned:</span>
+                     <span className="text-sm">
+                        <ScientificNotation value={aTokenBalance} />
+                     </span>
+                  </>
+               )}
+               {isNumber(tokenPriceInUSDC) && Number(tokenPriceInUSDC) > 0 && (
                   <>
                      <span className="font-semibold text-sm">Token price:</span>
                      <span>
@@ -42,7 +82,7 @@ export const BuildingDetailInfo = (props: BuildingInfo) => {
                )}
                {reserve && (
                   <>
-                     <span className="font-semibold text-sm">Treasury reserve:</span>
+                     <span className="font-semibold text-sm">Treasury maximum reserve:</span>
                      <span>
                         <span className="text-sm">{reserve}</span>&nbsp;
                         <span className="text-xs text-gray-500">(USDC)</span>
