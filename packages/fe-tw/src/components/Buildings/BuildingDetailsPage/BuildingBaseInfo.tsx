@@ -88,9 +88,6 @@ export const BuildingBaseInfo = ({
                      </HoverCard>
                   )}
                </div>
-               <p className="text-sm text-slate-700 mt-2">
-                  Purchased at: {moment(purchasedAt).format("YYYY-MM-DD")}
-               </p>
             </article>
             {description && (
                <article className="mt-4">

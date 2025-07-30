@@ -54,7 +54,7 @@ export const useTokenPermitSignature = () => {
          ],
       };
 
-      const ddLine = deadline ?? Math.floor(Date.now() / 1000 + 600);
+      const ddLine = deadline === undefined ? Math.floor(Date.now() / 1000 + 600) : deadline;
 
       const message = {
          owner: evmAddress,
