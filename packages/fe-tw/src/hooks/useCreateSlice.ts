@@ -465,6 +465,8 @@ export function useCreateSlice(sliceAddress?: `0x${string}`) {
          ),
       );
 
+      console.log("signatures :>> ", signatures);
+
       const aTokens = signatures.map((sig) => sig.spender);
       const amounts = signatures.map((sig) => sig.amount);
       const deadlines = signatures.map((sig) => sig.deadline);

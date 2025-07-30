@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Formik } from "formik";
 import { toast } from "sonner";
-import { Loader } from "lucide-react";
+import { Loader, CheckCircle, Loader2 } from "lucide-react";
 import {
    useChain,
    useEvmAddress,
@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import SliceAllocations from "@/components/Slices/SliceAllocations";
 import { useBuildings } from "@/hooks/useBuildings";
 import { useSliceData } from "@/hooks/useSliceData";
-import { Dialog, DialogContent, DialogHeader } from "../ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "../ui/dialog";
 import type {
    AddSliceAllocationRequestBody,
    DepositToSliceRequestData,
@@ -54,9 +54,152 @@ import { tokenAbi } from "@/services/contracts/abi/tokenAbi";
 import { TypedDataDomain } from "viem";
 import { Checkbox } from "../ui/checkbox";
 import { Label } from "../ui/label";
+import { Input } from "../ui/input";
 import { PieChart, TrendingUp, Wallet, Settings, Plus, BarChart3 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AllocationBuildingToken } from "./AllocationBuildingToken";
+import { useUniswapTradeSwaps } from "@/hooks/useUniswapTradeSwaps";
+import { oneHourTimePeriod } from "@/consts/trade";
+import { useQueryClient } from "@tanstack/react-query";
+
+// Add USDC to Slice hook
+function useUSDCForSlice(
+   sliceAddress?: `0x${string}`,
+   sliceBuildings?: any[],
+   sliceAllocations?: any[],
+) {
+   const { handleSwap, getAmountsOut, giveAllowance } = useUniswapTradeSwaps();
+   const { depositWithPermits } = useCreateSlice(sliceAddress);
+
+   const [currentStep, setCurrentStep] = useState<number>(0);
+   const [stepResults, setStepResults] = useState<{ [key: number]: boolean }>({});
+   const [exchangeRates, setExchangeRates] = useState<{ [tokenAddress: string]: number }>({});
+
+   const steps = [
+      "Getting slice buildings",
+      "Getting building tokens",
+      "Getting liquidity pairs",
+      "Calculating exchange rates",
+      "Swapping USDC to tokens",
+      "Depositing tokens to slice",
+   ];
+
+   const investUSDCToSlice = async (usdcAmount: string) => {
+      try {
+         setCurrentStep(0);
+         setStepResults({});
+
+         // Step 1: Get buildings of slice
+         setCurrentStep(1);
+         if (!sliceBuildings || sliceBuildings.length === 0) {
+            throw new Error("No buildings found in slice");
+         }
+         setStepResults((prev) => ({ ...prev, 1: true }));
+
+         // Step 2: Get tokens of buildings
+         setCurrentStep(2);
+         const buildingTokens = sliceBuildings.map((building) => building.tokenAddress);
+         if (!buildingTokens.length) {
+            throw new Error("No building tokens found");
+         }
+         setStepResults((prev) => ({ ...prev, 2: true }));
+
+         // Step 3: Get liquidity pairs and Step 4: Calculate exchange rates
+         setCurrentStep(3);
+         const rates: { [tokenAddress: string]: number } = {};
+
+         for (const tokenAddress of buildingTokens) {
+            const { data: outputAmounts } = await tryCatch(
+               getAmountsOut(ethers.parseUnits("1", 6), [USDC_ADDRESS, tokenAddress]),
+            );
+
+            if (outputAmounts && outputAmounts[1]) {
+               const { data: tokenDecimals } = await tryCatch(getTokenDecimals(tokenAddress));
+               if (tokenDecimals) {
+                  rates[tokenAddress] = Number(
+                     ethers.formatUnits(outputAmounts[1], tokenDecimals[0]),
+                  );
+               }
+            }
+         }
+         setExchangeRates(rates);
+         setStepResults((prev) => ({ ...prev, 3: true }));
+
+         setCurrentStep(4);
+         setStepResults((prev) => ({ ...prev, 4: true }));
+
+         // Step 5: Exchange USDC to tokens based on allocations
+         setCurrentStep(5);
+         const tokenAmounts: Array<{
+            tokenAddress: `0x${string}`;
+            aToken: `0x${string}`;
+            amount: number;
+         }> = [];
+
+         const totalUSDC = Number(usdcAmount);
+
+         for (let i = 0; i < buildingTokens.length; i++) {
+            const tokenAddress = buildingTokens[i];
+            const allocation = sliceAllocations?.[i];
+
+            if (allocation && rates[tokenAddress]) {
+               const usdcForToken = totalUSDC * (allocation.idealAllocation / 100);
+               const tokenAmount = usdcForToken / rates[tokenAddress];
+
+               // Perform the swap
+               const tokenAmountWei = ethers.parseUnits(usdcForToken.toString(), 6);
+               const { data: swapOutputAmounts } = await tryCatch(
+                  getAmountsOut(tokenAmountWei, [USDC_ADDRESS, tokenAddress]),
+               );
+
+               if (swapOutputAmounts && swapOutputAmounts[1]) {
+                  await giveAllowance(USDC_ADDRESS, tokenAmountWei);
+                  await giveAllowance(tokenAddress, swapOutputAmounts[1]);
+
+                  await handleSwap({
+                     amountIn: tokenAmountWei,
+                     amountOut: swapOutputAmounts[1],
+                     path: [USDC_ADDRESS, tokenAddress],
+                     deadline: Date.now() + oneHourTimePeriod,
+                  });
+
+                  tokenAmounts.push({
+                     tokenAddress: tokenAddress as `0x${string}`,
+                     aToken: allocation.aToken,
+                     amount: Number(
+                        ethers.formatUnits(
+                           swapOutputAmounts[1],
+                           await getTokenDecimals(tokenAddress).then((d) => d[0]),
+                        ),
+                     ),
+                  });
+               }
+            }
+         }
+         setStepResults((prev) => ({ ...prev, 5: true }));
+
+         // Step 6: Deposit tokens to slice
+         setCurrentStep(6);
+         if (tokenAmounts.length > 0) {
+            await depositWithPermits(tokenAmounts);
+         }
+         setStepResults((prev) => ({ ...prev, 6: true }));
+
+         return { success: true, tokenAmounts };
+      } catch (error) {
+         setStepResults((prev) => ({ ...prev, [currentStep]: false }));
+         throw error;
+      }
+   };
+
+   return {
+      investUSDCToSlice,
+      currentStep,
+      stepResults,
+      steps,
+      exchangeRates,
+   };
+}
 
 type Props = {
    slice: SliceData;
@@ -65,6 +208,7 @@ type Props = {
 };
 
 export function SliceDetailPage({ slice, buildingId, isInBuildingContext = false }: Props) {
+   const queryClient = useQueryClient();
    const wallet = useWallet();
    const { readContract } = useReadContract();
    const { buildingsInfo } = useBuildings();
@@ -75,10 +219,19 @@ export function SliceDetailPage({ slice, buildingId, isInBuildingContext = false
    const { data: evmAddress } = useEvmAddress();
    const { rebalanceSliceMutation, addAllocationsToSliceMutation, depositWithPermits } =
       useCreateSlice(slice.address);
+   const { investUSDCToSlice, currentStep, stepResults, steps, exchangeRates } = useUSDCForSlice(
+      slice.address,
+      sliceBuildings,
+      sliceAllocations,
+   );
    const [isAllocationOpen, setIsAllocationOpen] = useState(false);
    const [assetsOptions, setAssetsOptions] = useState<any[]>();
    const [sliceDepositValue, setSliceDepositValue] = useState<string>();
    const [depositValueInvalid, setDepositValueInvalid] = useState(false);
+   const [useUSDCInvestment, setUseUSDCInvestment] = useState(false);
+   const [usdcAmount, setUsdcAmount] = useState<string>("");
+   const [showUSDCDialog, setShowUSDCDialog] = useState(false);
+   const [isUSDCLoading, setIsUSDCLoading] = useState(false);
 
    const { data: rewardsAvailableData, isLoading: rewardsAvailableIsLoading } = useQuery({
       queryKey: ["vaultRewardsAvailable"],
@@ -232,6 +385,35 @@ export function SliceDetailPage({ slice, buildingId, isInBuildingContext = false
    const rebalanceDisabled = !!rewardsAvailableData?.length
       ? !rewardsAvailableData.some((reward) => (reward as number) > 0)
       : false;
+
+   const handleUSDCInvestment = async () => {
+      if (!usdcAmount || Number(usdcAmount) <= 0) {
+         toast.error("Please enter a valid USDC amount");
+         return;
+      }
+
+      setIsUSDCLoading(true);
+      setShowUSDCDialog(true);
+
+      try {
+         await investUSDCToSlice(usdcAmount);
+
+         queryClient.invalidateQueries({ queryKey: ["TOKEN_INFO"] });
+         toast.success("Successfully invested USDC into slice!", {
+            duration: 10000,
+            closeButton: true,
+         });
+         setUsdcAmount("");
+      } catch (error) {
+         toast.error(`Error investing USDC: ${error?.toString()}`, {
+            duration: Infinity,
+            closeButton: true,
+         });
+      } finally {
+         setShowUSDCDialog(false);
+         setIsUSDCLoading(false);
+      }
+   };
 
    return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -415,28 +597,65 @@ export function SliceDetailPage({ slice, buildingId, isInBuildingContext = false
                      </CardHeader>
                      <CardContent className="space-y-4">
                         <div className="flex items-start gap-3">
-                           <Checkbox id="usdcTrade" />
+                           <Checkbox
+                              id="usdcTrade"
+                              checked={useUSDCInvestment}
+                              onCheckedChange={(checked) => setUseUSDCInvestment(!!checked)}
+                           />
                            <Label htmlFor="usdcTrade">Invest using USDC</Label>
                         </div>
-                        <DepositToSliceForm
-                           onChangeValue={(value: string) => {
-                              if (Number(value) < 100) {
-                                 setDepositValueInvalid(true);
-                              } else {
-                                 setDepositValueInvalid(false);
-                                 setSliceDepositValue(value);
-                              }
-                           }}
-                           onSubmitDepositValue={() => {
-                              handleDepositToSliceWithPermit(Number(sliceDepositValue));
-                           }}
-                        />
-                        {depositValueInvalid && (
-                           <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                              <p className="text-sm text-red-600 font-medium">
-                                 Minimum amount to deposit is 100 tokens
-                              </p>
+
+                        {useUSDCInvestment ? (
+                           <div className="space-y-4">
+                              <div>
+                                 <Label htmlFor="usdcAmount">USDC Amount to invest</Label>
+                                 <Input
+                                    id="usdcAmount"
+                                    type="number"
+                                    placeholder="e.g. 1000"
+                                    value={usdcAmount}
+                                    onChange={(e) => setUsdcAmount(e.target.value)}
+                                    className="mt-1"
+                                 />
+                              </div>
+                              <Button
+                                 onClick={handleUSDCInvestment}
+                                 disabled={!usdcAmount || Number(usdcAmount) <= 0 || isUSDCLoading}
+                                 className="w-full"
+                              >
+                                 {isUSDCLoading ? (
+                                    <>
+                                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                       Processing...
+                                    </>
+                                 ) : (
+                                    "Invest USDC to Slice"
+                                 )}
+                              </Button>
                            </div>
+                        ) : (
+                           <>
+                              <DepositToSliceForm
+                                 onChangeValue={(value: string) => {
+                                    if (Number(value) < 100) {
+                                       setDepositValueInvalid(true);
+                                    } else {
+                                       setDepositValueInvalid(false);
+                                       setSliceDepositValue(value);
+                                    }
+                                 }}
+                                 onSubmitDepositValue={() => {
+                                    handleDepositToSliceWithPermit(Number(sliceDepositValue));
+                                 }}
+                              />
+                              {depositValueInvalid && (
+                                 <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                                    <p className="text-sm text-red-600 font-medium">
+                                       Minimum amount to deposit is 100 tokens
+                                    </p>
+                                 </div>
+                              )}
+                           </>
                         )}
                      </CardContent>
                   </Card>
@@ -554,6 +773,63 @@ export function SliceDetailPage({ slice, buildingId, isInBuildingContext = false
                         </div>
                      )}
                   </Formik>
+               </DialogContent>
+            </Dialog>
+
+            {/* USDC Investment Progress Dialog */}
+            <Dialog open={showUSDCDialog} onOpenChange={setShowUSDCDialog}>
+               <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                     <DialogTitle>Investing USDC to Slice</DialogTitle>
+                     <DialogDescription>
+                        Please wait while we process your investment...
+                     </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                     {steps.map((step, index) => {
+                        const stepNumber = index + 1;
+                        const isCurrentStep = currentStep === stepNumber;
+                        const isCompleted = stepResults[stepNumber] === true;
+                        const isFailed = stepResults[stepNumber] === false;
+
+                        return (
+                           <div key={stepNumber} className="flex items-center gap-3">
+                              {isCompleted ? (
+                                 <CheckCircle className="h-5 w-5 text-green-500" />
+                              ) : isFailed ? (
+                                 <div className="h-5 w-5 rounded-full bg-red-500" />
+                              ) : isCurrentStep ? (
+                                 <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
+                              ) : (
+                                 <div className="h-5 w-5 rounded-full bg-gray-300" />
+                              )}
+                              <span
+                                 className={`text-sm ${
+                                    isCompleted
+                                       ? "text-green-700"
+                                       : isFailed
+                                         ? "text-red-700"
+                                         : isCurrentStep
+                                           ? "text-blue-700 font-medium"
+                                           : "text-gray-500"
+                                 }`}
+                              >
+                                 {step}
+                              </span>
+                           </div>
+                        );
+                     })}
+                  </div>
+                  {Object.keys(exchangeRates).length > 0 && (
+                     <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                        <h4 className="text-sm font-medium mb-2">Exchange Rates (1 USDC =)</h4>
+                        {Object.entries(exchangeRates).map(([tokenAddress, rate]) => (
+                           <div key={tokenAddress} className="text-xs text-gray-600">
+                              {tokenAddress.slice(0, 8)}... : {rate.toFixed(4)} tokens
+                           </div>
+                        ))}
+                     </div>
+                  )}
                </DialogContent>
             </Dialog>
          </div>
