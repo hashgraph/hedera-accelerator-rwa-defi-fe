@@ -52,6 +52,11 @@ import { basicVaultAbi } from "@/services/contracts/abi/basicVaultAbi";
 import { autoCompounderAbi } from "@/services/contracts/abi/autoCompounderAbi";
 import { tokenAbi } from "@/services/contracts/abi/tokenAbi";
 import { TypedDataDomain } from "viem";
+import { Checkbox } from "../ui/checkbox";
+import { Label } from "../ui/label";
+import { PieChart, TrendingUp, Wallet, Settings, Plus, BarChart3 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { AllocationBuildingToken } from "./AllocationBuildingToken";
 
 type Props = {
    slice: SliceData;
@@ -229,152 +234,276 @@ export function SliceDetailPage({ slice, buildingId, isInBuildingContext = false
       : false;
 
    return (
-      <div className="p-6 max-w-7xl mx-auto space-y-8">
-         <Breadcrumb>
-            <BreadcrumbList>
-               <BreadcrumbItem>
-                  <BreadcrumbLink href="/explorer">Explorer</BreadcrumbLink>
-               </BreadcrumbItem>
-               <BreadcrumbSeparator />
-               {isInBuildingContext && buildingId ? (
-                  <>
-                     <BreadcrumbItem>
-                        <BreadcrumbLink href={`/building/${buildingId}`}>Building</BreadcrumbLink>
-                     </BreadcrumbItem>
-                     <BreadcrumbSeparator />
-                     <BreadcrumbItem>
-                        <BreadcrumbLink href={`/building/${buildingId}/slices`}>
-                           Slices
-                        </BreadcrumbLink>
-                     </BreadcrumbItem>
-                  </>
-               ) : (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+         <div className="max-w-7xl mx-auto p-6 space-y-8">
+            <Breadcrumb>
+               <BreadcrumbList>
                   <BreadcrumbItem>
-                     <BreadcrumbLink href="/slices">Slices</BreadcrumbLink>
+                     <BreadcrumbLink href="/explorer">Explorer</BreadcrumbLink>
                   </BreadcrumbItem>
-               )}
-               <BreadcrumbSeparator />
-               <BreadcrumbItem>
-                  <BreadcrumbPage>{slice.name}</BreadcrumbPage>
-               </BreadcrumbItem>
-            </BreadcrumbList>
-         </Breadcrumb>
-
-         <Card className="flex flex-col p-0">
-            <CardHeader className="w-full p-5 bg-indigo-100">
-               <h1 className="text-3xl font-bold">{slice.name}</h1>
-               <p className="text-base">{slice.description}</p>
-            </CardHeader>
-
-            <CardContent>
-               <img
-                  src={slice.imageIpfsUrl ?? "/assets/dome.jpeg"}
-                  alt={slice.name}
-                  style={{ maxHeight: 300 }}
-                  className="object-cover rounded-lg w-150"
-               />
-
-               <div className="flex flex-row flex-wrap justify-start gap-8 w-full mt-10">
-                  {(sliceAllocations?.length > 0 || !!evmAddress) && (
-                     <div style={{ width: "33%" }}>
-                        <SliceAllocations
-                           allocations={sliceAllocations}
-                           sliceBuildings={sliceBuildings}
-                           onOpenAddAllocation={() => {
-                              setIsAllocationOpen(true);
-                           }}
-                        />
-                     </div>
+                  <BreadcrumbSeparator />
+                  {isInBuildingContext && buildingId ? (
+                     <>
+                        <BreadcrumbItem>
+                           <BreadcrumbLink href={`/building/${buildingId}`}>
+                              Building
+                           </BreadcrumbLink>
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator />
+                        <BreadcrumbItem>
+                           <BreadcrumbLink href={`/building/${buildingId}/slices`}>
+                              Slices
+                           </BreadcrumbLink>
+                        </BreadcrumbItem>
+                     </>
+                  ) : (
+                     <BreadcrumbItem>
+                        <BreadcrumbLink href="/slices">Slices</BreadcrumbLink>
+                     </BreadcrumbItem>
                   )}
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
+                     <BreadcrumbPage>{slice.name}</BreadcrumbPage>
+                  </BreadcrumbItem>
+               </BreadcrumbList>
+            </Breadcrumb>
 
-                  {sliceBuildings?.length > 0 && (
-                     <div>
-                        <SliceBuildings buildingsData={sliceBuildingsDetails} />
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-8 shadow-2xl">
+               <div className="absolute inset-0 bg-black/20"></div>
+               <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center gap-8">
+                  <div className="flex-1 space-y-4">
+                     <div className="flex items-center gap-3">
+                        <Badge variant="outline">Slice Portfolio</Badge>
+                        {allocationsExists && <Badge color="emerald">Active Allocations</Badge>}
                      </div>
-                  )}
+                     <h1 className="text-4xl lg:text-5xl font-bold text-white leading-tight">
+                        {slice.name}
+                     </h1>
+                     <p className="text-xl text-white/90 leading-relaxed max-w-2xl">
+                        {slice.description}
+                     </p>
 
-                  {!!evmAddress && (
-                     <div>
-                        <Card className="min-h-100">
-                           <CardHeader>
-                              <CardTitle>Deposit to Slice</CardTitle>
-                              <CardDescription>
-                                 Deposit amount per Building Token in selected Slice
-                              </CardDescription>
-                           </CardHeader>
-                           <CardContent className={cx("flex flex-col flex-auto", { "h-64": true })}>
-                              <DepositToSliceForm
-                                 onChangeValue={(value: string) => {
-                                    if (Number(value) < 100) {
-                                       setDepositValueInvalid(true);
-                                    } else {
-                                       setDepositValueInvalid(false);
-                                       setSliceDepositValue(value);
-                                    }
-                                 }}
-                                 onSubmitDepositValue={() => {
-                                    handleDepositToSliceWithPermit(Number(sliceDepositValue));
-                                 }}
-                              />
-                              {depositValueInvalid && (
-                                 <p className="text-sm text-red-600">
-                                    Minimum amount to deposit is 100 tokens
-                                 </p>
-                              )}
-                           </CardContent>
-                        </Card>
-                     </div>
-                  )}
-
-                  <div className="min-w-80">
-                     {totalDeposits.total || totalDeposits.user ? (
-                        <SliceDepositChart
-                           totalStaked={totalDeposits.total}
-                           totalUserStaked={totalDeposits.user}
-                        />
-                     ) : (
-                        <></>
+                     {evmAddress && (
+                        <div className="flex flex-wrap gap-3 pt-4">
+                           <Button onClick={() => setIsAllocationOpen(true)} variant="outline">
+                              <Settings className="w-4 h-4 mr-2" />
+                              Manage Allocations
+                           </Button>
+                           {allocationsExists && (
+                              <Button onClick={onHandleRebalance} disabled={rebalanceDisabled}>
+                                 <TrendingUp className="w-4 h-4 mr-2" />
+                                 Rebalance
+                              </Button>
+                           )}
+                        </div>
                      )}
                   </div>
-               </div>
-            </CardContent>
-         </Card>
 
-         <Dialog
-            open={isAllocationOpen}
-            onOpenChange={(isOpened) => {
-               setIsAllocationOpen(isOpened);
-            }}
-         >
-            <DialogContent
-               onInteractOutside={(e) => e.preventDefault()}
-               className="max-w-md border-indigo-100"
+                  <div className="lg:w-80 h-48 rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20">
+                     <img
+                        src={slice.imageIpfsUrl ?? "/assets/dome.jpeg"}
+                        alt={slice.name}
+                        className="w-full h-full object-cover"
+                     />
+                  </div>
+               </div>
+            </div>
+
+            {(totalDeposits.total || totalDeposits.user) && (
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card variant="emerald">
+                     <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                           <BarChart3 className="w-5 h-5" />
+                           Total Staked
+                        </CardTitle>
+                     </CardHeader>
+                     <CardContent>
+                        <div className="text-3xl font-bold text-emerald-600">
+                           {totalDeposits.total?.toLocaleString() || "0"}
+                        </div>
+                        <p className="text-sm text-gray-600 mt-1">Total value locked</p>
+                     </CardContent>
+                  </Card>
+
+                  <Card variant="indigo">
+                     <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                           <Wallet className="w-5 h-5" />
+                           Your Stake
+                        </CardTitle>
+                     </CardHeader>
+                     <CardContent>
+                        <div className="text-3xl font-bold text-indigo-600">
+                           {totalDeposits.user?.toLocaleString() || "0"}
+                        </div>
+                        <p className="text-sm text-gray-600 mt-1">Your contribution</p>
+                     </CardContent>
+                  </Card>
+               </div>
+            )}
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+               {(sliceAllocations?.length > 0 || !!evmAddress) && (
+                  <Card className="lg:col-span-1">
+                     <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                           <PieChart className="w-5 h-5" />
+                           Portfolio Allocations
+                        </CardTitle>
+                        <CardDescription>
+                           View and manage your slice token allocations
+                        </CardDescription>
+                     </CardHeader>
+                     <CardContent>
+                        <div className="space-y-4">
+                           {sliceAllocations?.length === 0 ? (
+                              <div className="text-center py-8">
+                                 <PieChart className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                                 <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                                    No allocations yet
+                                 </h3>
+                                 <p className="text-gray-500 mb-4">
+                                    Start by adding your first allocation to this slice
+                                 </p>
+                                 {!!evmAddress && (
+                                    <Button
+                                       onClick={() => setIsAllocationOpen(true)}
+                                       variant="outline"
+                                    >
+                                       <Settings className="w-4 h-4 mr-2" />
+                                       Add Allocation
+                                    </Button>
+                                 )}
+                              </div>
+                           ) : (
+                              <>
+                                 {sliceAllocations.map((item) => (
+                                    <AllocationBuildingToken
+                                       allocation={item}
+                                       showOnDetails
+                                       key={item.aToken}
+                                    />
+                                 ))}
+                                 {!!evmAddress && (
+                                    <div className="pt-4 border-t">
+                                       <Button
+                                          onClick={() => setIsAllocationOpen(true)}
+                                          className="w-full"
+                                          variant="outline"
+                                       >
+                                          <Settings className="w-4 h-4 mr-2" />
+                                          Update Allocations & Rebalance
+                                       </Button>
+                                    </div>
+                                 )}
+                              </>
+                           )}
+                        </div>
+                     </CardContent>
+                  </Card>
+               )}
+
+               {!!evmAddress && (
+                  <Card variant="indigo">
+                     <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                           <Plus className="w-5 h-5" />
+                           Deposit to Slice
+                        </CardTitle>
+                        <CardDescription>Add funds to your slice portfolio</CardDescription>
+                     </CardHeader>
+                     <CardContent className="space-y-4">
+                        <div className="flex items-start gap-3">
+                           <Checkbox id="usdcTrade" />
+                           <Label htmlFor="usdcTrade">Invest using USDC</Label>
+                        </div>
+                        <DepositToSliceForm
+                           onChangeValue={(value: string) => {
+                              if (Number(value) < 100) {
+                                 setDepositValueInvalid(true);
+                              } else {
+                                 setDepositValueInvalid(false);
+                                 setSliceDepositValue(value);
+                              }
+                           }}
+                           onSubmitDepositValue={() => {
+                              handleDepositToSliceWithPermit(Number(sliceDepositValue));
+                           }}
+                        />
+                        {depositValueInvalid && (
+                           <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                              <p className="text-sm text-red-600 font-medium">
+                                 Minimum amount to deposit is 100 tokens
+                              </p>
+                           </div>
+                        )}
+                     </CardContent>
+                  </Card>
+               )}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+               {sliceBuildings?.length > 0 && (
+                  <div className="lg:col-span-2">
+                     <Card>
+                        <CardHeader>
+                           <CardTitle>Connected Buildings</CardTitle>
+                           <CardDescription>
+                              Buildings included in this slice portfolio
+                           </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                           <SliceBuildings buildingsData={sliceBuildingsDetails} />
+                        </CardContent>
+                     </Card>
+                  </div>
+               )}
+
+               {(totalDeposits.total || totalDeposits.user) && (
+                  <div className="lg:col-span-1">
+                     <SliceDepositChart
+                        totalStaked={totalDeposits.total}
+                        totalUserStaked={totalDeposits.user}
+                     />
+                  </div>
+               )}
+            </div>
+
+            <Dialog
+               open={isAllocationOpen}
+               onOpenChange={(isOpened) => {
+                  setIsAllocationOpen(isOpened);
+               }}
             >
-               <DialogHeader className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-t-lg border-b border-indigo-100 p-6 -m-6 mb-6">
-                  Update Allocations and Rebalance
-               </DialogHeader>
-               <Formik
-                  initialValues={{
-                     tokenAssets: allocationsExists ? mappedSliceAllocations : [undefined],
-                     tokenAssetAmounts: allocationsExists
-                        ? sliceAllocations.reduce((acc, alloc) => {
-                             return {
-                                ...acc,
-                                [assetsOptions?.find(
-                                   (opt) => opt.tokenAddress === alloc.buildingToken,
-                                )?.buildingAddress]: alloc.actualAllocation.toString(),
-                             };
-                          }, {})
-                        : {},
-                     rewardAmount: "100",
-                  }}
-                  validationSchema={sliceRebalanceSchema}
-                  onSubmit={onSubmitAllocationsForm}
-                  validateOnChange={false}
-               >
-                  {(props) => (
-                     <div>
-                        <div className="mt-6">
+               <DialogContent onInteractOutside={(e) => e.preventDefault()} className="max-w-2xl">
+                  <DialogHeader className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-t-lg border-b border-indigo-100 p-6 -m-6 mb-6">
+                     <h2 className="text-2xl font-bold text-gray-900">Manage Slice Allocations</h2>
+                     <p className="text-gray-600 mt-2">
+                        Update your portfolio allocations and rebalance
+                     </p>
+                  </DialogHeader>
+                  <Formik
+                     initialValues={{
+                        tokenAssets: allocationsExists ? mappedSliceAllocations : [undefined],
+                        tokenAssetAmounts: allocationsExists
+                           ? sliceAllocations.reduce((acc, alloc) => {
+                                return {
+                                   ...acc,
+                                   [assetsOptions?.find(
+                                      (opt) => opt.tokenAddress === alloc.buildingToken,
+                                   )?.buildingAddress]: alloc.actualAllocation.toString(),
+                                };
+                             }, {})
+                           : {},
+                        rewardAmount: "100",
+                     }}
+                     validationSchema={sliceRebalanceSchema}
+                     onSubmit={onSubmitAllocationsForm}
+                     validateOnChange={false}
+                  >
+                     {(props) => (
+                        <div className="space-y-6">
                            <AddSliceAllocationForm
                               assetOptions={assetsOptions!}
                               existsAllocations={mappedSliceAllocations}
@@ -385,40 +514,49 @@ export function SliceDetailPage({ slice, buildingId, isInBuildingContext = false
                               setFieldValue={(name, value) => props.setFieldValue(name, value)}
                               addMoreAllocationsDisabled={addMoreAllocationsDisabled}
                            />
+
+                           <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t">
+                              <Button
+                                 type="button"
+                                 variant="outline"
+                                 disabled={
+                                    props.isSubmitting ||
+                                    !props.isValid ||
+                                    !allocationsExists ||
+                                    rebalanceDisabled
+                                 }
+                                 onClick={onHandleRebalance}
+                                 className="flex-1"
+                              >
+                                 <TrendingUp className="w-4 h-4 mr-2" />
+                                 Rebalance Portfolio
+                              </Button>
+                              <Button
+                                 type="submit"
+                                 disabled={
+                                    props.isSubmitting ||
+                                    !props.isValid ||
+                                    addMoreAllocationsDisabled
+                                 }
+                                 onClick={props.submitForm}
+                                 className="flex-1"
+                              >
+                                 <Settings className="w-4 h-4 mr-2" />
+                                 Update Allocations
+                              </Button>
+                           </div>
+
+                           {props.isSubmitting && (
+                              <div className="flex justify-center py-8">
+                                 <Loader size={32} className="animate-spin text-indigo-600" />
+                              </div>
+                           )}
                         </div>
-                        <div className="mt-6 justify-start flex flex-row gap-4">
-                           <Button
-                              type="button"
-                              variant="default"
-                              disabled={
-                                 props.isSubmitting ||
-                                 !props.isValid ||
-                                 !allocationsExists ||
-                                 rebalanceDisabled
-                              }
-                              onClick={onHandleRebalance}
-                           >
-                              Rebalance
-                           </Button>
-                           <Button
-                              type="submit"
-                              variant="default"
-                              disabled={
-                                 props.isSubmitting || !props.isValid || addMoreAllocationsDisabled
-                              }
-                              onClick={props.submitForm}
-                           >
-                              Update Allocation
-                           </Button>
-                        </div>
-                        <div className="mt-6">
-                           {props.isSubmitting && <Loader size={64} className="animate-spin" />}
-                        </div>
-                     </div>
-                  )}
-               </Formik>
-            </DialogContent>
-         </Dialog>
+                     )}
+                  </Formik>
+               </DialogContent>
+            </Dialog>
+         </div>
       </div>
    );
 }
