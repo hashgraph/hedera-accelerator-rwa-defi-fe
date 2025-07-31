@@ -24,13 +24,14 @@ export function BuildingCard({ building }: BuildingCardProps) {
          key={building.id}
          className="transition-transform duration-200 hover:scale-[1.02] cursor-pointer p-0 pb-6 gap-2"
       >
-         <Link href={`/building/${building.id}`}>
+         <Link prefetch={true} href={`/building/${building.id}`}>
             <>
                <Image
                   src={building.imageUrl ?? "assets/dome.jpeg"}
                   alt={building.title ?? "Building Image"}
                   width={300}
                   height={300}
+                  quality={70}
                   className="w-full h-32 object-cover rounded-t-md mb-3 top-0"
                />
                <CardContent>

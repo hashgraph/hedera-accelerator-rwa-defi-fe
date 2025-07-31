@@ -55,7 +55,6 @@
       "@walletconnect/web3wallet": "^1.16.1",
       "class-variance-authority": "^0.7.1",
       "clsx": "^2.1.1",
-      "daisyui": "^5.0.9",
       "date-fns": "^4.1.0",
       "embla-carousel-react": "^8.5.2",
       "ethers": "^6.13.5",

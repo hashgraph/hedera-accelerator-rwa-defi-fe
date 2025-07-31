@@ -457,11 +457,13 @@ export function useCreateSlice(sliceAddress?: `0x${string}`) {
          amount: number;
       }>,
    ) => {
+      console.log("tokensData :>> ", tokensData);
       const signatures = await Promise.all(
          tokensData.map(({ tokenAddress, amount }) =>
             getPermitSignature(tokenAddress, amount, sliceAddress!),
          ),
       );
+      console.log("signatures :>> ", signatures);
 
       const aTokens = signatures.map((_, idx) => tokensData[idx].aToken);
       const amounts = signatures.map((sig) => sig.amount);

@@ -42,6 +42,7 @@ export const useSliceData = (
          abi: sliceAbi,
          eventName: "Deposit",
          onLogs: (logs) => {
+            console.log("logs :>> ", logs);
             const userDeposits = logs
                .filter((log) => log.args[1] === evmAddress)
                .reduce((acc, log) => {

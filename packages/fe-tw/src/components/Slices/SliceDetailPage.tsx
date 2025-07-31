@@ -40,7 +40,7 @@ import { sliceRebalanceSchema } from "./helpers";
 import { DepositToSliceForm } from "../Admin/sliceManagement/DepositToSliceForm";
 import SliceDepositChart from "./SliceDepositChart";
 import { cx } from "class-variance-authority";
-import { USDC_ADDRESS } from "@/services/contracts/addresses";
+import { UNISWAP_FACTORY_ADDRESS, USDC_ADDRESS } from "@/services/contracts/addresses";
 import { readBuildingDetails } from "@/services/buildingService";
 import { basicVaultAbi } from "@/services/contracts/abi/basicVaultAbi";
 import { autoCompounderAbi } from "@/services/contracts/abi/autoCompounderAbi";
@@ -55,6 +55,10 @@ import { AllocationBuildingToken } from "./AllocationBuildingToken";
 import { useUniswapTradeSwaps } from "@/hooks/useUniswapTradeSwaps";
 import { oneHourTimePeriod } from "@/consts/trade";
 import { useQueryClient } from "@tanstack/react-query";
+import { ethers } from "ethers";
+import { map } from "lodash";
+import { uniswapFactoryAbi } from "@/services/contracts/abi/uniswapFactoryAbi";
+import { uniswapPairAbi } from "@/services/contracts/abi/uniswapPairAbi";
 
 // Add USDC to Slice hook
 function useUSDCForSlice(
@@ -62,6 +66,7 @@ function useUSDCForSlice(
    sliceBuildings?: any[],
    sliceAllocations?: any[],
 ) {
+   const { readContract } = useReadContract();
    const { handleSwap, getAmountsOut, giveAllowance } = useUniswapTradeSwaps();
    const { depositWithPermits } = useCreateSlice(sliceAddress);
 
@@ -70,9 +75,6 @@ function useUSDCForSlice(
    const [exchangeRates, setExchangeRates] = useState<{ [tokenAddress: string]: number }>({});
 
    const steps = [
-      "Getting slice buildings",
-      "Getting building tokens",
-      "Getting liquidity pairs",
       "Calculating exchange rates",
       "Swapping USDC to tokens",
       "Depositing tokens to slice",
@@ -80,27 +82,13 @@ function useUSDCForSlice(
 
    const investUSDCToSlice = async (usdcAmount: string) => {
       try {
-         setCurrentStep(0);
          setStepResults({});
 
-         // Step 1: Get buildings of slice
-         setCurrentStep(1);
-         if (!sliceBuildings || sliceBuildings.length === 0) {
-            throw new Error("No buildings found in slice");
-         }
-         setStepResults((prev) => ({ ...prev, 1: true }));
+         // Step 1: Get liquidity pairs and Step 4: Calculate exchange rates
+         setCurrentStep(0);
+         const rates: { [tokenAddress: string]: bigint } = {};
 
-         // Step 2: Get tokens of buildings
-         setCurrentStep(2);
-         const buildingTokens = sliceBuildings.map((building) => building.tokenAddress);
-         if (!buildingTokens.length) {
-            throw new Error("No building tokens found");
-         }
-         setStepResults((prev) => ({ ...prev, 2: true }));
-
-         // Step 3: Get liquidity pairs and Step 4: Calculate exchange rates
-         setCurrentStep(3);
-         const rates: { [tokenAddress: string]: number } = {};
+         const buildingTokens = map(sliceAllocations, "buildingToken");
 
          for (const tokenAddress of buildingTokens) {
             const { data: outputAmounts } = await tryCatch(
@@ -110,20 +98,14 @@ function useUSDCForSlice(
             if (outputAmounts && outputAmounts[1]) {
                const { data: tokenDecimals } = await tryCatch(getTokenDecimals(tokenAddress));
                if (tokenDecimals) {
-                  rates[tokenAddress] = Number(
-                     ethers.formatUnits(outputAmounts[1], tokenDecimals[0]),
-                  );
+                  rates[tokenAddress] = outputAmounts[1];
                }
             }
          }
          setExchangeRates(rates);
-         setStepResults((prev) => ({ ...prev, 3: true }));
+         setStepResults((prev) => ({ ...prev, 0: true }));
 
-         setCurrentStep(4);
-         setStepResults((prev) => ({ ...prev, 4: true }));
-
-         // Step 5: Exchange USDC to tokens based on allocations
-         setCurrentStep(5);
+         setCurrentStep(1);
          const tokenAmounts: Array<{
             tokenAddress: `0x${string}`;
             aToken: `0x${string}`;
@@ -137,22 +119,19 @@ function useUSDCForSlice(
             const allocation = sliceAllocations?.[i];
 
             if (allocation && rates[tokenAddress]) {
-               const usdcForToken = totalUSDC * (allocation.idealAllocation / 100);
-               const tokenAmount = usdcForToken / rates[tokenAddress];
+               const usdcForToken = (totalUSDC * allocation.idealAllocation) / 100;
+               const tokenAmount = rates[tokenAddress] * BigInt(usdcForToken);
 
-               // Perform the swap
-               const tokenAmountWei = ethers.parseUnits(usdcForToken.toString(), 6);
-               const { data: swapOutputAmounts } = await tryCatch(
-                  getAmountsOut(tokenAmountWei, [USDC_ADDRESS, tokenAddress]),
-               );
+               const usdcAmountWei = ethers.parseUnits(usdcForToken.toString(), 6);
+               const tokenAmountWei = tokenAmount;
 
-               if (swapOutputAmounts && swapOutputAmounts[1]) {
-                  await giveAllowance(USDC_ADDRESS, tokenAmountWei);
-                  await giveAllowance(tokenAddress, swapOutputAmounts[1]);
+               if (usdcAmountWei && tokenAmountWei) {
+                  await giveAllowance(USDC_ADDRESS, usdcAmountWei);
+                  await giveAllowance(tokenAddress, tokenAmountWei);
 
                   await handleSwap({
-                     amountIn: tokenAmountWei,
-                     amountOut: swapOutputAmounts[1],
+                     amountIn: usdcAmountWei,
+                     amountOut: tokenAmountWei,
                      path: [USDC_ADDRESS, tokenAddress],
                      deadline: Date.now() + oneHourTimePeriod,
                   });
@@ -160,26 +139,23 @@ function useUSDCForSlice(
                   tokenAmounts.push({
                      tokenAddress: tokenAddress as `0x${string}`,
                      aToken: allocation.aToken,
-                     amount: Number(
-                        ethers.formatUnits(
-                           swapOutputAmounts[1],
-                           await getTokenDecimals(tokenAddress).then((d) => d[0]),
-                        ),
-                     ),
+                     amount: tokenAmount,
                   });
                }
             }
          }
-         setStepResults((prev) => ({ ...prev, 5: true }));
+         setStepResults((prev) => ({ ...prev, 1: true }));
+
+         console.log(tokenAmounts);
 
          // Step 6: Deposit tokens to slice
-         setCurrentStep(6);
+         setCurrentStep(2);
          if (tokenAmounts.length > 0) {
             await depositWithPermits(tokenAmounts);
          }
-         setStepResults((prev) => ({ ...prev, 6: true }));
+         setStepResults((prev) => ({ ...prev, 2: true }));
 
-         return { success: true, tokenAmounts };
+         return { success: true };
       } catch (error) {
          setStepResults((prev) => ({ ...prev, [currentStep]: false }));
          throw error;
@@ -210,8 +186,6 @@ export function SliceDetailPage({ slice, buildingId, isInBuildingContext = false
       slice.address,
       buildingsInfo,
    );
-
-   const data = useTokenInfo(slice.address);
 
    const { data: evmAddress } = useEvmAddress();
    const { rebalanceSliceMutation, addAllocationsToSliceMutation, depositWithPermits } =
@@ -822,7 +796,7 @@ export function SliceDetailPage({ slice, buildingId, isInBuildingContext = false
                         <h4 className="text-sm font-medium mb-2">Exchange Rates (1 USDC =)</h4>
                         {Object.entries(exchangeRates).map(([tokenAddress, rate]) => (
                            <div key={tokenAddress} className="text-xs text-gray-600">
-                              {tokenAddress.slice(0, 8)}... : {rate.toFixed(4)} tokens
+                              {tokenAddress.slice(0, 8)}... : {rate} tokens
                            </div>
                         ))}
                      </div>

@@ -13,9 +13,5 @@ export default async function Home({ params }: Props) {
       return <p>Not found</p>;
    }
 
-   return (
-      <Suspense fallback={"Loading..."}>
-         <BuildingDetailPage {...building} />
-      </Suspense>
-   );
+   return <BuildingDetailPage {...building} />;
 }
