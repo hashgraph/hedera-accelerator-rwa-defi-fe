@@ -42,7 +42,6 @@ export const useSliceData = (
          abi: sliceAbi,
          eventName: "Deposit",
          onLogs: (logs) => {
-            console.log("logs :>> ", logs);
             const userDeposits = logs
                .filter((log) => log.args[1] === evmAddress)
                .reduce((acc, log) => {
@@ -52,10 +51,10 @@ export const useSliceData = (
                return (acc += Number(ethers.formatUnits(log.args[2], 18)));
             }, 0);
 
-            setTotalDeposits({
-               total: totalDeposits,
-               user: userDeposits,
-            });
+            setTotalDeposits((prev) => ({
+               total: prev.total + totalDeposits,
+               user: prev.user + userDeposits,
+            }));
          },
       });
 

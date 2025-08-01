@@ -33,143 +33,29 @@ import {
 import { AddSliceAllocationForm } from "@/components/Admin/sliceManagement/AddSliceAllocationForm";
 import { TxResultToastView } from "@/components/CommonViews/TxResultView";
 import { useCreateSlice } from "@/hooks/useCreateSlice";
-import { getTokenBalanceOf, getTokenDecimals, getTokenName } from "@/services/erc20Service";
+import {
+   getTokenBalanceOf,
+   getTokenDecimals,
+   getTokenName,
+   getTokenSymbol,
+} from "@/services/erc20Service";
 import { tryCatch } from "@/services/tryCatch";
 import { SliceBuildings } from "./SliceBuildings";
 import { sliceRebalanceSchema } from "./helpers";
 import { DepositToSliceForm } from "../Admin/sliceManagement/DepositToSliceForm";
 import SliceDepositChart from "./SliceDepositChart";
-import { cx } from "class-variance-authority";
 import { UNISWAP_FACTORY_ADDRESS, USDC_ADDRESS } from "@/services/contracts/addresses";
 import { readBuildingDetails } from "@/services/buildingService";
 import { basicVaultAbi } from "@/services/contracts/abi/basicVaultAbi";
-import { autoCompounderAbi } from "@/services/contracts/abi/autoCompounderAbi";
-import { tokenAbi } from "@/services/contracts/abi/tokenAbi";
-import { TypedDataDomain } from "viem";
 import { Checkbox } from "../ui/checkbox";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { PieChart, TrendingUp, Wallet, Settings, Plus, BarChart3 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AllocationBuildingToken } from "./AllocationBuildingToken";
-import { useUniswapTradeSwaps } from "@/hooks/useUniswapTradeSwaps";
-import { oneHourTimePeriod } from "@/consts/trade";
 import { useQueryClient } from "@tanstack/react-query";
-import { ethers } from "ethers";
-import { map } from "lodash";
-import { uniswapFactoryAbi } from "@/services/contracts/abi/uniswapFactoryAbi";
-import { uniswapPairAbi } from "@/services/contracts/abi/uniswapPairAbi";
-
-// Add USDC to Slice hook
-function useUSDCForSlice(
-   sliceAddress?: `0x${string}`,
-   sliceBuildings?: any[],
-   sliceAllocations?: any[],
-) {
-   const { readContract } = useReadContract();
-   const { handleSwap, getAmountsOut, giveAllowance } = useUniswapTradeSwaps();
-   const { depositWithPermits } = useCreateSlice(sliceAddress);
-
-   const [currentStep, setCurrentStep] = useState<number>(0);
-   const [stepResults, setStepResults] = useState<{ [key: number]: boolean }>({});
-   const [exchangeRates, setExchangeRates] = useState<{ [tokenAddress: string]: number }>({});
-
-   const steps = [
-      "Calculating exchange rates",
-      "Swapping USDC to tokens",
-      "Depositing tokens to slice",
-   ];
-
-   const investUSDCToSlice = async (usdcAmount: string) => {
-      try {
-         setStepResults({});
-
-         // Step 1: Get liquidity pairs and Step 4: Calculate exchange rates
-         setCurrentStep(0);
-         const rates: { [tokenAddress: string]: bigint } = {};
-
-         const buildingTokens = map(sliceAllocations, "buildingToken");
-
-         for (const tokenAddress of buildingTokens) {
-            const { data: outputAmounts } = await tryCatch(
-               getAmountsOut(ethers.parseUnits("1", 6), [USDC_ADDRESS, tokenAddress]),
-            );
-
-            if (outputAmounts && outputAmounts[1]) {
-               const { data: tokenDecimals } = await tryCatch(getTokenDecimals(tokenAddress));
-               if (tokenDecimals) {
-                  rates[tokenAddress] = outputAmounts[1];
-               }
-            }
-         }
-         setExchangeRates(rates);
-         setStepResults((prev) => ({ ...prev, 0: true }));
-
-         setCurrentStep(1);
-         const tokenAmounts: Array<{
-            tokenAddress: `0x${string}`;
-            aToken: `0x${string}`;
-            amount: number;
-         }> = [];
-
-         const totalUSDC = Number(usdcAmount);
-
-         for (let i = 0; i < buildingTokens.length; i++) {
-            const tokenAddress = buildingTokens[i];
-            const allocation = sliceAllocations?.[i];
-
-            if (allocation && rates[tokenAddress]) {
-               const usdcForToken = (totalUSDC * allocation.idealAllocation) / 100;
-               const tokenAmount = rates[tokenAddress] * BigInt(usdcForToken);
-
-               const usdcAmountWei = ethers.parseUnits(usdcForToken.toString(), 6);
-               const tokenAmountWei = tokenAmount;
-
-               if (usdcAmountWei && tokenAmountWei) {
-                  await giveAllowance(USDC_ADDRESS, usdcAmountWei);
-                  await giveAllowance(tokenAddress, tokenAmountWei);
-
-                  await handleSwap({
-                     amountIn: usdcAmountWei,
-                     amountOut: tokenAmountWei,
-                     path: [USDC_ADDRESS, tokenAddress],
-                     deadline: Date.now() + oneHourTimePeriod,
-                  });
-
-                  tokenAmounts.push({
-                     tokenAddress: tokenAddress as `0x${string}`,
-                     aToken: allocation.aToken,
-                     amount: tokenAmount,
-                  });
-               }
-            }
-         }
-         setStepResults((prev) => ({ ...prev, 1: true }));
-
-         console.log(tokenAmounts);
-
-         // Step 6: Deposit tokens to slice
-         setCurrentStep(2);
-         if (tokenAmounts.length > 0) {
-            await depositWithPermits(tokenAmounts);
-         }
-         setStepResults((prev) => ({ ...prev, 2: true }));
-
-         return { success: true };
-      } catch (error) {
-         setStepResults((prev) => ({ ...prev, [currentStep]: false }));
-         throw error;
-      }
-   };
-
-   return {
-      investUSDCToSlice,
-      currentStep,
-      stepResults,
-      steps,
-      exchangeRates,
-   };
-}
+import { useUSDCForSlice } from "@/hooks/useUSDCForSlice";
+import Image from "next/image";
 
 type Props = {
    slice: SliceData;
@@ -192,7 +78,6 @@ export function SliceDetailPage({ slice, buildingId, isInBuildingContext = false
       useCreateSlice(slice.address);
    const { investUSDCToSlice, currentStep, stepResults, steps, exchangeRates } = useUSDCForSlice(
       slice.address,
-      sliceBuildings,
       sliceAllocations,
    );
    const [isAllocationOpen, setIsAllocationOpen] = useState(false);
@@ -426,7 +311,9 @@ export function SliceDetailPage({ slice, buildingId, isInBuildingContext = false
                <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center gap-8">
                   <div className="flex-1 space-y-4">
                      <div className="flex items-center gap-3">
-                        <Badge variant="outline">Slice Portfolio</Badge>
+                        <Badge variant="default" color="default">
+                           Slice Portfolio
+                        </Badge>
                         {allocationsExists && <Badge color="emerald">Active Allocations</Badge>}
                      </div>
                      <h1 className="text-4xl lg:text-5xl font-bold text-white leading-tight">
@@ -453,9 +340,12 @@ export function SliceDetailPage({ slice, buildingId, isInBuildingContext = false
                   </div>
 
                   <div className="lg:w-80 h-48 rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20">
-                     <img
-                        src={slice.imageIpfsUrl ?? "/assets/dome.jpeg"}
+                     <Image
+                        src={slice.imageIpfsUrl}
                         alt={slice.name}
+                        width={300}
+                        height={300}
+                        quality={80}
                         className="w-full h-full object-cover"
                      />
                   </div>
@@ -583,7 +473,7 @@ export function SliceDetailPage({ slice, buildingId, isInBuildingContext = false
                                  <Input
                                     id="usdcAmount"
                                     type="number"
-                                    placeholder="e.g. 1000"
+                                    placeholder="e.g. 100"
                                     value={usdcAmount}
                                     onChange={(e) => setUsdcAmount(e.target.value)}
                                     className="mt-1"
@@ -615,6 +505,11 @@ export function SliceDetailPage({ slice, buildingId, isInBuildingContext = false
                                        setSliceDepositValue(value);
                                     }
                                  }}
+                                 depositEnabled={
+                                    sliceDepositValue !== undefined &&
+                                    Number(sliceDepositValue) !== 0 &&
+                                    !depositValueInvalid
+                                 }
                                  onSubmitDepositValue={() => {
                                     handleDepositToSliceWithPermit(Number(sliceDepositValue));
                                  }}
@@ -622,7 +517,7 @@ export function SliceDetailPage({ slice, buildingId, isInBuildingContext = false
                               {depositValueInvalid && (
                                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                                     <p className="text-sm text-red-600 font-medium">
-                                       Minimum amount to deposit is 100 tokens
+                                       Minimum amount to invest is 100 tokens
                                     </p>
                                  </div>
                               )}
@@ -747,7 +642,6 @@ export function SliceDetailPage({ slice, buildingId, isInBuildingContext = false
                </DialogContent>
             </Dialog>
 
-            {/* USDC Investment Progress Dialog */}
             <Dialog open={showUSDCDialog} onOpenChange={setShowUSDCDialog}>
                <DialogContent className="sm:max-w-md">
                   <DialogHeader>
@@ -793,12 +687,32 @@ export function SliceDetailPage({ slice, buildingId, isInBuildingContext = false
                   </div>
                   {Object.keys(exchangeRates).length > 0 && (
                      <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                        <h4 className="text-sm font-medium mb-2">Exchange Rates (1 USDC =)</h4>
-                        {Object.entries(exchangeRates).map(([tokenAddress, rate]) => (
-                           <div key={tokenAddress} className="text-xs text-gray-600">
-                              {tokenAddress.slice(0, 8)}... : {rate} tokens
-                           </div>
-                        ))}
+                        <h4 className="text-sm font-medium mb-2">Token Exchange Information</h4>
+                        <div className="space-y-2 max-h-32 overflow-y-auto">
+                           {Object.entries(exchangeRates).map(([tokenAddress, rate]) => (
+                              <div
+                                 key={tokenAddress}
+                                 className="flex flex-col gap-1 p-2 bg-white rounded border"
+                              >
+                                 <div className="flex justify-between items-center">
+                                    <span className="text-xs font-medium text-gray-700">
+                                       {rate.tokenName} ({rate.tokenSymbol})
+                                    </span>
+                                    <span className="text-xs text-gray-500">
+                                       {rate.tokenDecimals} decimals
+                                    </span>
+                                 </div>
+                                 <div className="flex justify-between text-xs">
+                                    <span className="text-gray-600">
+                                       USDC: ${rate.usdcAmount.toFixed(2)}
+                                    </span>
+                                    <span className="text-green-600 font-medium">
+                                       → {Number(rate.tokenAmount).toFixed(4)} {rate.tokenSymbol}
+                                    </span>
+                                 </div>
+                              </div>
+                           ))}
+                        </div>
                      </div>
                   )}
                </DialogContent>
