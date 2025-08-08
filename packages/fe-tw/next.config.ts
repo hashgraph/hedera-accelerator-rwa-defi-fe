@@ -2,12 +2,19 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
    images: {
+      unoptimized: true,
       remotePatterns: [
          {
             protocol: "https",
-            hostname: "ipfs.io",
+            hostname: "gateway.pinata.cloud",
             port: "",
-            pathname: "/**",
+            pathname: "/ipfs/**", 
+         },
+         {
+            protocol: "https",
+            hostname: "plum-famous-crane-874.mypinata.cloud",
+            port: "",
+            pathname: "/ipfs/**",
          },
       ],
    },
