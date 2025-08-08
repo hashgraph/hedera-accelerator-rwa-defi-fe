@@ -1,6 +1,7 @@
 "use client";
 import { useTreasuryData } from "@/components/Payments/hooks";
 import { useStaking } from "@/components/Staking/hooks";
+import { WalkthroughStep } from "@/components/Walkthrough";
 import { useBuildingInfo } from "@/hooks/useBuildingInfo";
 import { useTokenInfo } from "@/hooks/useTokenInfo";
 import type { BuildingInfo } from "@/types/erc3643/types";
@@ -37,7 +38,14 @@ export const BuildingDetailInfo = (props: BuildingInfo) => {
 
    return (
       <div className="grid grid-cols-2 gap-4 sm:gap-8 sm:grid-cols-1 lg:grid-cols-2 mt-16">
-         <div>
+         <WalkthroughStep
+            guideId="USER_INVESTING_GUIDE"
+            stepIndex={4}
+            title="Great job!"
+            description="Here you can see all the information about the building, including financial and demographic data."
+            side="right"
+            showConfirmButton
+         >
             <article className="prose">
                <h3 className="font-bold text-purple-700 text-xl">Financial</h3>
             </article>
@@ -90,7 +98,7 @@ export const BuildingDetailInfo = (props: BuildingInfo) => {
                   </>
                )}
             </div>
-         </div>
+         </WalkthroughStep>
 
          <div>
             <article className="prose">

@@ -4,31 +4,34 @@ import { useState } from "react";
 import { Shield, CheckCheck, AlertCircle } from "lucide-react";
 import { useEvmAddress } from "@buidlerlabs/hashgraph-react-wallets";
 import { Button } from "@/components/ui/button";
-import {
-   Card,
-   CardHeader,
-   CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { tryCatch } from "@/services/tryCatch";
 import { TxResultToastView } from "../CommonViews/TxResultView";
 import { useIdentity } from "./useIdentity";
 import { TransactionExtended } from "@/types/common";
+import { WalkthroughStep } from "../Walkthrough";
+import { useRouter } from "next/navigation";
 
 const Account = () => {
+   const router = useRouter();
    const { data: evmAddress } = useEvmAddress();
    const { identityData, deployIdentity } = useIdentity();
    const [isDeploying, setIsDeploying] = useState(false);
 
-   const handleDeployIdentity = async () => {
+   const handleDeployIdentity = async ({ onSuccess }: { onSuccess?: () => void }) => {
       setIsDeploying(true);
 
-      const { data: result, error } = await tryCatch<TransactionExtended, {message: string}>(deployIdentity(evmAddress));
+      const { data: result, error } = await tryCatch<TransactionExtended, { message: string }>(
+         deployIdentity(evmAddress),
+      );
 
       if (result?.success) {
+         onSuccess?.();
          toast.success(
             <TxResultToastView title="Identity deployed successfully!" txSuccess={result} />,
          );
+         router.back();
       } else if (result?.error) {
          toast.error(
             <TxResultToastView title="Error deploying identity" txError={result.error} />,
@@ -97,14 +100,28 @@ const Account = () => {
                   </div>
                   {evmAddress && !identityData.isDeployed && (
                      <div className="flex justify-end">
-                        <Button
-                           className=" h-11 mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors"
-                           disabled={isDeploying || identityData.isDeployed}
-                           isLoading={isDeploying}
-                           onClick={handleDeployIdentity}
+                        <WalkthroughStep
+                           guideId="USER_INVESTING_GUIDE"
+                           stepIndex={7}
+                           title="Great!"
+                           description="Read the information above and click 'Deploy Identity' below to deploy your identity."
+                           side="right"
                         >
-                           {isDeploying ? "Deploying Identity..." : "Deploy Identity"}
-                        </Button>
+                           {({ confirmUserPassedStep }) => (
+                              <Button
+                                 className=" h-11 mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors"
+                                 disabled={isDeploying || identityData.isDeployed}
+                                 isLoading={isDeploying}
+                                 onClick={() => {
+                                    handleDeployIdentity({
+                                       onSuccess: confirmUserPassedStep,
+                                    });
+                                 }}
+                              >
+                                 {isDeploying ? "Deploying Identity..." : "Deploy Identity"}
+                              </Button>
+                           )}
+                        </WalkthroughStep>
                      </div>
                   )}
                </>

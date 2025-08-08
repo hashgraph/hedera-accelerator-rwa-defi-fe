@@ -1,42 +1,38 @@
-import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
-import { fetchJsonFromIpfs } from "@/services/ipfsService";
-import { convertBuildingNFTsData, readBuildingsList } from "@/services/buildingService";
-import Image from "next/image";
-import { readContract } from "@/services/contracts/readContract";
-import { buildingAbi } from "@/services/contracts/abi/buildingAbi";
-import { Badge } from "../ui/badge";
+"use client";
 import { BuildingCard } from "./BuildingCard";
+import { WalkthroughStep } from "../Walkthrough";
+import { useWalkthroughStore } from "../Walkthrough/WalkthroughStore";
+import type { BuildingData } from "@/types/erc3643/types";
 
-export async function BuildingsOverview() {
-   const buildings = await readBuildingsList();
-   const buildingNftData = await Promise.all(
-      buildings[0].map(async (building: string[]) => ({
-         ...(await fetchJsonFromIpfs(building[2])),
-         owner: (
-            await readContract({
-               address: building[0],
-               abi: buildingAbi,
-               functionName: "owner",
-               args: [],
-            })
-         )[0],
-      })),
-   );
+interface BuildingsOverviewProps {
+   buildings: BuildingData[];
+}
 
-   const convertedBuildings = convertBuildingNFTsData(
-      buildingNftData.map((data, idx) => ({
-         ...data,
-         address: buildings[0][idx][0],
-         copeIpfsHash: buildings[0][idx][2],
-      })),
-   );
+export function BuildingsOverview({ buildings }: BuildingsOverviewProps) {
+   const currentStep = useWalkthroughStore((state) => state.currentStep);
+   const setCurrentStep = useWalkthroughStore((state) => state.setCurrentStep);
 
    return (
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-         {convertedBuildings.map((building) => (
-            <BuildingCard key={building.id} building={building} />
-         ))}
+         {buildings.map((building: BuildingData, idx: number) =>
+            idx === 0 ? (
+               <WalkthroughStep
+                  key={building.id}
+                  guideId={"USER_INVESTING_GUIDE"}
+                  stepIndex={3}
+                  title="Great job!"
+                  description="Here you can see all the buildings that are available for investment. Now let's select the first building and see what we can do further."
+                  side="left"
+               >
+                  <BuildingCard
+                     building={building}
+                     onClick={currentStep === 3 ? () => setCurrentStep(4) : undefined}
+                  />
+               </WalkthroughStep>
+            ) : (
+               <BuildingCard key={building.id} building={building} />
+            ),
+         )}
       </div>
    );
 }

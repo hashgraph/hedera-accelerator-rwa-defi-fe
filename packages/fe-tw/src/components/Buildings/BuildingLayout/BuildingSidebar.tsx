@@ -19,6 +19,8 @@ import {
    useSidebar,
 } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { WalkthroughStep } from "@/components/Walkthrough";
+import { useWalkthroughStore } from "@/components/Walkthrough/WalkthroughStore";
 import { useBuildingInfo } from "@/hooks/useBuildingInfo";
 import { useBuildingOwner } from "@/hooks/useBuildingOwner";
 import { useTokenInfo } from "@/hooks/useTokenInfo";
@@ -70,6 +72,9 @@ export const OWNER_NAV_ITEMS = [
 ];
 
 export function BuildingSidebar() {
+   const currentStep = useWalkthroughStore((state) => state.currentStep);
+   const setCurrentStep = useWalkthroughStore((state) => state.setCurrentStep);
+
    const { id } = useParams();
    const pathname = usePathname();
    const { identityData, isLoading: isIdentityLoading } = useIdentity(id as string);
@@ -98,6 +103,18 @@ export function BuildingSidebar() {
          setIsModalOpened(true);
       }
    };
+
+   useEffect(() => {
+      if (currentStep === 5) {
+         if (identityData.isDeployed && identityData.isIdentityRegistered) {
+            setCurrentStep(10);
+         } else if (identityData.isDeployed) {
+            setCurrentStep(8);
+         }
+      } else if (currentStep === 8 && identityData.isIdentityRegistered) {
+         setCurrentStep(10);
+      }
+   }, [currentStep, setCurrentStep]);
 
    return (
       <Sidebar>
@@ -133,23 +150,126 @@ export function BuildingSidebar() {
                </SidebarGroupAction>
                <SidebarGroupContent>
                   <SidebarMenuSub>
-                     {PROTECTED_BUILDING_NAV_ITEMS.map((item) => (
-                        <SidebarMenuSubItem key={item.title}>
-                           <SidebarMenuButton
-                              className="text-md"
-                              asChild
-                              isActive={pathname.includes(item.href)}
-                           >
-                              <Link
-                                 href={`/building/${id}/${item.href}`}
-                                 onClick={(e) => handleItemClick(e)}
+                     {PROTECTED_BUILDING_NAV_ITEMS.map((item) => {
+                        if (!identityData.isDeployed && item.title === "Trade") {
+                           return (
+                              <WalkthroughStep
+                                 guideId="USER_INVESTING_GUIDE"
+                                 stepIndex={5}
+                                 title="We are getting closer!"
+                                 description="Now let's try to invest in the building. You can do it by clicking on the 'Trade' button."
+                                 side="right"
                               >
-                                 <item.icon />
-                                 <span>{item.title}</span>
-                              </Link>
-                           </SidebarMenuButton>
-                        </SidebarMenuSubItem>
-                     ))}
+                                 {({ confirmUserPassedStep }) => (
+                                    <SidebarMenuSubItem key={item.title}>
+                                       <SidebarMenuButton
+                                          className="text-md"
+                                          asChild
+                                          isActive={pathname.includes(item.href)}
+                                       >
+                                          <Link
+                                             href={`/building/${id}/${item.href}`}
+                                             onClick={(e) => {
+                                                handleItemClick(e);
+                                                confirmUserPassedStep();
+                                             }}
+                                          >
+                                             <item.icon />
+                                             <span>{item.title}</span>
+                                          </Link>
+                                       </SidebarMenuButton>
+                                    </SidebarMenuSubItem>
+                                 )}
+                              </WalkthroughStep>
+                           );
+                        }
+
+                        if (!identityData.isIdentityRegistered && item.title === "Trade") {
+                           return (
+                              <WalkthroughStep
+                                 guideId="USER_INVESTING_GUIDE"
+                                 stepIndex={8}
+                                 title="We are getting closer!"
+                                 description="Now we need to register your identity at the building. Click the button to proceed."
+                                 side="right"
+                              >
+                                 {({ confirmUserPassedStep }) => (
+                                    <SidebarMenuButton
+                                       className="text-md"
+                                       asChild
+                                       isActive={pathname.includes(item.href)}
+                                    >
+                                       <Link
+                                          href={`/building/${id}/${item.href}`}
+                                          onClick={(e) => {
+                                             handleItemClick(e);
+                                             confirmUserPassedStep();
+                                          }}
+                                       >
+                                          <item.icon />
+                                          <span>{item.title}</span>
+                                       </Link>
+                                    </SidebarMenuButton>
+                                 )}
+                              </WalkthroughStep>
+                           );
+                        }
+
+                        if (
+                           identityData.isIdentityRegistered &&
+                           identityData.isDeployed &&
+                           item.title === "Trade"
+                        ) {
+                           return (
+                              <WalkthroughStep
+                                 guideId="USER_INVESTING_GUIDE"
+                                 stepIndex={10}
+                                 title="Now we can properly invest!"
+                                 description="Hit 'Trade' to start investing in this building."
+                                 side="right"
+                              >
+                                 {({ confirmUserPassedStep }) => (
+                                    <SidebarMenuButton
+                                       className="text-md"
+                                       asChild
+                                       isActive={pathname.includes(item.href)}
+                                    >
+                                       <Link
+                                          href={`/building/${id}/${item.href}`}
+                                          onClick={(e) => {
+                                             handleItemClick(e);
+                                             confirmUserPassedStep();
+                                          }}
+                                       >
+                                          <item.icon />
+                                          <span>{item.title}</span>
+                                       </Link>
+                                    </SidebarMenuButton>
+                                 )}
+                              </WalkthroughStep>
+                           );
+                        }
+
+                        return (
+                           <SidebarMenuSubItem key={item.title}>
+                              <SidebarMenuButton
+                                 className="text-md"
+                                 asChild
+                                 isActive={pathname.includes(item.href)}
+                              >
+                                 <Link
+                                    href={`/building/${id}/${item.href}`}
+                                    onClick={(e) => {
+                                       handleItemClick(e);
+                                    }}
+                                 >
+                                    <item.icon />
+                                    <span>{item.title}</span>
+                                 </Link>
+                              </SidebarMenuButton>
+                           </SidebarMenuSubItem>
+                        );
+                     })}
                   </SidebarMenuSub>
                </SidebarGroupContent>
             </SidebarGroup>

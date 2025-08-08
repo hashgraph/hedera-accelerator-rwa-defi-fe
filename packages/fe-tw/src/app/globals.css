@@ -194,3 +194,36 @@
       --chart-5: oklch(from hsl(340 75% 55%) l c h);
    }
 }
+
+
+@theme {
+   --animate-fade-in-bottom: fade-in-bottom 0.4s cubic-bezier(0.445, 0.050, 0.550, 0.950) both;
+
+   @keyframes fade-in-bottom {
+      0% {
+         -webkit-transform: translateY(30px);
+         transform: translateY(30px);
+         opacity: 0;
+      }
+
+      100% {
+         -webkit-transform: translateY(0);
+         transform: translateY(0);
+         opacity: 1;
+      }
+   }
+
+   @keyframes fade-in-bottom {
+      0% {
+         -webkit-transform: translateY(30px);
+         transform: translateY(30px);
+         opacity: 0;
+      }
+
+      100% {
+         -webkit-transform: translateY(0);
+         transform: translateY(0);
+         opacity: 1;
+      }
+   }
+}

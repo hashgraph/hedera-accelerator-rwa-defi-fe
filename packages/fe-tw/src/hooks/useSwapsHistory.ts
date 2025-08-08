@@ -160,3 +160,4 @@ export const useSwapsHistory = (
 
    return { oneSidedExchangeSwapsHistory, uniswapExchangeHistory };
 };
+

@@ -2,6 +2,7 @@ import { Shield, ExternalLink } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Button } from "../ui/button";
 import Link from "next/link";
+import { WalkthroughStep } from "../Walkthrough";
 
 interface IProps {
    isModalOpened: boolean;
@@ -54,12 +55,24 @@ const IdentityNotDeployedModal = ({ isModalOpened, onOpenChange }: IProps) => {
                      Cancel
                   </Button>
 
-                  <Link href="/account" className="flex items-center">
-                     <Button type="button">
-                        Deploy Identity
-                        <ExternalLink className="w-4 h-4" />
-                     </Button>
-                  </Link>
+                  <WalkthroughStep
+                     guideId="USER_INVESTING_GUIDE"
+                     stepIndex={6}
+                     title="Aw!"
+                     description="Before you can invest, you need to deploy your identity. Click the button below to proceed."
+                     side="right"
+                  >
+                     {({ confirmUserPassedStep }) => (
+                        <div onClick={confirmUserPassedStep}>
+                           <Link href="/account" className="flex items-center">
+                              <Button type="button">
+                                 Deploy Identity
+                                 <ExternalLink className="w-4 h-4" />
+                              </Button>
+                           </Link>
+                        </div>
+                     )}
+                  </WalkthroughStep>
                </div>
             </div>
          </DialogContent>

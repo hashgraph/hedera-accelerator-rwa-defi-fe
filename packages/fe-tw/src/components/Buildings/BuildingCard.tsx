@@ -14,15 +14,17 @@ interface BuildingCardProps {
       imageUrl?: string;
       owner?: string;
    };
+   onClick?: () => void;
 }
 
-export function BuildingCard({ building }: BuildingCardProps) {
+export function BuildingCard({ building, onClick }: BuildingCardProps) {
    const { data: evmAddress } = useEvmAddress();
 
    return (
       <Card
          key={building.id}
          className="transition-transform duration-200 hover:scale-[1.02] cursor-pointer p-0 pb-6 gap-2"
+         onClick={onClick}
       >
          <Link prefetch={true} href={`/building/${building.id}`}>
             <>

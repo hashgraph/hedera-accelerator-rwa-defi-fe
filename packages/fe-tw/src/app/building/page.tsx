@@ -7,15 +7,39 @@ import {
    BreadcrumbPage,
    BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Suspense } from "react";
+import { convertBuildingNFTsData, readBuildingsList } from "@/services/buildingService";
+import { buildingAbi } from "@/services/contracts/abi/buildingAbi";
+import { readContract } from "@/services/contracts/readContract";
+import { fetchJsonFromIpfs } from "@/services/ipfsService";
 
-export default function BuildingIndexPage() {
+export default async function BuildingIndexPage() {
+   const buildings = await readBuildingsList();
+   const buildingNftData = await Promise.all(
+      buildings[0].map(async (building: string[]) => ({
+         ...(await fetchJsonFromIpfs(building[2])),
+         owner: (
+            await readContract({
+               address: building[0],
+               abi: buildingAbi,
+               functionName: "owner",
+               args: [],
+            })
+         )[0],
+      })),
+   );
+
+   const convertedBuildings = convertBuildingNFTsData(
+      buildingNftData.map((data, idx) => ({
+         ...data,
+         address: buildings[0][idx][0],
+         copeIpfsHash: buildings[0][idx][2],
+      })),
+   );
+
    return (
       <div className="p-6 max-w-7xl mx-auto space-y-6">
          <BuildingInfo />
-         <Suspense fallback={<div className="text-center">Loading...</div>}>
-            <BuildingsOverview />
-         </Suspense>
+         <BuildingsOverview buildings={convertedBuildings} />
       </div>
    );
 }

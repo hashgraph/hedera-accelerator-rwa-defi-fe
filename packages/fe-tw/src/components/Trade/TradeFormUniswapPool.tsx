@@ -25,6 +25,7 @@ import { tryCatch } from "@/services/tryCatch";
 import type { TradeFormPayload } from "@/types/erc3643/types";
 import { TxResultToastView } from "../CommonViews/TxResultView";
 import { useQueryClient } from "@tanstack/react-query";
+import { useWalkthrough, WalkthroughStep } from "../Walkthrough";
 
 type Props = {
    buildingTokenOptions: { tokenAddress: `0x${string}`; tokenName: string }[];
@@ -32,18 +33,12 @@ type Props = {
    onTokensPairSelected: (tokenA?: `0x${string}`, tokenB?: `0x${string}`) => void;
 };
 
-const initialValues = {
-   amount: "",
-   tokenA: undefined,
-   tokenB: undefined,
-   autoRevertsAfter: oneHourTimePeriod,
-};
-
 export default function TradeFormUniswapPool({
    buildingTokenOptions,
    displayOnBuildingPage,
    onTokensPairSelected,
 }: Props) {
+   const { confirmUserFinishedGuide } = useWalkthrough();
    const queryClient = useQueryClient();
    const { handleSwap, getAmountsOut, giveAllowance } = useUniswapTradeSwaps();
    const [isLoading, setIsLoading] = useState(false);
@@ -133,6 +128,8 @@ export default function TradeFormUniswapPool({
 
             queryClient.invalidateQueries({ queryKey: ["TOKEN_INFO"] });
 
+            confirmUserFinishedGuide("USER_INVESTING_GUIDE");
+
             toast.success(
                <TxResultToastView
                   title={`Successfully traded ${amountA} tokens of token ${tokenA} for ${formattedAmountB} of ${tokenB}!`}
@@ -177,7 +174,13 @@ export default function TradeFormUniswapPool({
                   setSubmitting(false);
                   handleSwapSubmit(values, resetForm);
                }}
-               initialValues={initialValues}
+               initialValues={{
+                  amount: "",
+                  tokenA: USDC_ADDRESS as `0x${string}`,
+                  tokenB: buildingTokenOptions[0]?.tokenAddress as `0x${string}`,
+                  autoRevertsAfter: oneHourTimePeriod,
+               }}
+               enableReinitialize={true}
                validationSchema={Yup.object({
                   amount: Yup.string().required(),
                   tokenA: Yup.string().required(),
@@ -196,141 +199,166 @@ export default function TradeFormUniswapPool({
                         Select a building token you hold and swap it to another building token or
                         USDC
                      </p>
-                     <div>
-                        <Label htmlFor="tokenASelect">Select token A</Label>
-                        <Select
-                           name="tokenA"
-                           onValueChange={(value) => {
-                              setFieldValue("tokenA", value);
-                              onTokensPairSelected(value as `0x${string}`);
-                           }}
-                           value={values.tokenA}
-                        >
-                           <SelectTrigger className="w-full mt-1">
-                              <SelectValue placeholder="Choose a Token A" />
-                           </SelectTrigger>
-                           <SelectContent>
-                              {[
-                                 ...buildingTokensOptions,
-                                 {
-                                    value: USDC_ADDRESS,
-                                    label: "USDC",
-                                 },
-                              ].map((building) => (
-                                 <SelectItem
-                                    key={building.value}
-                                    value={building.value as `0x${string}`}
-                                 >
-                                    {building.label} ({building.value})
-                                 </SelectItem>
-                              ))}
-                           </SelectContent>
-                        </Select>
-                     </div>
-                     <div className="flex justify-center -my-2">
-                        <Button
-                           type="button"
-                           variant="outline"
-                           size="sm"
-                           className="rounded-full p-2 h-10 w-10 border-2 hover:bg-indigo-50 transition-colors"
-                           onClick={() => {
-                              setValues({
-                                 ...values,
-                                 tokenA: values.tokenB,
-                                 tokenB: values.tokenA,
-                              });
-
-                              onTokensPairSelected(
-                                 values.tokenB! as `0x${string}`,
-                                 values.tokenA! as `0x${string}`,
-                              );
-                           }}
-                           disabled={!values.tokenA && !values.tokenB}
-                        >
-                           <ArrowUpDown className="h-4 w-4" />
-                        </Button>
-                     </div>
-                     <div>
-                        <Label htmlFor="tokenBSelect">Select token B</Label>
-                        <Select
-                           name="tokenB"
-                           onValueChange={(value) => {
-                              setFieldValue("tokenB", value);
-                              onTokensPairSelected(undefined, value as `0x${string}`);
-                           }}
-                           value={values.tokenB}
-                        >
-                           <SelectTrigger className="w-full mt-1">
-                              <SelectValue placeholder="Choose a Token B" />
-                           </SelectTrigger>
-                           <SelectContent>
-                              {[
-                                 ...buildingTokensOptions,
-                                 {
-                                    value: USDC_ADDRESS,
-                                    label: "USDC",
-                                 },
-                              ].map((token) => (
-                                 <SelectItem key={token.value} value={token.value as `0x${string}`}>
-                                    {token.label} ({token.value})
-                                 </SelectItem>
-                              ))}
-                           </SelectContent>
-                        </Select>
-                     </div>
-                     <div>
-                        <Label htmlFor="amount">Amount of tokens to swap</Label>
-                        <Input
-                           style={{
-                              fontSize: 15,
-                           }}
-                           className="mt-1"
-                           placeholder="e.g. 100"
-                           {...getFieldProps("amount")}
-                        />
-                     </div>
-                     <div>
-                        <Label htmlFor="autoRevertsAfter">Auto reverts period in hours</Label>
-                        <Select
-                           name="autoRevertsAfter"
-                           onValueChange={(value) => {
-                              setFieldValue("autoRevertsAfter", Number(value));
-                           }}
-                           value={values.autoRevertsAfter as unknown as string}
-                        >
-                           <SelectTrigger className="w-full mt-1">
-                              <SelectValue placeholder="Period in hours" />
-                           </SelectTrigger>
-                           <SelectContent>
-                              {revertsInOptions.map((token) => (
-                                 <SelectItem
-                                    key={token.value}
-                                    value={token.value as unknown as string}
-                                 >
-                                    {token.label}
-                                 </SelectItem>
-                              ))}
-                           </SelectContent>
-                        </Select>
-                     </div>
-                     {!!values.tokenA && !!values.tokenB && values.tokenA === values.tokenB && (
-                        <p className="text-sm text-red-600 font-bold">
-                           Tokens A and B should be different
-                        </p>
-                     )}
-                     <Button
-                        className="mt-4 self-end"
-                        type="submit"
-                        isLoading={isLoading}
-                        disabled={
-                           !values.tokenA ||
-                           !values.tokenB ||
-                           values.tokenA === values.tokenB ||
-                           isLoading
+                     <WalkthroughStep
+                        guideId="USER_INVESTING_GUIDE"
+                        stepIndex={15}
+                        title="Configure your trade"
+                        description={
+                           <>
+                              Select tokens, amount to swap, and auto-reverts period. As you can see
+                              we have pre-selected USDC as token A, meaning we are going to sell
+                              USDC for the building token. <br />
+                              Put 1000 in the amount field to swap 1000 USDC for the building and
+                              hit 'Swap tokens'.
+                              <br />{" "}
+                              <b>
+                                 This will finish our guide and you will hold your first building
+                                 token!
+                              </b>
+                           </>
                         }
+                        side="right"
+                        className="space-y-4"
                      >
-                        Swap tokens
-                     </Button>
+                        <div>
+                           <Label htmlFor="tokenASelect">Select token A</Label>
+                           <Select
+                              name="tokenA"
+                              onValueChange={(value) => {
+                                 setFieldValue("tokenA", value);
+                                 onTokensPairSelected(value as `0x${string}`);
+                              }}
+                              value={values.tokenA}
+                           >
+                              <SelectTrigger className="w-full mt-1">
+                                 <SelectValue placeholder="Choose a Token A" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                 {[
+                                    ...buildingTokensOptions,
+                                    {
+                                       value: USDC_ADDRESS,
+                                       label: "USDC",
+                                    },
+                                 ].map((building) => (
+                                    <SelectItem
+                                       key={building.value}
+                                       value={building.value as `0x${string}`}
+                                    >
+                                       {building.label} ({building.value})
+                                    </SelectItem>
+                                 ))}
+                              </SelectContent>
+                           </Select>
+                        </div>
+                        <div className="flex justify-center -my-2">
+                           <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="rounded-full p-2 h-10 w-10 border-2 hover:bg-indigo-50 transition-colors"
+                              onClick={() => {
+                                 setValues({
+                                    ...values,
+                                    tokenA: values.tokenB,
+                                    tokenB: values.tokenA,
+                                 });
+
+                                 onTokensPairSelected(
+                                    values.tokenB! as `0x${string}`,
+                                    values.tokenA! as `0x${string}`,
+                                 );
+                              }}
+                              disabled={!values.tokenA && !values.tokenB}
+                           >
+                              <ArrowUpDown className="h-4 w-4" />
+                           </Button>
+                        </div>
+                        <div>
+                           <Label htmlFor="tokenBSelect">Select token B</Label>
+                           <Select
+                              name="tokenB"
+                              onValueChange={(value) => {
+                                 setFieldValue("tokenB", value);
+                                 onTokensPairSelected(undefined, value as `0x${string}`);
+                              }}
+                              value={values.tokenB}
+                           >
+                              <SelectTrigger className="w-full mt-1">
+                                 <SelectValue placeholder="Choose a Token B" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                 {[
+                                    ...buildingTokensOptions,
+                                    {
+                                       value: USDC_ADDRESS,
+                                       label: "USDC",
+                                    },
+                                 ].map((token) => (
+                                    <SelectItem
+                                       key={token.value}
+                                       value={token.value as `0x${string}`}
+                                    >
+                                       {token.label} ({token.value})
+                                    </SelectItem>
+                                 ))}
+                              </SelectContent>
+                           </Select>
+                        </div>
+                        <div>
+                           <Label htmlFor="amount">Amount of tokens to swap</Label>
+                           <Input
+                              style={{
+                                 fontSize: 15,
+                              }}
+                              className="mt-1"
+                              placeholder="e.g. 100"
+                              {...getFieldProps("amount")}
+                           />
+                        </div>
+                        <div>
+                           <Label htmlFor="autoRevertsAfter">Auto reverts period in hours</Label>
+                           <Select
+                              name="autoRevertsAfter"
+                              onValueChange={(value) => {
+                                 setFieldValue("autoRevertsAfter", Number(value));
+                              }}
+                              value={values.autoRevertsAfter as unknown as string}
+                           >
+                              <SelectTrigger className="w-full mt-1">
+                                 <SelectValue placeholder="Period in hours" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                 {revertsInOptions.map((token) => (
+                                    <SelectItem
+                                       key={token.value}
+                                       value={token.value as unknown as string}
+                                    >
+                                       {token.label}
+                                    </SelectItem>
+                                 ))}
+                              </SelectContent>
+                           </Select>
+                        </div>
+                        {!!values.tokenA && !!values.tokenB && values.tokenA === values.tokenB && (
+                           <p className="text-sm text-red-600 font-bold">
+                              Tokens A and B should be different
+                           </p>
+                        )}
+                        <Button
+                           className="mt-4 self-end"
+                           type="submit"
+                           isLoading={isLoading}
+                           disabled={
+                              !values.tokenA ||
+                              !values.tokenB ||
+                              values.tokenA === values.tokenB ||
+                              isLoading
+                           }
+                        >
+                           Swap tokens
+                        </Button>
+                     </WalkthroughStep>
                   </Form>
                )}
             </Formik>
