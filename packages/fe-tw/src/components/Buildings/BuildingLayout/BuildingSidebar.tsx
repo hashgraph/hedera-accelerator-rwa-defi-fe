@@ -319,7 +319,11 @@ export function BuildingSidebar() {
                               <SidebarMenu>
                                  {OWNER_NAV_ITEMS.map((item) => (
                                     <SidebarMenuItem key={item.title}>
-                                       <SidebarMenuButton className="text-sm" asChild>
+                                       <SidebarMenuButton
+                                          className="text-sm"
+                                          asChild
+                                          isActive={pathname.includes(item.href)}
+                                       >
                                           <Link href={`/building/${id}/${item.href}`}>
                                              <item.icon />
                                              <span>{item.title}</span>

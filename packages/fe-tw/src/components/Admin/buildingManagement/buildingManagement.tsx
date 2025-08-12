@@ -85,12 +85,15 @@ const BuildingManagement = () => {
       }
       formikHelpers.resetForm();
       setNewBuildingAddress(buildingAddress);
-      confirmUserFinishedGuide("ADMIN_BUILDING_GUIDE");
    };
 
    useEffect(() => {
       return () => {
-         if (currentGuide === "ADMIN_BUILDING_GUIDE" && Number(currentStep) > 3) {
+         if (
+            currentGuide === "ADMIN_BUILDING_GUIDE" &&
+            Number(currentStep) > 3 &&
+            Number(currentStep) < 16
+         ) {
             setCurrentStep(3);
          }
       };
@@ -222,7 +225,7 @@ const BuildingManagement = () => {
                            <WalkthroughStep
                               guideId="ADMIN_BUILDING_GUIDE"
                               stepIndex={15}
-                              title="Final step!"
+                              title="It's time to deploy!"
                               description="When you're ready, click Deploy. We'll handle uploading metadata to IPFS, deploying contracts, and finish setting up the building."
                               side="top"
                            >
@@ -264,12 +267,23 @@ const BuildingManagement = () => {
                                           Deployment of the building and its parts was successful!
                                           <br />
                                           One step remains to be done - you need to add&nbsp;
-                                          <Link
-                                             className="underline font-semibold"
-                                             href={`/building/${newBuildingAddress}/liquidity`}
+                                          <WalkthroughStep
+                                             guideId="ADMIN_BUILDING_GUIDE"
+                                             stepIndex={16}
+                                             title="All is good"
+                                             description="Now we will add liquidity to the building. That will allow actually invest in it."
+                                             side="bottom"
                                           >
-                                             liquidity
-                                          </Link>
+                                             {({ confirmUserPassedStep }) => (
+                                                <Link
+                                                   className="underline font-semibold"
+                                                   href={`/building/${newBuildingAddress}/liquidity`}
+                                                   onClick={confirmUserPassedStep}
+                                                >
+                                                   liquidity
+                                                </Link>
+                                             )}
+                                          </WalkthroughStep>
                                        </span>
                                     </>
                                  ) : error ? (

@@ -9,9 +9,6 @@ interface BuildingsOverviewProps {
 }
 
 export function BuildingsOverview({ buildings }: BuildingsOverviewProps) {
-   const currentStep = useWalkthroughStore((state) => state.currentStep);
-   const setCurrentStep = useWalkthroughStore((state) => state.setCurrentStep);
-
    return (
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
          {buildings.map((building: BuildingData, idx: number) =>
@@ -24,10 +21,9 @@ export function BuildingsOverview({ buildings }: BuildingsOverviewProps) {
                   description="Here you can see all the buildings that are available for investment. Now let's select the first building and see what we can do further."
                   side="left"
                >
-                  <BuildingCard
-                     building={building}
-                     onClick={currentStep === 3 ? () => setCurrentStep(4) : undefined}
-                  />
+                  {({ confirmUserPassedStep }) => (
+                     <BuildingCard building={building} onClick={confirmUserPassedStep} />
+                  )}
                </WalkthroughStep>
             ) : (
                <BuildingCard key={building.id} building={building} />
