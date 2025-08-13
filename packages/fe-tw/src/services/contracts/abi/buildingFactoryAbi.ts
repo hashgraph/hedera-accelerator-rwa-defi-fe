@@ -15,6 +15,41 @@ export const buildingFactoryAbi = [
       type: "error",
    },
    {
+      inputs: [
+         {
+            internalType: "address",
+            name: "owner",
+            type: "address",
+         },
+      ],
+      name: "OwnableInvalidOwner",
+      type: "error",
+   },
+   {
+      inputs: [
+         {
+            internalType: "address",
+            name: "account",
+            type: "address",
+         },
+      ],
+      name: "OwnableUnauthorizedAccount",
+      type: "error",
+   },
+   {
+      anonymous: false,
+      inputs: [
+         {
+            indexed: false,
+            internalType: "address",
+            name: "buildingAddress",
+            type: "address",
+         },
+      ],
+      name: "BuildingConfigured",
+      type: "event",
+   },
+   {
       anonymous: false,
       inputs: [
          {
@@ -127,24 +162,72 @@ export const buildingFactoryAbi = [
       type: "event",
    },
    {
+      anonymous: false,
+      inputs: [
+         {
+            indexed: true,
+            internalType: "address",
+            name: "previousOwner",
+            type: "address",
+         },
+         {
+            indexed: true,
+            internalType: "address",
+            name: "newOwner",
+            type: "address",
+         },
+      ],
+      name: "OwnershipTransferred",
+      type: "event",
+   },
+   {
+      anonymous: false,
+      inputs: [
+         {
+            indexed: false,
+            internalType: "address",
+            name: "agent",
+            type: "address",
+         },
+      ],
+      name: "RegistryAgentRemoved",
+      type: "event",
+   },
+   {
+      anonymous: false,
+      inputs: [
+         {
+            indexed: false,
+            internalType: "address[]",
+            name: "agents",
+            type: "address[]",
+         },
+      ],
+      name: "RegistryAgentsAdded",
+      type: "event",
+   },
+   {
+      inputs: [
+         {
+            internalType: "address[]",
+            name: "agents",
+            type: "address[]",
+         },
+      ],
+      name: "addRegistryAgents",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+   },
+   {
       inputs: [
          {
             internalType: "address",
-            name: "building",
+            name: "buildingAddress",
             type: "address",
-         },
-         {
-            internalType: "address",
-            name: "module",
-            type: "address",
-         },
-         {
-            internalType: "bytes",
-            name: "callData",
-            type: "bytes",
          },
       ],
-      name: "addComplianceModule",
+      name: "configNewBuilding",
       outputs: [],
       stateMutability: "nonpayable",
       type: "function",
@@ -197,7 +280,7 @@ export const buildingFactoryAbi = [
                },
                {
                   internalType: "address",
-                  name: "identity",
+                  name: "auditRegistry",
                   type: "address",
                },
                {
@@ -224,6 +307,21 @@ export const buildingFactoryAbi = [
                   internalType: "address",
                   name: "autoCompounder",
                   type: "address",
+               },
+               {
+                  internalType: "address",
+                  name: "initialOwner",
+                  type: "address",
+               },
+               {
+                  internalType: "uint256",
+                  name: "tokenMintAmount",
+                  type: "uint256",
+               },
+               {
+                  internalType: "bool",
+                  name: "isConfigured",
+                  type: "bool",
                },
             ],
             internalType: "struct BuildingFactoryStorage.BuildingDetails",
@@ -257,7 +355,7 @@ export const buildingFactoryAbi = [
                },
                {
                   internalType: "address",
-                  name: "identity",
+                  name: "auditRegistry",
                   type: "address",
                },
                {
@@ -284,6 +382,21 @@ export const buildingFactoryAbi = [
                   internalType: "address",
                   name: "autoCompounder",
                   type: "address",
+               },
+               {
+                  internalType: "address",
+                  name: "initialOwner",
+                  type: "address",
+               },
+               {
+                  internalType: "uint256",
+                  name: "tokenMintAmount",
+                  type: "uint256",
+               },
+               {
+                  internalType: "bool",
+                  name: "isConfigured",
+                  type: "bool",
                },
             ],
             internalType: "struct BuildingFactoryStorage.BuildingDetails[]",
@@ -314,51 +427,76 @@ export const buildingFactoryAbi = [
       type: "function",
    },
    {
+      inputs: [],
+      name: "getRegistryAgents",
+      outputs: [
+         {
+            internalType: "address[]",
+            name: "",
+            type: "address[]",
+         },
+      ],
+      stateMutability: "view",
+      type: "function",
+   },
+   {
       inputs: [
          {
-            internalType: "address",
-            name: "_nft",
-            type: "address",
-         },
-         {
-            internalType: "address",
-            name: "_uniswapRouter",
-            type: "address",
-         },
-         {
-            internalType: "address",
-            name: "_uniswapFactory",
-            type: "address",
-         },
-         {
-            internalType: "address",
-            name: "_onchainIdGateway",
-            type: "address",
-         },
-         {
-            internalType: "address",
-            name: "_trexGateway",
-            type: "address",
-         },
-         {
-            internalType: "address",
-            name: "_usdc",
-            type: "address",
-         },
-         {
-            internalType: "address",
-            name: "_buildingBeacon",
-            type: "address",
-         },
-         {
-            internalType: "address",
-            name: "_treasuryBeacon",
-            type: "address",
-         },
-         {
-            internalType: "address",
-            name: "_governanceBeacon",
-            type: "address",
+            components: [
+               {
+                  internalType: "address",
+                  name: "nft",
+                  type: "address",
+               },
+               {
+                  internalType: "address",
+                  name: "uniswapRouter",
+                  type: "address",
+               },
+               {
+                  internalType: "address",
+                  name: "uniswapFactory",
+                  type: "address",
+               },
+               {
+                  internalType: "address",
+                  name: "onchainIdGateway",
+                  type: "address",
+               },
+               {
+                  internalType: "address",
+                  name: "trexGateway",
+                  type: "address",
+               },
+               {
+                  internalType: "address",
+                  name: "usdc",
+                  type: "address",
+               },
+               {
+                  internalType: "address",
+                  name: "buildingBeacon",
+                  type: "address",
+               },
+               {
+                  internalType: "address",
+                  name: "treasuryBeacon",
+                  type: "address",
+               },
+               {
+                  internalType: "address",
+                  name: "governanceBeacon",
+                  type: "address",
+               },
+               {
+                  internalType: "address",
+                  name: "upkeeper",
+                  type: "address",
+               },
+            ],
+            internalType: "struct BuildingFactoryInit",
+            name: "init",
+            type: "tuple",
          },
       ],
       name: "initialize",
@@ -482,7 +620,7 @@ export const buildingFactoryAbi = [
                },
                {
                   internalType: "address",
-                  name: "identity",
+                  name: "auditRegistry",
                   type: "address",
                },
                {
@@ -510,6 +648,21 @@ export const buildingFactoryAbi = [
                   name: "autoCompounder",
                   type: "address",
                },
+               {
+                  internalType: "address",
+                  name: "initialOwner",
+                  type: "address",
+               },
+               {
+                  internalType: "uint256",
+                  name: "tokenMintAmount",
+                  type: "uint256",
+               },
+               {
+                  internalType: "bool",
+                  name: "isConfigured",
+                  type: "bool",
+               },
             ],
             internalType: "struct BuildingFactoryStorage.BuildingDetails",
             name: "buildingDetails",
@@ -517,6 +670,19 @@ export const buildingFactoryAbi = [
          },
       ],
       stateMutability: "nonpayable",
+      type: "function",
+   },
+   {
+      inputs: [],
+      name: "owner",
+      outputs: [
+         {
+            internalType: "address",
+            name: "",
+            type: "address",
+         },
+      ],
+      stateMutability: "view",
       type: "function",
    },
    {
@@ -538,6 +704,39 @@ export const buildingFactoryAbi = [
          },
       ],
       name: "registerIdentity",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+   },
+   {
+      inputs: [
+         {
+            internalType: "address",
+            name: "agent",
+            type: "address",
+         },
+      ],
+      name: "removeRegistryAgent",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+   },
+   {
+      inputs: [],
+      name: "renounceOwnership",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+   },
+   {
+      inputs: [
+         {
+            internalType: "address",
+            name: "newOwner",
+            type: "address",
+         },
+      ],
+      name: "transferOwnership",
       outputs: [],
       stateMutability: "nonpayable",
       type: "function",

@@ -64,6 +64,7 @@ export enum BuildingMinorStep {
    DEPLOY_IMAGE_IPFS = 1,
    DEPLOY_COPE = 2,
    DEPLOY_BUILDING = 3,
+   CONFIG_BUILDING = 4,
 }
 
 export enum TokenMinorStep {
