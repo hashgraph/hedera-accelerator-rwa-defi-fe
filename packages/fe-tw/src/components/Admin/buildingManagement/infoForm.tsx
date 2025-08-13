@@ -65,6 +65,7 @@ const BuildingInfoForm = () => {
                            <FormInput
                               required
                               label={"Building Title"}
+                              tooltipContent="A descriptive name for your building that will be visible to all users and investors"
                               {...titleProps}
                               onBlur={async (e) => {
                                  titleProps.onBlur(e);
@@ -88,6 +89,7 @@ const BuildingInfoForm = () => {
                      required
                      label={"Building Token Supply"}
                      type="number"
+                     tooltipContent="The total number of building tokens that will represent ownership. This determines how many shares the building can be divided into"
                      {...formik.getFieldProps("info.buildingTokenSupply")}
                      placeholder="e.g. 1000000"
                      error={
@@ -99,6 +101,7 @@ const BuildingInfoForm = () => {
 
                   <FormInput
                      label={"Building Description"}
+                     tooltipContent="A brief description of the building, its features, and investment highlights to help potential investors understand the property"
                      {...formik.getFieldProps("info.buildingDescription")}
                      placeholder="A short description"
                      error={
@@ -110,6 +113,7 @@ const BuildingInfoForm = () => {
 
                   <FormInput
                      label={"Building Purchase Date"}
+                     tooltipContent="The date when the building was purchased or acquired. Use YYYY-MM-DD format for consistency"
                      {...formik.getFieldProps("info.buildingPurchaseDate")}
                      placeholder="YYYY-MM-DD"
                      error={
@@ -121,6 +125,7 @@ const BuildingInfoForm = () => {
 
                   <FormInput
                      label={"Building Constructed Year"}
+                     tooltipContent="The year the building was originally constructed or built"
                      {...formik.getFieldProps("info.buildingConstructedYear")}
                      placeholder="YYYY"
                      error={
@@ -135,6 +140,7 @@ const BuildingInfoForm = () => {
             <div className="grid grid-cols-2 gap-4 mt-4">
                <FormInput
                   label={"Building Type"}
+                  tooltipContent="The classification of the building (e.g., Residential, Commercial, Industrial, Mixed-use)"
                   {...formik.getFieldProps("info.buildingType")}
                   placeholder="e.g. Residential"
                   error={
@@ -146,6 +152,7 @@ const BuildingInfoForm = () => {
 
                <FormInput
                   label={"Building Location"}
+                  tooltipContent="The city and state or country where the building is located. This helps investors understand the market"
                   {...formik.getFieldProps("info.buildingLocation")}
                   placeholder="e.g. New York City"
                   error={
@@ -157,6 +164,7 @@ const BuildingInfoForm = () => {
 
                <FormInput
                   label={"Building Location Type"}
+                  tooltipContent="The area classification where the building is situated (e.g., Urban, Suburban, Rural)"
                   {...formik.getFieldProps("info.buildingLocationType")}
                   placeholder="e.g. Urban"
                   error={
@@ -173,6 +181,7 @@ const BuildingInfoForm = () => {
             <div className="grid grid-cols-2 gap-4 mt-5">
                <FormInput
                   label={"Construction Materials"}
+                  tooltipContent="Primary building materials used in construction (e.g., Concrete, Steel, Wood frame). This affects durability and risk assessment"
                   {...formik.getFieldProps("info.copeConstructionMaterials")}
                   placeholder="e.g. Concrete"
                   error={
@@ -183,6 +192,7 @@ const BuildingInfoForm = () => {
                />
                <FormInput
                   label={"Construction Year Built"}
+                  tooltipContent="The specific year when construction was completed. Used for age assessment and depreciation calculations"
                   {...formik.getFieldProps("info.copeConstructionYearBuilt")}
                   placeholder="e.g. 2010"
                   error={
@@ -193,6 +203,7 @@ const BuildingInfoForm = () => {
                />
                <FormInput
                   label={"Roof Type"}
+                  tooltipContent="Type of roof construction (e.g., Flat, Pitched, Membrane). Important for weather resistance and maintenance"
                   {...formik.getFieldProps("info.copeConstructionRoofType")}
                   placeholder="e.g. Flat"
                   error={
@@ -203,6 +214,7 @@ const BuildingInfoForm = () => {
                />
                <FormInput
                   label={"Floors"}
+                  tooltipContent="Total number of floors in the building. This impacts value assessment and operational complexity"
                   {...formik.getFieldProps("info.copeConstructionNumFloors")}
                   placeholder="e.g. 8"
                   error={
@@ -213,6 +225,7 @@ const BuildingInfoForm = () => {
                />
                <FormInput
                   label={"Occupancy Type"}
+                  tooltipContent="How the building is used (e.g., Residential, Office, Retail, Industrial). This affects risk profile and rental income potential"
                   {...formik.getFieldProps("info.copeOccupancyType")}
                   placeholder="e.g. Residential"
                   error={
@@ -223,6 +236,7 @@ const BuildingInfoForm = () => {
                />
                <FormInput
                   label={"Occupancy Percentage"}
+                  tooltipContent="Current percentage of the building that is occupied or leased. Higher occupancy typically means more stable income"
                   {...formik.getFieldProps("info.copeOccupancyPercentage")}
                   placeholder="e.g. 85"
                   error={
@@ -233,6 +247,7 @@ const BuildingInfoForm = () => {
                />
                <FormInput
                   label={"Fire Protection"}
+                  tooltipContent="Fire safety systems installed (e.g., Fire alarms, Smoke detectors). Important for safety and insurance purposes"
                   {...formik.getFieldProps("info.copeProtectionFire")}
                   placeholder="e.g. Yes"
                   error={
@@ -243,6 +258,7 @@ const BuildingInfoForm = () => {
                />
                <FormInput
                   label={"Sprinkles"}
+                  tooltipContent="Type of sprinkler system installed (e.g., Wet pipe system, Dry pipe, Pre-action). Reduces fire damage risk"
                   {...formik.getFieldProps("info.copeProtectionSprinklers")}
                   placeholder="e.g. Wet pipe system"
                   error={
@@ -254,6 +270,7 @@ const BuildingInfoForm = () => {
 
                <FormInput
                   label="Security"
+                  tooltipContent="Security measures in place (e.g., 24/7 doorman, Security cameras, Access control). Affects tenant satisfaction and property value"
                   {...formik.getFieldProps("info.copeProtectionSecurity")}
                   placeholder="e.g. 24/7 doorman"
                   error={
@@ -264,6 +281,7 @@ const BuildingInfoForm = () => {
                />
                <FormInput
                   label="Nearby Risks"
+                  tooltipContent="Any potential hazards near the property (e.g., Adjacent gas station, Chemical plant, Airport). Important for risk assessment"
                   {...formik.getFieldProps("info.copeExposureNearbyRisks")}
                   placeholder="e.g. Adjacent gas station"
                   error={
@@ -274,6 +292,7 @@ const BuildingInfoForm = () => {
                />
                <FormInput
                   label="Flood Zone"
+                  tooltipContent="FEMA flood zone designation (e.g., Zone X, Zone A, Zone AE). Determines flood risk and insurance requirements"
                   {...formik.getFieldProps("info.copeExposureFloodZone")}
                   placeholder="e.g. Zone X"
                   error={

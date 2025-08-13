@@ -15,7 +15,7 @@ const TokenForm = () => {
             <div className="flex items-center gap-2">
                <h2 className="text-xl font-semibold">Token</h2>
             </div>
-            <div className={cn("grid grid-cols-2 gap-4 mt-5")}>
+            <div className={cn("gap-4 mt-5")}>
                <WalkthroughStep
                   guideId="ADMIN_BUILDING_GUIDE"
                   stepIndex={7}
@@ -28,6 +28,7 @@ const TokenForm = () => {
                         <FormInput
                            required
                            label="Token Name"
+                           tooltipContent="The full name of the building token (e.g., 'Central Plaza Building Token'). This will be displayed to investors"
                            {...formik.getFieldProps("token.tokenName")}
                            onBlur={(e) => {
                               formik.getFieldProps("token.tokenName").onBlur(e);
@@ -50,6 +51,7 @@ const TokenForm = () => {
                         <FormInput
                            required
                            label="Token Symbol"
+                           tooltipContent="A short identifier for the token (e.g., 'BLDG', 'PLZA'). Usually 3-5 characters, used in trading and wallets"
                            {...formik.getFieldProps("token.tokenSymbol")}
                            onBlur={(e) => {
                               formik.getFieldProps("token.tokenSymbol").onBlur(e);
@@ -73,6 +75,7 @@ const TokenForm = () => {
                            required
                            type="number"
                            label="Token Decimals"
+                           tooltipContent="Number of decimal places for the token (typically 18 for compatibility with Ethereum standards). This determines the smallest divisible unit"
                            {...formik.getFieldProps("token.tokenDecimals")}
                            onBlur={(e) => {
                               formik.getFieldProps("token.tokenDecimals").onBlur(e);
@@ -110,6 +113,7 @@ const TokenForm = () => {
                            required
                            type="number"
                            label="Mint Token Amount"
+                           tooltipContent="Initial number of tokens to create when deploying. You can mint additional tokens later through governance if needed"
                            {...mintProps}
                            onBlur={(e) => {
                               mintProps.onBlur(e);

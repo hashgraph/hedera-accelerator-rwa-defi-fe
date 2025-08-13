@@ -5,6 +5,8 @@ import type * as React from "react";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectTrigger, SelectValue } from "./select";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./tooltip";
+import { HelpCircle, Info } from "lucide-react";
 
 interface FormSelectProps extends React.ComponentProps<typeof Select> {
    required?: boolean;
@@ -15,6 +17,7 @@ interface FormSelectProps extends React.ComponentProps<typeof Select> {
    className?: string;
    placeholder?: string;
    children: React.ReactNode;
+   tooltipContent?: string;
 }
 
 function FormSelect({
@@ -26,14 +29,33 @@ function FormSelect({
    className,
    placeholder,
    children,
+   tooltipContent,
    ...props
 }: FormSelectProps) {
    return (
       <div className="w-full">
-         <Label htmlFor={name} className="gap-1">
-            {label}
-            {required && <span className={"text-red-500"}>*</span>}
-         </Label>
+         <div className="flex items-center gap-1">
+            <Label htmlFor={name} className="gap-1">
+               {label}
+               {required && <span className={"text-red-500"}>*</span>}
+            </Label>
+            {tooltipContent && (
+               <Tooltip>
+                  <TooltipTrigger asChild>
+                     <button
+                        type="button"
+                        className="inline-flex items-center justify-center p-0 h-4 w-4 text-gray-600 hover:text-foreground transition-colors hover:cursor-pointer"
+                        aria-label={`Help for ${label}`}
+                     >
+                        <Info className="h-4 w-4" />
+                     </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                     <p>{tooltipContent}</p>
+                  </TooltipContent>
+               </Tooltip>
+            )}
+         </div>
          <Select name={name} {...props}>
             <SelectTrigger
                id={name}

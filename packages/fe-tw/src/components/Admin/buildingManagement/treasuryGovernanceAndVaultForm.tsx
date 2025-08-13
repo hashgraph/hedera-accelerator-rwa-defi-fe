@@ -27,6 +27,7 @@ const TreasuryGovernanceAndVaultForm = () => {
                         <FormInput
                            required
                            label="Reserve"
+                           tooltipContent="Maximum USDC amount held in treasury reserve. When exceeded, excess funds are distributed to token holders as dividends"
                            {...reserveProps}
                            onBlur={(e) => {
                               reserveProps.onBlur(e);
@@ -58,6 +59,7 @@ const TreasuryGovernanceAndVaultForm = () => {
                         <FormInput
                            required
                            label="Vault Yield Percentage"
+                           tooltipContent="Percentage of vault yield transferred to treasury (in basis points). Example: 1000 = 10%. Higher percentages increase treasury reserves"
                            {...nProps}
                            onBlur={(e) => {
                               nProps.onBlur(e);
@@ -96,6 +98,7 @@ const TreasuryGovernanceAndVaultForm = () => {
                         <FormInput
                            required
                            label="Governance Name"
+                           tooltipContent="Name of the governance entity that controls building parameters, upgrades, and major decisions. Token holders vote on proposals"
                            {...govProps}
                            onBlur={(e) => {
                               govProps.onBlur(e);
@@ -137,6 +140,7 @@ const TreasuryGovernanceAndVaultForm = () => {
                         <FormInput
                            required
                            label="Share Token Name"
+                           tooltipContent="Name of the vault share token representing proportional ownership of deposited assets. Used for yield distribution tracking"
                            {...shareNameProps}
                            onBlur={(e) => {
                               shareNameProps.onBlur(e);
@@ -169,6 +173,7 @@ const TreasuryGovernanceAndVaultForm = () => {
                         <FormInput
                            required
                            label="Share Token Symbol"
+                           tooltipContent="Short symbol for the vault share token (e.g., 'sBLDG', 'vPLZA'). Typically prefixed with 's' or 'v' to indicate shares/vault"
                            {...shareSymbolProps}
                            onBlur={(e) => {
                               shareSymbolProps.onBlur(e);
@@ -189,6 +194,7 @@ const TreasuryGovernanceAndVaultForm = () => {
 
                <FormInput
                   label="Fee Receiver Address"
+                  tooltipContent="Ethereum address that receives fees from vault operations. Typically the building manager or treasury address"
                   {...formik.getFieldProps("treasuryAndGovernance.feeReceiverAddress")}
                   placeholder="0x..."
                   error={
@@ -200,12 +206,14 @@ const TreasuryGovernanceAndVaultForm = () => {
 
                <FormInput
                   label={"Fee token address"}
+                  tooltipContent="Address of the token used for paying fees (usually USDC or the building token). Leave empty to use the default fee token"
                   {...formik.getFieldProps("treasuryAndGovernance.feeToken")}
                   placeholder="0x..."
                />
 
                <FormInput
                   label="Fee Percentage"
+                  tooltipContent="Percentage fee charged on vault operations (e.g., deposits, withdrawals). Expressed as a whole number (5 = 5%)"
                   {...formik.getFieldProps("treasuryAndGovernance.feePercentage")}
                   placeholder="e.g. 5"
                   error={
@@ -225,6 +233,7 @@ const TreasuryGovernanceAndVaultForm = () => {
             <div className="grid grid-cols-1 gap-4 mt-5">
                <FormInput
                   label="Auto Compounder Token Name"
+                  tooltipContent="Name of the auto-compounding token that automatically reinvests yield back into the vault for compound growth"
                   {...formik.getFieldProps("treasuryAndGovernance.autoCompounderTokenName")}
                   placeholder="e.g. My Auto Compounder Token"
                   error={
@@ -235,6 +244,7 @@ const TreasuryGovernanceAndVaultForm = () => {
                />
                <FormInput
                   label="Auto Compounder Token Symbol"
+                  tooltipContent="Short symbol for the auto-compounding token (e.g., 'acBLDG', 'cPLZA'). Usually prefixed with 'ac' or 'c' to indicate compounding"
                   {...formik.getFieldProps("treasuryAndGovernance.autoCompounderTokenSymbol")}
                   placeholder="e.g. ACTOK"
                   error={
