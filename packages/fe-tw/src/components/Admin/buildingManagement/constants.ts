@@ -132,6 +132,7 @@ export const MINOR_STEP_TO_FRIENDLY_NAME = {
       [BuildingMinorStep.DEPLOY_IMAGE_IPFS]: "Deploy Image to IPFS...",
       [BuildingMinorStep.DEPLOY_COPE]: "Deploy Building Information to IPFS...",
       [BuildingMinorStep.DEPLOY_BUILDING]: "Deploy Building...",
+      [BuildingMinorStep.CONFIG_BUILDING]: "Configurating deployed building...",
    },
 };
 
@@ -160,7 +161,7 @@ export const FRIENDLY_STEP_NAME = {
    token: "Token",
    treasuryAndGovernance: "Treasury & Governance",
 };
-export type stepsKeyTypes = 'info' | 'token' | 'treasuryAndGovernance';
+export type stepsKeyTypes = "info" | "token" | "treasuryAndGovernance";
 
 export const FRIENDLY_STEP_STATUS: Record<StepsStatus, string> = {
    [StepsStatus.NOT_STARTED]: "Not Started",

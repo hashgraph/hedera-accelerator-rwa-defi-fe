@@ -43,7 +43,7 @@ export const useBuildingOrchestration = () => {
 
          imageIpfsHash = uploadedImageHash!;
 
-         if (imageError) processError(imageError);
+         if (imageError) return processError(imageError);
       }
 
       setCurrentDeploymentStep([MajorBuildingStep.BUILDING, BuildingMinorStep.DEPLOY_COPE]);
@@ -51,7 +51,7 @@ export const useBuildingOrchestration = () => {
          string,
          { args: string[] }
       >(uploadBuildingInfoToPinata(values, imageIpfsHash!));
-      if (metadataError) processError(metadataError);
+      if (metadataError) return processError(metadataError);
 
       const buildingDetails = {
          tokenURI: buildingMetadataIpfs,
@@ -84,7 +84,13 @@ export const useBuildingOrchestration = () => {
          string,
          { args: string[] }
       >(deployBuilding(buildingDetails));
-      if (buildingDeploymentError) processError(buildingDeploymentError);
+      if (buildingDeploymentError) return processError(buildingDeploymentError);
+
+      setCurrentDeploymentStep([MajorBuildingStep.BUILDING, BuildingMinorStep.CONFIG_BUILDING]);
+      const { error: buildingConfigError } = await tryCatch<void, { args: string[] }>(
+         configNewBuilding(building),
+      );
+      if (buildingConfigError) return processError(buildingConfigError);
 
       return building;
    };
@@ -99,6 +105,17 @@ export const useBuildingOrchestration = () => {
          }),
       );
       return getNewBuildingAddress();
+   };
+
+   const configNewBuilding = async (buildingAddress: string) => {
+      await executeTransaction(() =>
+         writeContract({
+            contractId: ContractId.fromEvmAddress(0, 0, BUILDING_FACTORY_ADDRESS),
+            abi: buildingFactoryAbi,
+            functionName: "configNewBuilding",
+            args: [buildingAddress],
+         }),
+      );
    };
 
    return {

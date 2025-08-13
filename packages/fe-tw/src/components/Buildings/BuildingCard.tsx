@@ -37,10 +37,10 @@ export function BuildingCard({ building, onClick }: BuildingCardProps) {
                   className="w-full h-32 object-cover rounded-t-md mb-3 top-0"
                />
                <CardContent>
-                  <h3 className="text-lg font-semibold">
+                  <h3 className="text-lg font-semibold flex flex-wrap gap-2">
                      {building.title ?? "Untitled Building"}
                      {building.owner === evmAddress && (
-                        <Badge className="ml-2" variant="default" color="indigo">
+                        <Badge variant="default" color="indigo">
                            Owner
                         </Badge>
                      )}

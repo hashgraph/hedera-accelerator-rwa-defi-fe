@@ -42,7 +42,6 @@ import { useWalkthroughStore } from "@/components/Walkthrough/WalkthroughStore";
 import { BUILDING_MOCKS, makePrefilledFormFromMock } from "./buildings.mocks";
 
 const BuildingManagement = () => {
-   const { confirmUserFinishedGuide } = useWalkthrough();
    const currentStep = useWalkthroughStore((state) => state.currentStep);
    const currentGuide = useWalkthroughStore((state) => state.currentGuide);
    const setCurrentStep = useWalkthroughStore((state) => state.setCurrentStep);
