@@ -106,18 +106,17 @@ export function SliceDetailPage({ slice, buildingId, isInBuildingContext = false
             vault: detailLog[0][7],
             ac: detailLog[0][8],
          }));
-         const userVaultRewards = await Promise.all(
-            sliceAllocationVaults.map((vault, id) =>
-               readContract({
-                  address: vault.vault,
-                  abi: basicVaultAbi,
-                  functionName: "getUserReward",
-                  args: [evmAddress, USDC_ADDRESS],
-               }),
-            ),
-         );
 
-         return userVaultRewards;
+        return await Promise.all(
+           sliceAllocationVaults.map((vault, id) =>
+              readContract({
+                 address: vault.vault,
+                 abi: basicVaultAbi,
+                 functionName: "getAllRewards",
+                 args: [sliceAllocations[id].aToken],
+              }),
+           ),
+        );
       },
       enabled: sliceAllocations?.length > 0 && (buildingsInfo?.length || 0) > 0,
    });
