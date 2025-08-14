@@ -220,34 +220,7 @@ export function useCreateSlice(sliceAddress?: `0x${string}`) {
 
    const rebalanceSliceMutation = useMutation({
       mutationFn: async (values: { sliceAllocation: AddSliceAllocationRequestBody }) => {
-         const { tokenAssets, rewardAmount } = values.sliceAllocation;
-         let txHashes = [];
-         const rewardsAmountToInUSDC = parseUnits(rewardAmount, 6);
-         const buildingDetails = await Promise.all(
-            tokenAssets?.map((building) => readBuildingDetails(building)),
-         );
-         const vaultsInfo = buildingDetails.map((detailLog) => ({
-            address: detailLog[0][0],
-            token: detailLog[0][4],
-            vault: detailLog[0][7],
-            ac: detailLog[0][8],
-         }));
-         const approveRewardsHashes = await approvalsInBatch(
-            vaultsInfo.map((v) => v.vault),
-            vaultsInfo.map((_) => rewardsAmountToInUSDC),
-            0,
-            [],
-            USDC_ADDRESS,
-            true,
-         );
-         txHashes.push(...approveRewardsHashes);
-         const addRewardsHashes = await addRewardInBatch(
-            vaultsInfo.map((v) => v.vault),
-            0,
-            [],
-            rewardsAmountToInUSDC,
-         );
-         txHashes.push(...addRewardsHashes);
+         
 
          const data = executeTransaction(() =>
             writeContract({
@@ -307,29 +280,6 @@ export function useCreateSlice(sliceAddress?: `0x${string}`) {
                [],
             ),
          );
-
-         const approvalsHashes = await approvalsInBatch(
-            tokensToApprove,
-            tokensToApprove.map((_t) =>
-               _t === USDC_ADDRESS
-                  ? parseUnits((Number(rewardAmount) * vaultsInfo.length).toString(), 6)
-                  : rewardsAmountToInStaking,
-            ),
-            0,
-            [],
-            UNISWAP_ROUTER_ADDRESS,
-         );
-         txHashes.push(...approvalsHashes);
-
-         const addLiquidityHashes = await addLiquidityInBatch(
-            vaultsInfo.map((v) => v.token),
-            0,
-            [],
-            rewardsAmountToInUSDC,
-            rewardsAmountToInStaking,
-            deployedSliceAddress,
-         );
-         txHashes.push(...addLiquidityHashes);
 
          return txHashes;
       },
