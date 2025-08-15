@@ -12,6 +12,7 @@ import { FormInput } from "../ui/formInput";
 import { Info, TrendingUp, TrendingDown, ArrowRightLeft } from "lucide-react";
 import { Transaction } from "./types";
 import { TxResultToastView } from "../CommonViews/TxResultView";
+import { TooltipInfoButton } from "../ui/tooltipInfoButton";
 
 type ManageStakeProps = {
    disabled: boolean;
@@ -143,10 +144,15 @@ export default function ManageStake({
                <TabsContent value="stake" className="mt-6 space-y-4">
                   {autoCompounderAddress && (
                      <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-                        <div className="flex-1">
+                        <div className="flex flex-1 items-center gap-1">
                            <Label htmlFor="autocompound-stake" className="font-medium text-sm">
                               Auto Compounder
                            </Label>
+                           <TooltipInfoButton label="Auto Compounder">
+                              Turn on to enable Auto Compounder, which will automatically reinvest
+                              your rewards back into your stake, maximizing your yield. Turn off to
+                              manually claim your rewards to your wallet.
+                           </TooltipInfoButton>
                         </div>
                         <Switch
                            id="autocompound-stake"
@@ -184,6 +190,7 @@ export default function ManageStake({
                      value={amount}
                      onChange={(e) => setAmount(e.target.value)}
                      disabled={disabled || isDepositing || isWithdrawing}
+                     tooltipContent="Enter the amount you want to stake. This amount will be used to calculate your rewards and determine your staking power."
                   />
                   <Button
                      isLoading={isDepositing}
@@ -200,10 +207,14 @@ export default function ManageStake({
                <TabsContent value="unstake" className="mt-6 space-y-4">
                   {autoCompounderAddress && (
                      <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-                        <div className="flex-1">
+                        <div className="flex items-center gap-1">
                            <Label htmlFor="autocompound-unstake" className="font-medium text-sm">
                               From Auto Compounder
                            </Label>
+                           <TooltipInfoButton label="Auto Compounder">
+                              Turn on to unstake your tokens from the Auto Compounder. Turn off to
+                              unstake your tokens from the basic stake.
+                           </TooltipInfoButton>
                         </div>
                         <Switch
                            id="autocompound-unstake"
@@ -242,6 +253,7 @@ export default function ManageStake({
                      value={amount}
                      onChange={(e) => setAmount(e.target.value)}
                      disabled={disabled || isDepositing || isWithdrawing}
+                     tooltipContent="Enter the amount you want to unstake. This will reduce your stake by the specified amount. This will also reduce your rewards and voting power."
                   />
 
                   <Button

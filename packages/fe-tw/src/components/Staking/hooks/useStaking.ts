@@ -32,8 +32,8 @@ interface StakingData {
    userStakedTokens: number | undefined;
    userClaimedRewards: UserClaimedReward[];
    rewardTokens: string[];
-   userRewards: string | undefined;
-   autoCompounderRewards: string | undefined;
+   userRewards: number | undefined;
+   autoCompounderRewards: number | undefined;
    aTokenTotalSupply: number | undefined;
    tokenPriceInUSDC: number | undefined;
    tvl: number | undefined;
@@ -206,7 +206,7 @@ export const useStaking = ({ buildingId }: { buildingId: string }): StakingHookR
       totalStakedTokens: vaultInfo?.totalStakedTokens,
       userStakedTokens: vaultInfo?.userStakedTokens,
       rewardTokens: vaultInfo?.rewardTokens || [],
-      userRewards: vaultRewards?.data as string,
+      userRewards: vaultRewards?.data,
       autoCompounderRewards: autoCompounderRewards?.data,
       userClaimedRewards,
       tokenPriceInUSDC: tokenPrice,

@@ -83,6 +83,8 @@ export default function StakingOverview({ buildingId }: StakingOverviewProps) {
                </Alert>
             )}
 
+         <WhyStake />
+
          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
             <ManageStake
                disabled={tokenBalance === 0 && !userStakedTokens}
@@ -142,8 +144,6 @@ export default function StakingOverview({ buildingId }: StakingOverviewProps) {
                <ClaimedRewardsCard userClaimedRewards={userClaimedRewards} />
             </div>
          </div>
-
-         <WhyStake />
       </div>
    );
 }
