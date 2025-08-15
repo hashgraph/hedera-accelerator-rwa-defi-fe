@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectTrigger, SelectValue } from "./select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./tooltip";
 import { HelpCircle, Info } from "lucide-react";
+import { TooltipInfoButton } from "./tooltipInfoButton";
 
 interface FormSelectProps extends React.ComponentProps<typeof Select> {
    required?: boolean;
@@ -40,20 +41,7 @@ function FormSelect({
                {required && <span className={"text-red-500"}>*</span>}
             </Label>
             {tooltipContent && (
-               <Tooltip>
-                  <TooltipTrigger asChild>
-                     <button
-                        type="button"
-                        className="inline-flex items-center justify-center p-0 h-4 w-4 text-gray-600 hover:text-foreground transition-colors hover:cursor-pointer"
-                        aria-label={`Help for ${label}`}
-                     >
-                        <Info className="h-4 w-4" />
-                     </button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                     <p>{tooltipContent}</p>
-                  </TooltipContent>
-               </Tooltip>
+               <TooltipInfoButton label={label}>{tooltipContent}</TooltipInfoButton>
             )}
          </div>
          <Select name={name} {...props}>

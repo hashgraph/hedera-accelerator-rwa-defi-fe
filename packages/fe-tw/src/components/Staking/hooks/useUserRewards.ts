@@ -31,7 +31,7 @@ export const useUserRewards = (
             args: [evmAddress],
          });
 
-         return ethers.formatUnits(BigInt(rewards as string), 6);
+         return Number(ethers.formatUnits(BigInt(rewards as string), 6));
       },
       enabled:
          Boolean(vaultAddress) &&
@@ -52,7 +52,7 @@ export const useUserRewards = (
             args: [evmAddress],
          })) as string[];
 
-         return ethers.formatUnits(BigInt(rewards[0]), 6);
+         return Number(ethers.formatUnits(BigInt(rewards[0]), 6));
       },
       enabled:
          Boolean(vaultAddress) &&
