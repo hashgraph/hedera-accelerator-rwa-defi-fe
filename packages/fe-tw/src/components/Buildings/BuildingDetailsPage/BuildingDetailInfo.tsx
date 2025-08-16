@@ -5,7 +5,7 @@ import { WalkthroughStep } from "@/components/Walkthrough";
 import { useBuildingInfo } from "@/hooks/useBuildingInfo";
 import { useTokenInfo } from "@/hooks/useTokenInfo";
 import type { BuildingInfo } from "@/types/erc3643/types";
-import { isNumber, map, zipObject } from "lodash";
+import { isNumber, map, reduce, zipObject } from "lodash";
 import { useParams } from "next/navigation";
 
 const ScientificNotation = ({ value }: { value: number }) => {
@@ -29,7 +29,15 @@ export const BuildingDetailInfo = (props: BuildingInfo) => {
    const { tokenAddress, treasuryAddress } = useBuildingInfo(id as string);
    const { tokenPriceInUSDC, totalSupply, balanceOf, isLoading } = useTokenInfo(tokenAddress);
    const { reserve } = useTreasuryData(treasuryAddress, id as string);
-   const { userStakedTokens, aTokenBalance } = useStaking({ buildingId: id as string });
+   const { userStakedTokens, aTokenBalance, userClaimedRewards } = useStaking({
+      buildingId: id as string,
+   });
+
+   const accumulatedUserRewards = reduce(
+      userClaimedRewards,
+      (acc, reward) => acc + Number(reward.amount),
+      0,
+   );
 
    if (isLoading) {
       return null;
@@ -75,6 +83,16 @@ export const BuildingDetailInfo = (props: BuildingInfo) => {
                      <span className="font-semibold text-sm">Total aTokens owned:</span>
                      <span className="text-sm">
                         <ScientificNotation value={aTokenBalance} />
+                     </span>
+                  </>
+               )}
+               {isNumber(accumulatedUserRewards) && accumulatedUserRewards > 0 && (
+                  <>
+                     <span className="font-semibold text-sm">Total rewards claimed:</span>
+                     <span className="text-sm">
+                        <ScientificNotation value={accumulatedUserRewards} />
+                        &nbsp;
+                        <span className="text-xs text-gray-500">(USDC)</span>
                      </span>
                   </>
                )}
