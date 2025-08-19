@@ -105,68 +105,57 @@ export const SliceManagement = () => {
       e.resetForm();
       setCurrentSetupStep(1);
 
-      try {
-         const deployResult = await tryCatch(createSlice(values));
-         const lastDeployedSliceResult = await tryCatch(waitForLastSliceDeployed());
+      const deployResult = await tryCatch(createSlice(values));
+      const lastDeployedSliceResult = await tryCatch(waitForLastSliceDeployed());
 
-         if (deployResult.data) {
-            toast.success(
-               <TxResultToastView
-                  title={`Slice ${values.slice.name} deployed`}
-                  txSuccess={deployResult.data}
-               />,
-               { duration: Infinity, closeButton: true },
-            );
-
-            if (lastDeployedSliceResult.data) {
-               setLastSliceDeployed(lastDeployedSliceResult.data);
-            }
-
-            if (lastDeployedSliceResult.data && values.sliceAllocation?.tokenAssets?.length > 0) {
-               const { data } = await tryCatch(
-                  addAllocationsToSliceMutation.mutateAsync({
-                     deployedSliceAddress: lastDeployedSliceResult.data,
-                     ...values,
-                  }),
-               );
-
-               if (data?.every((tx) => !!tx)) {
-                  toast.success(
-                     <TxResultToastView
-                        title={`Allocation added to ${values.slice?.name} slice`}
-                        txSuccess={{
-                           transaction_id: (data as unknown as string[])[0],
-                        }}
-                     />,
-                     { duration: Infinity, closeButton: true },
-                  );
-               } else {
-                  toast.error(
-                     <TxResultToastView title="Error during adding allocation" txError />,
-                     { duration: Infinity, closeButton: true },
-                  );
-               }
-            }
-         } else {
-            toast.error(
-               <TxResultToastView
-                  title={`Error during slice deployment ${deployResult.error?.message}`}
-                  txError={deployResult.error?.message}
-               />,
-               { duration: Infinity, closeButton: true },
-            );
-         }
-      } catch (err) {
-         toast.error(
+      if (deployResult.data) {
+         toast.success(
             <TxResultToastView
-               title={`Error during slice deployment ${(err as { message: string }).message}`}
-               txError
+               title={`Slice ${values.slice.name} deployed`}
+               txSuccess={deployResult.data}
             />,
             { duration: Infinity, closeButton: true },
          );
-      } finally {
-         setIsTransactionInProgress(false);
+
+         if (lastDeployedSliceResult.data) {
+            setLastSliceDeployed(lastDeployedSliceResult.data);
+         }
+
+         if (lastDeployedSliceResult.data && values.sliceAllocation?.tokenAssets?.length > 0) {
+            const { data } = await tryCatch(
+               addAllocationsToSliceMutation.mutateAsync({
+                  deployedSliceAddress: lastDeployedSliceResult.data,
+                  ...values,
+               }),
+            );
+
+            if (data?.every((tx) => !!tx)) {
+               toast.success(
+                  <TxResultToastView
+                     title={`Allocation added to ${values.slice?.name} slice`}
+                     txSuccess={{
+                        transaction_id: (data as unknown as string[])[0],
+                     }}
+                  />,
+                  { duration: Infinity, closeButton: true },
+               );
+            } else {
+               toast.error(<TxResultToastView title="Error during adding allocation" txError />, {
+                  duration: Infinity,
+                  closeButton: true,
+               });
+            }
+         }
+      } else {
+         toast.error(
+            <TxResultToastView
+               title={`Error during slice deployment ${deployResult.error?.message}`}
+               txError={deployResult.error?.message}
+            />,
+            { duration: Infinity, closeButton: true },
+         );
       }
+      setIsTransactionInProgress(false);
    };
 
    return (

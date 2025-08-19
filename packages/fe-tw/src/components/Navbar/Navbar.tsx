@@ -227,13 +227,6 @@ export function Navbar() {
                               >
                                  Create and manage slices
                               </ListItem>
-                              <ListItem
-                                 icon={<FileStack />}
-                                 title="Audit"
-                                 href="/admin/auditmanagement"
-                              >
-                                 Create and Manage Audit
-                              </ListItem>
                               <WalkthroughStep
                                  guideId={"USER_LOGIN_FLOW"}
                                  stepIndex={4}
