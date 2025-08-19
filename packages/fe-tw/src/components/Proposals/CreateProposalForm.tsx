@@ -3,10 +3,10 @@
 import React from "react";
 import { toast } from "sonner";
 import { Form, Formik } from "formik";
-import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { SelectItem } from "@/components/ui/select";
 import { FormSelect } from "@/components/ui/formSelect";
+import { FormTextarea } from "@/components/ui/formTextarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { CreateProposalPayload } from "@/types/erc3643/types";
@@ -81,19 +81,21 @@ export function CreateProposalForm({
                      label="Proposal Title"
                      placeholder="Enter proposal title"
                      error={touched.title && errors.title ? errors.title : undefined}
+                     tooltipContent="Enter a clear and concise title that summarizes what this proposal is about. This will be visible to all voters."
                      {...getFieldProps("title")}
                   />
                </div>
 
                <div>
-                  <Label htmlFor="description">Proposal Description</Label>
-                  <Textarea
-                     className="mt-1"
-                     placeholder="Proposal Description"
+                  <FormTextarea
+                     required
+                     label="Proposal Description"
+                     placeholder="Provide a detailed description of your proposal..."
+                     error={
+                        touched.description && errors.description ? errors.description : undefined
+                     }
+                     tooltipContent="Provide a comprehensive description explaining the purpose, benefits, and any relevant details of your proposal. This helps voters make informed decisions."
                      {...getFieldProps("description")}
-                     onChange={(e) => {
-                        setFieldValue("description", e.target.value);
-                     }}
                   />
                </div>
 
@@ -108,6 +110,7 @@ export function CreateProposalForm({
                            ? errors.auditorWalletAddress
                            : undefined
                      }
+                     tooltipContent="Enter the wallet address of the auditor you want to add to this building. Auditors help verify compliance and building operations."
                      {...getFieldProps("auditorWalletAddress")}
                   />
                )}
@@ -121,7 +124,12 @@ export function CreateProposalForm({
                      onValueChange={(value) => {
                         setFieldValue("auditorWalletAddress", value);
                      }}
-                     error={errors.auditorWalletAddress && touched.auditorWalletAddress ? errors.auditorWalletAddress : undefined}
+                     error={
+                        errors.auditorWalletAddress && touched.auditorWalletAddress
+                           ? errors.auditorWalletAddress
+                           : undefined
+                     }
+                     tooltipContent="Select the auditor you want to remove from this building. Only existing auditors are shown in this list."
                   >
                      {map(auditors, (auditor) => (
                         <SelectItem key={auditor} value={auditor}>
@@ -132,33 +140,32 @@ export function CreateProposalForm({
                )}
 
                {values.type === ProposalType.PaymentProposal && (
-                  <div>
-                     <Label htmlFor="to">Proposal To</Label>
-                     <Input
-                        className="mt-1 w-full"
-                        placeholder="e.g. 0x123"
-                        type="text"
-                        {...getFieldProps("to")}
-                     />
-                     {errors.to && touched.to && (
-                        <div className="text-red-500 text-sm mt-1">{errors.to}</div>
-                     )}
-                  </div>
+                  <FormInput
+                     required
+                     label="Proposal To"
+                     placeholder="e.g. 0x123"
+                     type="text"
+                     error={errors.to && touched.to ? errors.to : undefined}
+                     tooltipContent="Enter the wallet address of the recipient who will receive the payment if this proposal is approved."
+                     {...getFieldProps("to")}
+                  />
                )}
 
                {(values.type === ProposalType.PaymentProposal ||
                   values.type === ProposalType.ChangeReserveProposal) && (
-                  <div>
-                     <Label htmlFor="amount">Proposal Amount</Label>
-                     <Input
-                        className="mt-1 w-full"
-                        placeholder="e.g. 10"
-                        {...getFieldProps("amount")}
-                     />
-                     {errors.amount && touched.amount && (
-                        <div className="text-red-500 text-sm mt-1">{errors.amount}</div>
-                     )}
-                  </div>
+                  <FormInput
+                     required
+                     label="Proposal Amount"
+                     placeholder="e.g. 10"
+                     type="number"
+                     error={errors.amount && touched.amount ? errors.amount : undefined}
+                     tooltipContent={
+                        values.type === ProposalType.PaymentProposal
+                           ? "Enter the amount to be paid to the recipient if this proposal is approved."
+                           : "Enter the new reserve amount for the building. This affects the financial reserves maintained by the building."
+                     }
+                     {...getFieldProps("amount")}
+                  />
                )}
 
                <FormSelect
@@ -169,11 +176,10 @@ export function CreateProposalForm({
                      setFieldValue("type", value);
                   }}
                   error={errors.type && touched.type ? errors.type : undefined}
+                  tooltipContent="Choose the type of proposal you want to create. Each type serves different purposes: Text for general discussions, Payment for fund transfers, Auditor management for adding/removing auditors, and Reserve changes for adjusting building finances."
                >
                   <SelectItem value={ProposalType.TextProposal}>Text Proposal</SelectItem>
-                  <SelectItem value={ProposalType.PaymentProposal}>
-                     Payment Proposal
-                  </SelectItem>
+                  <SelectItem value={ProposalType.PaymentProposal}>Payment Proposal</SelectItem>
                   <SelectItem value={ProposalType.AddAuditorProposal}>
                      Add Auditor Proposal
                   </SelectItem>

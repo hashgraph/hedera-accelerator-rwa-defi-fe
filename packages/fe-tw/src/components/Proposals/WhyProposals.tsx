@@ -2,35 +2,35 @@
 
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { X, Lock, Vote, DollarSign, MessageCircleQuestion } from "lucide-react";
+import { X, Users, Vote, Gavel, MessageCircleQuestion, Shield, TrendingUp } from "lucide-react";
 import { Button } from "../ui/button";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 
-const WhyStake = () => {
+const WhyProposals = () => {
    const [selectedAccordion, setSelectedAccordion] = useLocalStorage<string | undefined>(
-      "isStakingInfoClosed",
-      undefined,
+      "isProposalInfoClosed",
+      "proposal-info",
    );
 
    const benefits = [
       {
-         icon: <Lock className="h-5 w-5 text-blue-600" />,
-         title: "Lock & Stabilize",
+         icon: <Users className="h-5 w-5 text-blue-600" />,
+         title: "Decentralized Governance",
          description:
-            "By staking, you commit to not selling your tokens for a period. This helps stabilize the token price and shows long-term confidence in the building's success.",
+            "DAO (Decentralized Autonomous Organization) means no single person controls decisions. Every staked token gets a voice in how the property is managed and profits are distributed.",
       },
       {
-         icon: <Vote className="h-5 w-5 text-green-600" />,
-         title: "Have Your Say",
+         icon: <TrendingUp className="h-5 w-5 text-orange-600" />,
+         title: "Direct Impact on Returns",
          description:
-            "Get voting power in building decisions - from renovations to profit distribution. Your stake gives you a voice in how the property is managed.",
+            "Your votes directly affect property value and rental income. Smart decisions on renovations, tenant management, and expenses can increase your investment returns over time.",
       },
       {
-         icon: <DollarSign className="h-5 w-5 text-purple-600" />,
-         title: "Earn Passive Income",
+         icon: <Shield className="h-5 w-5 text-purple-600" />,
+         title: "Transparent & Secure",
          description:
-            "Think of it like a bank deposit, but better! Earn rewards from the building's income while your tokens potentially grow in value too.",
+            "All proposals and votes are recorded on the blockchain, creating an immutable and transparent record. Smart contracts automatically execute approved decisions.",
       },
    ];
 
@@ -43,9 +43,9 @@ const WhyStake = () => {
                value={selectedAccordion}
                onValueChange={(value) => setSelectedAccordion(value)}
             >
-               <AccordionItem value="staking-info">
+               <AccordionItem value="proposal-info">
                   <AccordionTrigger>
-                     <div className="flex items-center gap-2">Why Should You Stake?</div>
+                     <div className="flex items-center gap-2">What is DAO Governance?</div>
                   </AccordionTrigger>
                   <AccordionContent className="flex flex-col gap-2">
                      {benefits.map((benefit, index) => (
@@ -66,9 +66,9 @@ const WhyStake = () => {
                      ))}
                      <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
                         <p className="text-xs text-blue-800">
-                           <strong>New to staking?</strong> Don't worry! You can start small and
-                           unstake anytime. Your tokens remain yours - you're just putting them to
-                           work to earn more.
+                           <strong>Ready to participate?</strong> Every vote matters! Start by
+                           reviewing active proposals and cast your vote to help shape the future of
+                           this property. Your voice drives the decisions.
                         </p>
                      </div>
                   </AccordionContent>
@@ -79,4 +79,4 @@ const WhyStake = () => {
    );
 };
 
-export default WhyStake;
+export default WhyProposals;
