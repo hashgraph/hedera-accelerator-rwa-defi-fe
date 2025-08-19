@@ -20,6 +20,7 @@ import { useGovernanceProposals } from "./hooks/useGovernanceProposals";
 import { ProposalState } from "@/types/props";
 import { useBuildingInfo } from "@/hooks/useBuildingInfo";
 import { buildingGovernanceAbi } from "@/services/contracts/abi/buildingGovernanceAbi";
+import WhyProposals from "./WhyProposals";
 
 type Props = {
    buildingAddress: `0x${string}`;
@@ -103,8 +104,9 @@ export function ProposalsView(props: Props) {
       <LoadingView isLoading />
    ) : (
       <div className="p-2">
+         <WhyProposals />
          {!isDelegated && (
-            <div className="mb-6 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
+            <div className="p-4 mt-4 bg-indigo-50 border border-indigo-200 rounded-lg">
                <div className="flex items-start space-x-3">
                   <div className="flex-shrink-0">
                      <svg
@@ -146,7 +148,7 @@ export function ProposalsView(props: Props) {
             </div>
          )}
 
-         <Tabs defaultValue="active">
+         <Tabs defaultValue="active" className="mt-4">
             <TabsList>
                <TabsTrigger value="active">Active</TabsTrigger>
                <TabsTrigger value="past">Past</TabsTrigger>
