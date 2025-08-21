@@ -9,19 +9,12 @@ import { FormInput } from "@/components/ui/formInput";
 import { FormSelect } from "@/components/ui/formSelect";
 import { Pie, PieChart } from "recharts";
 import {
-   Card,
-   CardContent,
-   CardDescription,
-   CardFooter,
-   CardHeader,
-   CardTitle,
-} from "@/components/ui/card";
-import {
    ChartConfig,
    ChartContainer,
    ChartTooltip,
    ChartTooltipContent,
 } from "@/components/ui/chart";
+import { cx } from "class-variance-authority";
 
 type Props = {
    assetOptions: BuildingToken[];
@@ -31,6 +24,7 @@ type Props = {
    setFieldValue: (name: string, value: unknown) => void;
    useOnCreateSlice?: boolean;
    addMoreAllocationsDisabled?: boolean;
+   className?: string;
 };
 
 const indigoShades = [
@@ -42,6 +36,7 @@ const indigoShades = [
 ];
 
 export const AddSliceAllocationForm = ({
+   className,
    assetOptions,
    existsAllocations,
    formik,
@@ -71,8 +66,9 @@ export const AddSliceAllocationForm = ({
       }));
    };
 
-   const generateChartConfig = () => {
-      const chartData = generateChartData();
+   const generateChartConfig = (
+      chartData: { asset: string; allocation: number; name: string; fill: string }[],
+   ) => {
       const config: ChartConfig = {
          allocation: {
             label: "Allocation %",
@@ -90,7 +86,7 @@ export const AddSliceAllocationForm = ({
    };
 
    const chartData = generateChartData();
-   const chartConfig = generateChartConfig();
+   const chartConfig = generateChartConfig(chartData);
 
    const totalAllocationsAmount = Object.values(formik.values.tokenAssetAmounts).reduce(
       (acc, amount) => (acc += Number(amount)),
@@ -140,7 +136,7 @@ export const AddSliceAllocationForm = ({
       const canRemove = formik.values?.tokenAssets?.length > 1 && !isExisting;
 
       return (
-         <div className="grid grid-cols-2 xs:grid-cols-1 gap-3 py-3" key={asset || assetId}>
+         <div className={cx("grid grid-cols-2 sm:grid-cols-1 gap-3 py-3")} key={asset || assetId}>
             <FormSelect
                name={`tokenAsset-${assetId}`}
                label="Asset Token"

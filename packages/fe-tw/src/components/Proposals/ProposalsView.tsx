@@ -87,19 +87,6 @@ export function ProposalsView(props: Props) {
       }
    };
 
-   useEffect(() => {
-      if (!isLoading) {
-         if (buildingGovernance === ethers.ZeroAddress) {
-            toast.warning(
-               "Governance needs to be deployed before you can start submitting proposals",
-            );
-            replace(`/admin/buildingmanagement?governance=true&bAddress=${props.buildingAddress}`);
-         } else {
-            setPageLoading(false);
-         }
-      }
-   }, [buildingGovernance, isLoading]);
-
    return pageLoading ? (
       <LoadingView isLoading />
    ) : (
