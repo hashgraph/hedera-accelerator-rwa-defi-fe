@@ -4,12 +4,12 @@ import { Popover, PopoverAnchor } from "@/components/ui/popover";
 import { PopoverContent, PopoverPortal } from "@radix-ui/react-popover";
 import { cx } from "class-variance-authority";
 import { useWalkthroughStore } from "./WalkthroughStore";
-import { isFunction } from "lodash";
+import { find, isEmpty, isFunction, matches } from "lodash";
 import { createPortal } from "react-dom";
 import { Button } from "../ui/button";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
-interface WalkthroughStepProps {
+export interface WalkthroughStepProps {
    children:
       | ReactNode
       | ((props: {
@@ -17,18 +17,27 @@ interface WalkthroughStepProps {
            confirmUserFinishedGuide: () => void;
         }) => ReactNode);
    className?: string;
+   steps?: WalkthroughStep[];
+   guideId?: string;
+   stepIndex?: number;
+   title?: string;
+   description?: string | ReactNode;
+   side?: "top" | "right" | "bottom" | "left";
+   showConfirmButton?: boolean;
+}
+
+export interface WalkthroughStep {
    guideId: string;
    stepIndex: number;
    title: string;
-   description: string | ReactNode;
-   side?: "top" | "right" | "bottom" | "left";
-   showConfirmButton?: boolean;
+   description: string;
 }
 
 export const WalkthroughStep = memo(
    ({
       children,
       className,
+      steps,
       guideId,
       stepIndex,
       title,
@@ -42,7 +51,9 @@ export const WalkthroughStep = memo(
       const setCurrentGuide = useWalkthroughStore((state) => state.setCurrentGuide);
       const finishGuide = useWalkthroughStore((state) => state.finishGuide);
 
-      const isHighlighted = currentStep === stepIndex && currentGuide === guideId;
+      const isHighlighted = isEmpty(steps)
+         ? currentStep === stepIndex && currentGuide === guideId
+         : find(steps, matches({ guideId: currentGuide, stepIndex: currentStep }));
 
       const [showPing, setShowPing] = useState(false);
 
@@ -56,28 +67,48 @@ export const WalkthroughStep = memo(
       }, [isHighlighted]);
 
       const handleStepPassed = useCallback(() => {
-         if (currentStep === stepIndex) {
+         if (!isEmpty(steps)) {
+            const currentStepInfo = find(
+               steps,
+               matches({ guideId: currentGuide, stepIndex: currentStep }),
+            );
+            if (currentStepInfo) {
+               setCurrentStep(currentStepInfo.stepIndex + 1);
+            }
+         } else if (guideId === currentGuide && currentStep === stepIndex) {
             setCurrentStep(stepIndex + 1);
          }
-      }, [currentStep, stepIndex, setCurrentStep]);
+      }, [steps, currentGuide, currentStep, stepIndex, setCurrentStep]);
 
       const handleConfirmFinishedGuide = useCallback(() => {
-         if (currentGuide === guideId && currentStep === stepIndex) {
+         if (!isEmpty(steps)) {
+            const currentStepInfo = find(
+               steps,
+               matches({ guideId: currentGuide, stepIndex: currentStep }),
+            );
+            if (currentStepInfo) {
+               finishGuide(currentStepInfo.guideId);
+               setCurrentGuide(null);
+               setCurrentStep(null);
+            }
+         } else if (currentGuide === guideId && currentStep === stepIndex) {
             finishGuide(guideId);
             setCurrentGuide(null);
             setCurrentStep(null);
          }
       }, [currentGuide, currentStep, guideId, setCurrentGuide, setCurrentStep]);
 
-      const handleFinishGuide = useCallback(() => {
-         finishGuide(guideId);
-         setCurrentGuide(null);
-         setCurrentStep(null);
-      }, [finishGuide, guideId, setCurrentGuide, setCurrentStep]);
+      const currentGuideInfo = find(
+         steps,
+         matches({
+            guideId: currentGuide,
+            stepIndex: currentStep,
+         }),
+      );
 
       return (
          <div className={cx("relative", className)}>
-            {isHighlighted && (
+            {Boolean(isHighlighted) && (
                <div
                   className={cx(
                      "pointer-events-none absolute inset-0 rounded-md z-50 ",
@@ -86,7 +117,7 @@ export const WalkthroughStep = memo(
                   )}
                />
             )}
-            <Popover open={isHighlighted}>
+            <Popover open={Boolean(isHighlighted)}>
                <PopoverAnchor className={cx(isHighlighted ? "relative z-190" : "", className)}>
                   {isFunction(children)
                      ? children({
@@ -104,7 +135,7 @@ export const WalkthroughStep = memo(
                   >
                      <div className="animate-fade-in-bottom bg-gradient-to-br from-white to-slate-50 p-6 rounded-xl shadow-xl border border-slate-200 max-w-sm relative">
                         <Button
-                           onClick={handleFinishGuide}
+                           onClick={handleConfirmFinishedGuide}
                            className="absolute top-3 right-3"
                            variant="ghost"
                            aria-label="Close guide"
@@ -113,9 +144,11 @@ export const WalkthroughStep = memo(
                         </Button>
 
                         <div className="pr-6">
-                           <h3 className="font-bold text-lg text-slate-800 mb-2">{title}</h3>
+                           <h3 className="font-bold text-lg text-slate-800 mb-2">
+                              {currentGuideInfo ? currentGuideInfo.title : title}
+                           </h3>
                            <div className="text-sm text-slate-600 mb-6 leading-relaxed">
-                              {description}
+                              {currentGuideInfo ? currentGuideInfo.description : description}
                            </div>
                         </div>
 
