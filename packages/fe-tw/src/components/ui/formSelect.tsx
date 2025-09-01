@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectTrigger, SelectValue } from "./select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./tooltip";
 import { HelpCircle, Info } from "lucide-react";
 import { TooltipInfoButton } from "./tooltipInfoButton";
+import { cx } from "class-variance-authority";
 
 interface FormSelectProps extends React.ComponentProps<typeof Select> {
    required?: boolean;
@@ -16,6 +17,9 @@ interface FormSelectProps extends React.ComponentProps<typeof Select> {
    error?: string;
    description?: string;
    className?: string;
+   classNames?: {
+      container?: string;
+   };
    placeholder?: string;
    children: React.ReactNode;
    tooltipContent?: string;
@@ -28,13 +32,14 @@ function FormSelect({
    name,
    error,
    className,
+   classNames,
    placeholder,
    children,
    tooltipContent,
    ...props
 }: FormSelectProps) {
    return (
-      <div className="w-full">
+      <div className={cx("w-full", classNames?.container)}>
          <div className="flex items-center gap-1">
             <Label htmlFor={name} className="gap-1">
                {label}
