@@ -4,8 +4,8 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui
 import { Button } from "../ui/button";
 
 interface IProps {
-   title: string;
-   description: string;
+   title?: string;
+   description?: string;
    currentGuide: string | null;
    guides?: { guideId: string; priority: number }[];
    currentStep: number | null;

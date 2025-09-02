@@ -12,6 +12,7 @@ import {
    BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Card, CardContent } from "@/components/ui/card";
+import Image from "next/image";
 
 export function SlicesOverview() {
    const { slices } = useSlicesData();
@@ -43,12 +44,15 @@ export function SlicesOverview() {
             {slices.map((slice) => (
                <Card
                   key={slice.id}
-                  className="transition-transform duration-200 hover:scale-[1.02] cursor-pointer p-0 pb-6 gap-2"
+                  className="transition-transform duration-200 hover:scale-[1.02] cursor-pointer p-0  gap-2"
                >
                   <Link key={slice.id} href={`/slices/${slugify(slice.id)}`}>
-                     <img
-                        src={slice.imageIpfsUrl ?? "assets/dome.jpeg"}
+                     <Image
+                        src={slice.imageIpfsUrl}
                         alt={slice.name}
+                        quality={80}
+                        width={400}
+                        height={400}
                         className="w-full h-40 object-cover rounded-t-md mb-3"
                      />
                      <CardContent>

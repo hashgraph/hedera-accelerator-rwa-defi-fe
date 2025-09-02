@@ -12,6 +12,7 @@ export const TooltipInfoButton = ({ label, children }: IProps) => {
       <Tooltip>
          <TooltipTrigger asChild>
             <button
+               tabIndex={-1}
                type="button"
                className="inline-flex items-center justify-center p-0 h-4 w-4 text-gray-600 hover:text-foreground transition-colors hover:cursor-pointer"
                aria-label={`Help for ${label}`}

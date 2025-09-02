@@ -43,11 +43,13 @@ import {
 import { toast } from "sonner";
 import { shortEvmAddress } from "@/services/util";
 import { useWalkthrough, WalkthroughPromptCard, WalkthroughStep } from "../Walkthrough";
+import { step } from "viem/chains";
 
 export function Navbar() {
    const { currentGuide, PromptCardProps } = useWalkthrough([
-      { guideId: "ADMIN_BUILDING_GUIDE", priority: 1 },
-      { guideId: "USER_INVESTING_GUIDE", priority: 2 },
+      { guideId: "ADMIN_BUILDING_GUIDE", priority: 2 },
+      { guideId: "USER_INVESTING_GUIDE", priority: 3 },
+      { guideId: "USER_SLICE_GUIDE", priority: 4 },
    ]);
    const { isSidebarTriggerVisible } = useSidebar();
    const [isOpen, setIsOpen] = React.useState(false);
@@ -171,32 +173,40 @@ export function Navbar() {
                      </NavigationMenuItem>
                      <NavigationMenuItem>
                         <WalkthroughStep
-                           guideId="ADMIN_BUILDING_GUIDE"
-                           stepIndex={1}
-                           title="Start creating a tokenized building"
-                           description="Hover here to open the Create menu and begin the building tokenization walkthrough."
                            side="bottom"
+                           steps={[
+                              {
+                                 guideId: "ADMIN_BUILDING_GUIDE",
+                                 stepIndex: 1,
+                                 title: "Start creating a tokenized building",
+                                 description:
+                                    "Hover here to open the Create menu and begin the building tokenization walkthrough.",
+                              },
+                              {
+                                 guideId: "USER_LOGIN_FLOW",
+                                 stepIndex: 3,
+                                 title: "Let's get USDC",
+                                 description:
+                                    "Hover on this panel and select 'Get Demo USDC' to mint test USDC tokens for development and testing.",
+                              },
+                              {
+                                 guideId: "USER_SLICE_GUIDE",
+                                 stepIndex: 1,
+                                 title: "Let's create a slice!",
+                                 description:
+                                    "Slices are like ETFs for real estate - they let you bundle multiple buildings into a single investment product. Hover here to start creating your slice.",
+                              },
+                           ]}
                         >
                            {({ confirmUserPassedStep }) => (
-                              <WalkthroughStep
-                                 guideId={"USER_LOGIN_FLOW"}
-                                 stepIndex={3}
-                                 title="Let's get USDC"
-                                 description="Hover on this panel and select 'Get Demo USDC' to mint test USDC tokens for development and testing."
-                                 side="bottom"
+                              <NavigationMenuTrigger
+                                 className={navigationMenuTriggerStyle()}
+                                 onMouseEnter={() => {
+                                    confirmUserPassedStep();
+                                 }}
                               >
-                                 {({ confirmUserPassedStep: confirmInvestStep }) => (
-                                    <NavigationMenuTrigger
-                                       className={navigationMenuTriggerStyle()}
-                                       onMouseEnter={() => {
-                                          confirmUserPassedStep();
-                                          confirmInvestStep();
-                                       }}
-                                    >
-                                       Create
-                                    </NavigationMenuTrigger>
-                                 )}
-                              </WalkthroughStep>
+                                 Create
+                              </NavigationMenuTrigger>
                            )}
                         </WalkthroughStep>
                         <NavigationMenuContent asChild data-state="open">
@@ -220,13 +230,24 @@ export function Navbar() {
                                     </ListItem>
                                  )}
                               </WalkthroughStep>
-                              <ListItem
-                                 icon={<Slice />}
-                                 title="Slice"
-                                 href="/admin/slicemanagement"
+                              <WalkthroughStep
+                                 guideId={"USER_SLICE_GUIDE"}
+                                 stepIndex={2}
+                                 title="Navigate to Slice Creation"
+                                 description="Click here to open the Slice Management page, where you'll configure your slice's properties and select which buildings to include."
+                                 side="bottom"
                               >
-                                 Create and manage slices
-                              </ListItem>
+                                 {({ confirmUserPassedStep: confirmSliceInvestStep }) => (
+                                    <ListItem
+                                       icon={<Slice />}
+                                       title="Slice"
+                                       href="/admin/slicemanagement"
+                                       onClick={confirmSliceInvestStep}
+                                    >
+                                       Create and manage slices
+                                    </ListItem>
+                                 )}
+                              </WalkthroughStep>
                               <WalkthroughStep
                                  guideId={"USER_LOGIN_FLOW"}
                                  stepIndex={4}
@@ -315,14 +336,21 @@ export function Navbar() {
          <WalkthroughPromptCard
             {...PromptCardProps}
             title={
-               PromptCardProps.currentGuide === "ADMIN_BUILDING_GUIDE"
-                  ? "Do you want help tokenizing a building?"
-                  : "Do you want us to help you invest into buildings?"
+               {
+                  ADMIN_BUILDING_GUIDE: "Do you want help tokenizing a building?",
+                  USER_INVESTING_GUIDE: "Do you want us to help you invest into buildings?",
+                  USER_SLICE_GUIDE: "Do you want us to help create and invest into a slice?",
+               }[PromptCardProps.currentGuide!]
             }
             description={
-               PromptCardProps.currentGuide === "ADMIN_BUILDING_GUIDE"
-                  ? "We will guide you from the Create menu to Building Management and explain each key field (image/IPFS, total supply, token settings, USDC reserve, governance, and vault)."
-                  : "We will guide you through the investing process step by step."
+               {
+                  ADMIN_BUILDING_GUIDE:
+                     "We will guide you from the Create menu to Building Management and explain each key field (image/IPFS, total supply, token settings, USDC reserve, governance, and vault).",
+                  USER_INVESTING_GUIDE:
+                     "We will guide you through the investing process step by step.",
+                  USER_SLICE_GUIDE:
+                     "Slice is DeFi analogue of ETF, which will allow you to invest in a diversified portfolio of real estate assets.",
+               }[PromptCardProps.currentGuide!]
             }
          />
       </>

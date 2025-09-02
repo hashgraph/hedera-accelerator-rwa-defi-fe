@@ -37,6 +37,8 @@ import { useEvmAddress } from "@buidlerlabs/hashgraph-react-wallets";
 import { useBuildings } from "@/hooks/useBuildings";
 import { getTokenBalanceOf } from "@/services/erc20Service";
 import { StepsStatus } from "../buildingManagement/types";
+import { WalkthroughStep } from "@/components/Walkthrough/WalkthroughStep";
+import { useWalkthroughStore } from "@/components/Walkthrough/WalkthroughStore";
 
 const getCurrentStepState = (
    isSelected: boolean,
@@ -66,6 +68,10 @@ export const SliceManagement = () => {
    const [assetsOptions, setAssetsOptions] = useState<any>();
    const [lastSliceDeployed, setLastSliceDeployed] = useState<`0x${string}`>();
    const { buildingsInfo } = useBuildings();
+   const currentStep = useWalkthroughStore((state) => state.currentStep);
+   const currentGuide = useWalkthroughStore((state) => state.currentGuide);
+   const setCurrentStep = useWalkthroughStore((state) => state.setCurrentStep);
+
    const {
       createSlice,
       waitForLastSliceDeployed,
@@ -99,6 +105,18 @@ export const SliceManagement = () => {
          );
       }
    };
+
+   useEffect(() => {
+      return () => {
+         if (
+            currentGuide === "USER_SLICE_GUIDE" &&
+            Number(currentStep) > 3 &&
+            Number(currentStep) < 16
+         ) {
+            setCurrentStep(3);
+         }
+      };
+   }, []);
 
    const handleSubmit = async (values: CreateSliceRequestData, e: { resetForm: () => void }) => {
       setIsTransactionInProgress(true);
@@ -243,18 +261,41 @@ export const SliceManagement = () => {
 
                      <div className="flex justify-end mt-10">
                         {currentSetupStep === 1 ? (
-                           <Button
-                              size="lg"
-                              type="button"
-                              variant="outline"
-                              onClick={() => setCurrentSetupStep((step) => step + 1)}
+                           <WalkthroughStep
+                              guideId={"USER_SLICE_GUIDE"}
+                              stepIndex={8}
+                              title="Ready to proceed to asset allocation"
+                              description="Now that you've configured your slice's basic properties, let's move to the next step where you'll select which buildings to include and set their allocation percentages."
+                              side="bottom"
                            >
-                              Next
-                           </Button>
+                              {({ confirmUserPassedStep: confirmSliceInvestStep }) => (
+                                 <Button
+                                    size="lg"
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => {
+                                       setCurrentSetupStep((step) => step + 1);
+                                       confirmSliceInvestStep();
+                                    }}
+                                 >
+                                    Next
+                                 </Button>
+                              )}
+                           </WalkthroughStep>
                         ) : (
-                           <Button type="submit" onClick={submitForm} disabled={!isValid}>
-                              Deploy Slice
-                           </Button>
+                           <WalkthroughStep
+                              guideId={"USER_SLICE_GUIDE"}
+                              stepIndex={15}
+                              title="Deploy your slice to the blockchain"
+                              description="Once you've configured all allocations (they must total exactly 100%), click here to deploy your slice as a smart contract on the Hedera network."
+                              side="bottom"
+                           >
+                              {({ confirmUserPassedStep }) => (
+                                 <Button type="submit" onClick={submitForm} disabled={!isValid}>
+                                    Deploy Slice
+                                 </Button>
+                              )}
+                           </WalkthroughStep>
                         )}
                      </div>
                   </>

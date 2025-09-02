@@ -12,6 +12,16 @@ const ScientificNotation = ({ value }: { value: number }) => {
    if (value < 1_000_000_000) {
       return <span>{value.toLocaleString()}</span>;
    }
+   if (value <= 1e13) {
+      return (
+         <span>
+            {new Intl.NumberFormat("en-US", {
+               notation: "compact",
+               compactDisplay: "long",
+            }).format(value)}
+         </span>
+      );
+   }
 
    const exponentialStr = value.toExponential(2);
    const [coefficient, exponent] = exponentialStr.split("e");
@@ -110,7 +120,8 @@ export const BuildingDetailInfo = (props: BuildingInfo) => {
                   <>
                      <span className="font-semibold text-sm">Treasury maximum reserve:</span>
                      <span>
-                        <span className="text-sm">{reserve}</span>&nbsp;
+                        <span className="text-sm">{<ScientificNotation value={reserve} />}</span>
+                        &nbsp;
                         <span className="text-xs text-gray-500">(USDC)</span>
                      </span>
                   </>

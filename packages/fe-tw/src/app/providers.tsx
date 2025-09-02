@@ -4,6 +4,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { WalkthroughProvider } from "@/components/Walkthrough";
 import { ReactWalletsProvider } from "@/services/wallets/ReactWalletsProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import type React from "react";
 
 const queryClient = new QueryClient();
@@ -17,7 +18,9 @@ export function Providers({
       <QueryClientProvider client={queryClient}>
          <WalkthroughProvider>
             <ReactWalletsProvider>
-               <SidebarProvider>{children}</SidebarProvider>
+               <NuqsAdapter>
+                  <SidebarProvider>{children}</SidebarProvider>
+               </NuqsAdapter>
             </ReactWalletsProvider>
          </WalkthroughProvider>
       </QueryClientProvider>
