@@ -59,10 +59,10 @@ export default async function BuildingIndexPage() {
          <BuildingsOverview
             buildings={convertedBuildings}
             filterOptions={{
-               constructedYear: Array.from(constructedYearOptions),
-               type: Array.from(typeOptions),
-               location: Array.from(locationOptions),
-               locationType: Array.from(locationTypeOptions),
+               constructedYear: Array.from(constructedYearOptions).sort().reverse(),
+               type: Array.from(typeOptions).sort(),
+               location: Array.from(locationOptions).sort(),
+               locationType: Array.from(locationTypeOptions).sort(),
             }}
          />
       </div>
