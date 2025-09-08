@@ -10,14 +10,16 @@ import { BUILDING_FACTORY_ADDRESS } from "@/services/contracts/addresses";
 import { buildingFactoryAbi } from "@/services/contracts/abi/buildingFactoryAbi";
 import { tryCatch } from "@/services/tryCatch";
 import useWriteContract from "@/hooks/useWriteContract";
+import { useTokenInfo } from "@/hooks/useTokenInfo";
+import { ethers } from "ethers";
 
 jest.mock("@/hooks/useUploadImageToIpfs");
 jest.mock("@/hooks/useExecuteTransaction");
+jest.mock("@/hooks/useWriteContract");
+jest.mock("@/hooks/useTokenInfo");
 jest.mock("@buidlerlabs/hashgraph-react-wallets", () => ({
    __esModule: true,
-   useWriteContract: jest.fn(),
-   useReadContract: jest.fn(),
-   useEvmAddress: jest.fn(),
+   useEvmAddress: jest.fn(() => ({ data: "0x_USER" })),
 }));
 
 jest.mock("../helpers");
@@ -32,6 +34,7 @@ const mockExecuteTransaction = jest.fn().mockImplementation(async (cb) => {
 });
 const mockWriteContract = jest.fn();
 let mockHelperUploadBuildingInfoToPinata: jest.Mock;
+let mockGetNewBuildingAddress: jest.Mock;
 
 describe("useBuildingOrchestration", () => {
    beforeEach(() => {
@@ -42,10 +45,15 @@ describe("useBuildingOrchestration", () => {
          executeTransaction: mockExecuteTransaction,
       });
       (useWriteContract as jest.Mock).mockReturnValue({ writeContract: mockWriteContract });
+      (useTokenInfo as jest.Mock).mockReturnValue({ decimals: 6 });
 
       mockUploadImage.mockResolvedValue("0x_MOCK_IMAGE_IPFS_HASH");
       mockHelperUploadBuildingInfoToPinata = helpers.uploadBuildingInfoToPinata as jest.Mock;
       mockHelperUploadBuildingInfoToPinata.mockResolvedValue("0x_MOCK_METADATA_IPFS_HASH");
+      mockGetNewBuildingAddress = (helpers as any).getNewBuildingAddress as jest.Mock;
+      if (mockGetNewBuildingAddress) {
+         mockGetNewBuildingAddress.mockReturnValue("0x_MOCK_BUILDING_ADDRESS");
+      }
       mockWriteContract.mockResolvedValue({
          receipt: "mockReceipt",
          newBuildingAddress: "0x_MOCK_BUILDING_ADDRESS",
@@ -110,25 +118,29 @@ describe("useBuildingOrchestration", () => {
       });
 
       expect(mockUploadImage).toHaveBeenCalledWith(minimalValues.info.buildingImageIpfsFile);
-      expect(tryCatch).toHaveBeenCalledWith(
-         mockUploadImage(minimalValues.info.buildingImageIpfsFile),
-      );
+      expect(tryCatch).toHaveBeenCalledWith(expect.any(Promise));
 
       expect(mockHelperUploadBuildingInfoToPinata).toHaveBeenCalledWith(
          minimalValues,
          "0x_MOCK_IMAGE_IPFS_HASH",
       );
-      expect(tryCatch).toHaveBeenCalledWith(
-         mockHelperUploadBuildingInfoToPinata(minimalValues, "0x_MOCK_IMAGE_IPFS_HASH"),
-      );
+      expect(tryCatch).toHaveBeenCalledWith(expect.any(Promise));
 
-      expect(mockExecuteTransaction).toHaveBeenCalledTimes(1);
+      expect(mockExecuteTransaction).toHaveBeenCalledTimes(2);
+
       const expectedBuildingDetails = {
          tokenURI: "0x_MOCK_METADATA_IPFS_HASH",
          tokenName: minimalValues.token.tokenName,
          tokenSymbol: minimalValues.token.tokenSymbol,
          tokenDecimals: minimalValues.token.tokenDecimals,
-         treasuryReserveAmount: minimalValues.treasuryAndGovernance.reserve,
+         tokenMintAmount: ethers.parseUnits(
+            String(minimalValues.token.mintBuildingTokenAmount),
+            minimalValues.token.tokenDecimals,
+         ),
+         treasuryReserveAmount: ethers.parseUnits(
+            String(minimalValues.treasuryAndGovernance.reserve),
+            6,
+         ),
          treasuryNPercent: minimalValues.treasuryAndGovernance.npercentage,
          governanceName: minimalValues.treasuryAndGovernance.governanceName,
          vaultShareTokenName: minimalValues.treasuryAndGovernance.shareTokenName,
@@ -136,20 +148,26 @@ describe("useBuildingOrchestration", () => {
          vaultFeeReceiver: minimalValues.treasuryAndGovernance.feeReceiverAddress,
          vaultFeeToken: minimalValues.treasuryAndGovernance.feeToken,
          vaultFeePercentage: minimalValues.treasuryAndGovernance.feePercentage,
+         aTokenName: minimalValues.treasuryAndGovernance.autoCompounderTokenName,
+         aTokenSymbol: minimalValues.treasuryAndGovernance.autoCompounderTokenSymbol,
          vaultCliff: 30,
          vaultUnlockDuration: 60,
-      };
+      } as const;
 
-      expect(mockWriteContract).toHaveBeenCalledWith({
+      expect(mockWriteContract).toHaveBeenNthCalledWith(1, {
          contractId: ContractId.fromEvmAddress(0, 0, BUILDING_FACTORY_ADDRESS),
          abi: buildingFactoryAbi,
          functionName: "newBuilding",
-         args: [expectedBuildingDetails],
+         args: [expect.objectContaining(expectedBuildingDetails)],
       });
 
-      expect(submissionResult).toEqual({
-         data: { receipt: "mockReceipt", newBuildingAddress: "0x_MOCK_BUILDING_ADDRESS" },
-         error: null,
+      expect(mockWriteContract).toHaveBeenNthCalledWith(2, {
+         contractId: ContractId.fromEvmAddress(0, 0, BUILDING_FACTORY_ADDRESS),
+         abi: buildingFactoryAbi,
+         functionName: "configNewBuilding",
+         args: ["0x_MOCK_BUILDING_ADDRESS"],
       });
+
+      expect(submissionResult).toEqual("0x_MOCK_BUILDING_ADDRESS");
    });
 });
