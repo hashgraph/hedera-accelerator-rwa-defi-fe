@@ -59,6 +59,7 @@ export const addTokenToMM = async ({
 }: TokenToMMPayload) => {
    if (!window?.ethereum) {
       toast.error("Metamask needs to be connected");
+      return;
    }
 
    try {

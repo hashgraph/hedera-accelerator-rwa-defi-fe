@@ -43,7 +43,7 @@ const validationSchema = Yup.object({
       .test("is-positive", "Amount must be greater than 0", (value) =>
          value ? parseFloat(value) > 0 : false,
       ),
-});
+})
 
 export function AddBuildingTokenLiquidityForm({ buildingAddress }: Props) {
    const { confirmUserFinishedGuide } = useWalkthrough();

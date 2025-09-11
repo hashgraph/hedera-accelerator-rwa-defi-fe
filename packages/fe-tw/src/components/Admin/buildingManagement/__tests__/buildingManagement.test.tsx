@@ -23,26 +23,26 @@ describe("BuildingManagement", () => {
       const { container } = render(<BuildingManagement />);
       const user = userEvent.setup();
 
-      await user.type(screen.getByLabelText("Building Title", { exact: false }), "My Building");
-      await user.type(screen.getByLabelText("Building Image IPFS Id", { exact: false }), "Qm123");
+      await user.type(screen.getByRole("textbox", { name: /Building Title/i }), "My Building");
+      await user.type(screen.getByRole("textbox", { name: /Building Image IPFS Id/i }), "Qm123");
       await user.click(screen.getByRole("button", { name: /Next/i }));
       const step1Title = screen.getByText("Building Info");
       const step1Node = step1Title.closest("[data-state]");
       expect(step1Node).toHaveAttribute("data-state", "valid");
 
-      await user.type(screen.getByLabelText("Token Name", { exact: false }), "MyToken");
-      await user.type(screen.getByLabelText("Token Symbol", { exact: false }), "MTK");
-      await user.type(screen.getByLabelText("Mint Token Amount", { exact: false }), "1000");
+      await user.type(screen.getByRole("textbox", { name: /Token Name/i }), "MyToken");
+      await user.type(screen.getByRole("textbox", { name: /Token Symbol/i }), "MTK");
+      await user.type(screen.getByRole("spinbutton", { name: /Mint Token Amount/i }), "1000");
       await user.click(screen.getByRole("button", { name: /Next/i }));
       const step2Title = screen.getByText("Token");
       const step2Node = step2Title.closest("[data-state]");
       expect(step2Node).toHaveAttribute("data-state", "valid");
 
-      await user.type(screen.getByLabelText("Reserve", { exact: false }), "10");
-      await user.type(screen.getByLabelText("NPercentage", { exact: false }), "5");
-      await user.type(screen.getByLabelText("Governance Name", { exact: false }), "GovName");
-      await user.type(screen.getByLabelText("Share Token Name", { exact: false }), "ShareToken");
-      await user.type(screen.getByLabelText("Share Token Symbol", { exact: false }), "STK");
+      await user.type(screen.getByRole("textbox", { name: /Reserve/i }), "10");
+      await user.type(screen.getByRole("textbox", { name: /Vault Yield Percentage/i }), "5");
+      await user.type(screen.getByRole("textbox", { name: /Governance Name/i }), "GovName");
+      await user.type(screen.getByRole("textbox", { name: /Share Token Name/i }), "ShareToken");
+      await user.type(screen.getByRole("textbox", { name: /Share Token Symbol/i }), "STK");
       await user.click(screen.getByRole("button", { name: /Deploy Building/i }));
 
       await waitFor(() => {

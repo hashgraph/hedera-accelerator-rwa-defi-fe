@@ -56,8 +56,6 @@ export const useIdentity = (buildingAddress?: string) => {
    } = useQuery({
       queryKey: ["identity", evmAddress],
       queryFn: async () => {
-         if (!evmAddress) return null;
-
          const data = await readContract({
             address: BUILDING_FACTORY_ADDRESS,
             abi: buildingFactoryAbi,
@@ -79,22 +77,19 @@ export const useIdentity = (buildingAddress?: string) => {
 
    const deployIdentityMutation = useMutation({
       mutationFn: async (walletAddress: string) => {
-         const tx = await executeTransaction(() =>
+         const tx = (await executeTransaction(() =>
             writeContract({
                contractId: ContractId.fromEvmAddress(0, 0, BUILDING_FACTORY_ADDRESS),
                abi: buildingFactoryAbi,
                functionName: "deployIdentityForWallet",
                args: [walletAddress],
             }),
-         ) as TransactionExtended;
+         )) as TransactionExtended;
 
          return tx;
       },
       onSuccess: (data) => {
          queryClient.invalidateQueries({ queryKey: ["identity", evmAddress] });
-      },
-      onError: (error) => {
-         console.error("Failed to deploy identity:", error);
       },
    });
 
@@ -106,14 +101,14 @@ export const useIdentity = (buildingAddress?: string) => {
          buildingAddress: string;
          country: number;
       }) => {
-         const tx = await executeTransaction(() =>
+         const tx = (await executeTransaction(() =>
             writeContract({
                contractId: ContractId.fromEvmAddress(0, 0, BUILDING_FACTORY_ADDRESS),
                abi: buildingFactoryAbi,
                functionName: "registerIdentity",
                args: [buildingAddress, evmAddress, country],
             }),
-         ) as TransactionExtended;
+         )) as TransactionExtended;
 
          return tx;
       },
