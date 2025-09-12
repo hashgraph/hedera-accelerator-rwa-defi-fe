@@ -1,3 +1,4 @@
+import { isEmpty } from "lodash";
 import { FormSelect } from "../ui/formSelect";
 import { SelectItem, SelectSeparator } from "../ui/select";
 
@@ -33,7 +34,7 @@ export const BuildingFilter = ({ options, filterState, onFilterChange }: Buildin
             <SelectItem key={"all"} value={null}>
                All
             </SelectItem>
-            <SelectSeparator />
+            {!isEmpty(options.constructedYear) && <SelectSeparator />}
             {options.constructedYear?.map((year) => (
                <SelectItem key={year} value={String(year)}>
                   {year}
@@ -50,7 +51,7 @@ export const BuildingFilter = ({ options, filterState, onFilterChange }: Buildin
             <SelectItem key={"all"} value={null}>
                All
             </SelectItem>
-            <SelectSeparator />
+            {!isEmpty(options.type) && <SelectSeparator />}
             {options.type?.map((type) => (
                <SelectItem key={type} value={type}>
                   {type}
@@ -67,7 +68,7 @@ export const BuildingFilter = ({ options, filterState, onFilterChange }: Buildin
             <SelectItem key={"all"} value={null}>
                All
             </SelectItem>
-            <SelectSeparator />
+            {!isEmpty(options.location) && <SelectSeparator />}
             {options.location?.map((location) => (
                <SelectItem key={location} value={location}>
                   {location}
@@ -84,7 +85,7 @@ export const BuildingFilter = ({ options, filterState, onFilterChange }: Buildin
             <SelectItem key={"all"} value={null}>
                All
             </SelectItem>
-            <SelectSeparator />
+            {!isEmpty(options.locationType) && <SelectSeparator />}
             {options.locationType?.map((locationType) => (
                <SelectItem key={locationType} value={locationType}>
                   {locationType}

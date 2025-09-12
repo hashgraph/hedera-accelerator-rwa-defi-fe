@@ -35,7 +35,6 @@ const activeProposalStatuses = [
 
 export function ProposalsView(props: Props) {
    const [showModal, setShowModal] = useState(false);
-   const [pageLoading, setPageLoading] = useState(true);
    const { replace } = useRouter();
    const {
       governanceAddress: buildingGovernance,
@@ -87,9 +86,7 @@ export function ProposalsView(props: Props) {
       }
    };
 
-   return pageLoading ? (
-      <LoadingView isLoading />
-   ) : (
+   return (
       <div className="p-2">
          <WhyProposals />
          {!isDelegated && (

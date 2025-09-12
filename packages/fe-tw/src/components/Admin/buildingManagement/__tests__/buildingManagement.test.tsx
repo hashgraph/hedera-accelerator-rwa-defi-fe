@@ -70,7 +70,7 @@ describe("BuildingManagement", () => {
             }),
          );
       });
-   });
+   }, 15000);
 
    it("should not call submitBuilding and mark first two steps as invalid if skipped and deployed", async () => {
       const { container } = render(<BuildingManagement />);

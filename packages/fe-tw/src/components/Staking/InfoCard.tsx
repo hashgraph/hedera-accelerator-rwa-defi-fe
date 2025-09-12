@@ -147,7 +147,7 @@ export default function InfoCard({
                         ${claimableRewards ? Number(claimableRewards).toFixed(2) : "0.00"}
                      </p>
                   </div>
-                  {!isEmpty(claimableRewards) && (
+                  {claimableRewards && Number(claimableRewards).toFixed(2) !== "0.00" && (
                      <Button
                         size="sm"
                         variant="outline"

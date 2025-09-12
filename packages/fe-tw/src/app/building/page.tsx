@@ -11,7 +11,7 @@ import { convertBuildingNFTsData, readBuildingsList } from "@/services/buildingS
 import { buildingAbi } from "@/services/contracts/abi/buildingAbi";
 import { readContract } from "@/services/contracts/readContract";
 import { fetchJsonFromIpfs } from "@/services/ipfsService";
-import { map, mapValues, reduce } from "lodash";
+import { compact, map, mapValues, reduce } from "lodash";
 
 export default async function BuildingIndexPage() {
    const buildings = await readBuildingsList();
@@ -59,10 +59,10 @@ export default async function BuildingIndexPage() {
          <BuildingsOverview
             buildings={convertedBuildings}
             filterOptions={{
-               constructedYear: Array.from(constructedYearOptions).sort().reverse(),
-               type: Array.from(typeOptions).sort(),
-               location: Array.from(locationOptions).sort(),
-               locationType: Array.from(locationTypeOptions).sort(),
+               constructedYear: compact(Array.from(constructedYearOptions)).sort().reverse(),
+               type: compact(Array.from(typeOptions)).sort(),
+               location: compact(Array.from(locationOptions)).sort(),
+               locationType: compact(Array.from(locationTypeOptions)).sort(),
             }}
          />
       </div>
