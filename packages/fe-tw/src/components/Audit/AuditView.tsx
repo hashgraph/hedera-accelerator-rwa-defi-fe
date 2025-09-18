@@ -25,7 +25,7 @@ import { format, isAfter } from "date-fns";
 import { capitalize, filter, includes, map } from "lodash";
 import Link from "next/link";
 import { clsx as cx } from "clsx";
-import { useEvmAddress } from "@buidlerlabs/hashgraph-react-wallets";
+import { useAccount } from "wagmi";
 import { Button } from "../ui/button";
 
 type AuditViewProps = {
@@ -50,7 +50,7 @@ const RATING_TO_COLOR: Record<string, "green" | "blue" | "yellow" | "red" | "gra
 };
 
 export function AuditView({ buildingAddress }: AuditViewProps) {
-   const { data: evmAddress } = useEvmAddress();
+   const { address: evmAddress } = useAccount();
    const [filterText, setFilterText] = useState("");
    const [currentPage, setCurrentPage] = useState(1);
    const itemsPerPage = 10;

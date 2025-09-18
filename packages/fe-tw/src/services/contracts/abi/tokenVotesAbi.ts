@@ -1,3 +1,5 @@
+import { Abi } from "viem";
+
 export const tokenVotesAbi = [
    {
       inputs: [],
@@ -1657,4 +1659,4 @@ export const tokenVotesAbi = [
       stateMutability: "pure",
       type: "function",
    },
-];
+] as const satisfies Abi;

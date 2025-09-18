@@ -4,7 +4,7 @@ import { TextEncoder, TextDecoder } from "util";
 
 // Polyfill for TextEncoder
 if (typeof global.TextEncoder === "undefined") {
-   global.TextEncoder = TextEncoder;
+   global.TextEncoder = TextEncoder as unknown as typeof global.TextEncoder;
 }
 if (typeof window.TextEncoder === "undefined") {
    window.TextEncoder = global.TextEncoder;

@@ -1,3 +1,5 @@
+import { Abi } from "viem";
+
 export const buildingTreasuryAbi = [
    {
       inputs: [],
@@ -546,4 +548,4 @@ export const buildingTreasuryAbi = [
       stateMutability: "view",
       type: "function",
    },
-];
+] as const satisfies Abi;

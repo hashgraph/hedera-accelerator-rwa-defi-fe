@@ -1,28 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { useEvmAddress, useWriteContract } from "@buidlerlabs/hashgraph-react-wallets";
 import { Button } from "@/components/ui/button";
 import { tokenAbi } from "@/services/contracts/abi/tokenAbi";
-import { ContractId } from "@hashgraph/sdk";
-import { useExecuteTransaction } from "@/hooks/useExecuteTransaction";
+import { executeTransaction } from "@/hooks/useExecuteTransaction";
 import { TxResultToastView } from "../CommonViews/TxResultView";
 import { toast } from "sonner";
 import { CoinsIcon } from "lucide-react";
 import { USDC_ADDRESS } from "@/services/contracts/addresses";
-import { TransactionExtended } from "@/types/common";
 import { WalkthroughStep } from "../Walkthrough";
-import { on } from "events";
-import { useWalkthroughStore } from "../Walkthrough/WalkthroughStore";
+import useWriteContract from "@/hooks/useWriteContract";
+import { useAccount } from "wagmi";
 
 const MINT_AMOUNT = 10000;
 const DECIMALS = 6;
 
 export const MintUSDCButton = () => {
-   const currentGuide = useWalkthroughStore((state) => state.currentGuide);
    const { writeContract } = useWriteContract();
-   const { executeTransaction } = useExecuteTransaction();
-   const { data: evmAddress } = useEvmAddress();
+   const { address: evmAddress } = useAccount();
    const [isLoading, setIsLoading] = useState(false);
 
    const handleMint = async ({ onSuccess }: { onSuccess: () => void }) => {
@@ -40,14 +35,14 @@ export const MintUSDCButton = () => {
 
          console.log(`Attempting to mint ${amountAsBigInt.toString()} base units to ${evmAddress}`);
 
-         const tx = (await executeTransaction(() =>
+         const tx = await executeTransaction(() =>
             writeContract({
-               contractId: ContractId.fromEvmAddress(0, 0, USDC_ADDRESS),
+               address: USDC_ADDRESS,
                args: [evmAddress as `0x${string}`, amountAsBigInt],
                functionName: "mint",
                abi: tokenAbi,
             }),
-         )) as TransactionExtended;
+         );
 
          onSuccess();
          toast.success(<TxResultToastView title={`${MINT_AMOUNT} USDC minted!`} txSuccess={tx} />);

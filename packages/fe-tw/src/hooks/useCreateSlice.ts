@@ -1,9 +1,7 @@
-import { useEvmAddress, useWatchTransactionReceipt } from "@buidlerlabs/hashgraph-react-wallets";
-import { ContractId } from "@hashgraph/sdk";
 import { useMutation } from "@tanstack/react-query";
 import * as uuid from "uuid";
-import { MaxUint256, parseUnits, ethers, TypedDataDomain } from "ethers";
-import { useExecuteTransaction } from "./useExecuteTransaction";
+import { MaxUint256, parseUnits } from "ethers";
+import { executeTransaction } from "./useExecuteTransaction";
 import useWriteContract from "./useWriteContract";
 import { readBuildingDetails } from "@/hooks/useBuildings";
 import { tokenAbi } from "@/services/contracts/abi/tokenAbi";
@@ -11,7 +9,6 @@ import { basicVaultAbi } from "@/services/contracts/abi/basicVaultAbi";
 import { uniswapRouterAbi } from "@/services/contracts/abi/uniswapRouterAbi";
 import { sliceAbi } from "@/services/contracts/abi/sliceAbi";
 import { sliceFactoryAbi } from "@/services/contracts/abi/sliceFactoryAbi";
-import { tokenVotesAbi } from "@/services/contracts/abi/tokenVotesAbi";
 import {
    UNISWAP_ROUTER_ADDRESS,
    USDC_ADDRESS,
@@ -31,15 +28,14 @@ import { buildingFactoryAbi } from "@/services/contracts/abi/buildingFactoryAbi"
 import { tryCatch } from "@/services/tryCatch";
 import { useUploadImageToIpfs } from "./useUploadImageToIpfs";
 import { useSlicesData } from "./useSlicesData";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTokenPermitSignature } from "./useTokenPermitSignature";
+import { useAccount } from "wagmi";
 
 export function useCreateSlice(sliceAddress?: `0x${string}`) {
    const { writeContract } = useWriteContract();
-   const { watch } = useWatchTransactionReceipt();
-   const { executeTransaction } = useExecuteTransaction();
    const { uploadImage } = useUploadImageToIpfs();
-   const { data: evmAddress } = useEvmAddress();
+   const { address: evmAddress } = useAccount();
    const { slices } = useSlicesData();
    const { getPermitSignature } = useTokenPermitSignature();
    const [ipfsHashUploadingInProgress, setIpfsHashUploadingInProgress] = useState(false);
@@ -55,11 +51,7 @@ export function useCreateSlice(sliceAddress?: `0x${string}`) {
       if (assets[assetId]) {
          const result = await executeTransaction(() =>
             writeContract({
-               contractId: ContractId.fromEvmAddress(
-                  0,
-                  0,
-                  reverseApproval ? approveAddress : assets[assetId],
-               ),
+               address: (reverseApproval ? approveAddress : assets[assetId]) as `0x${string}`,
                abi: tokenAbi,
                functionName: "approve",
                args: [reverseApproval ? assets[assetId] : approveAddress, amounts[assetId]],
@@ -93,11 +85,7 @@ export function useCreateSlice(sliceAddress?: `0x${string}`) {
                   functionName: "addAllocation",
                   args: [assets[assetId], CHAINLINK_PRICE_ID, amounts[assetId]],
                   abi: sliceAbi,
-                  contractId: ContractId.fromEvmAddress(
-                     0,
-                     0,
-                     deployedSliceAddress || sliceAddress!,
-                  ),
+                  address: deployedSliceAddress || sliceAddress!,
                }),
             ),
          );
@@ -124,7 +112,7 @@ export function useCreateSlice(sliceAddress?: `0x${string}`) {
          const { data: deploySliceIdentityResult } = await tryCatch(
             executeTransaction(() =>
                writeContract({
-                  contractId: ContractId.fromEvmAddress(0, 0, BUILDING_FACTORY_ADDRESS),
+                  address: BUILDING_FACTORY_ADDRESS,
                   abi: buildingFactoryAbi,
                   functionName: "deployIdentityForWallet",
                   args: [deployedSliceAddress ?? sliceAddress],
@@ -134,7 +122,7 @@ export function useCreateSlice(sliceAddress?: `0x${string}`) {
          const { data: registerSliceIdentityResult } = await tryCatch(
             executeTransaction(() =>
                writeContract({
-                  contractId: ContractId.fromEvmAddress(0, 0, BUILDING_FACTORY_ADDRESS),
+                  address: BUILDING_FACTORY_ADDRESS,
                   abi: buildingFactoryAbi,
                   functionName: "registerIdentity",
                   args: [assets[assetId].building, deployedSliceAddress ?? sliceAddress, 840],
@@ -174,7 +162,7 @@ export function useCreateSlice(sliceAddress?: `0x${string}`) {
                   MaxUint256,
                ],
                abi: uniswapRouterAbi,
-               contractId: ContractId.fromEvmAddress(0, 0, UNISWAP_ROUTER_ADDRESS),
+               address: UNISWAP_ROUTER_ADDRESS,
             }),
          );
 
@@ -203,7 +191,7 @@ export function useCreateSlice(sliceAddress?: `0x${string}`) {
                functionName: "addReward",
                args: [USDC_ADDRESS, rewardsAmount],
                abi: basicVaultAbi,
-               contractId: ContractId.fromEvmAddress(0, 0, assets[assetId]),
+               address: assets[assetId] as `0x${string}`,
             }),
          );
 
@@ -220,14 +208,12 @@ export function useCreateSlice(sliceAddress?: `0x${string}`) {
 
    const rebalanceSliceMutation = useMutation({
       mutationFn: async (values: { sliceAllocation: AddSliceAllocationRequestBody }) => {
-         
-
          const data = executeTransaction(() =>
             writeContract({
                functionName: "rebalance",
                args: [],
                abi: sliceAbi,
-               contractId: ContractId.fromEvmAddress(0, 0, sliceAddress!),
+               address: sliceAddress!,
             }),
          );
 
@@ -347,29 +333,14 @@ export function useCreateSlice(sliceAddress?: `0x${string}`) {
                   metadataUri: IpfsHash,
                };
 
-               writeContract({
-                  contractId: ContractId.fromEvmAddress(0, 0, SLICE_FACTORY_ADDRESS),
-                  abi: sliceFactoryAbi,
-                  functionName: "deploySlice",
-                  args: [uuid.v4(), sliceDetails],
-               })
-                  .then((tx) => {
-                     watch(tx as string, {
-                        onSuccess: (transaction) => {
-                           res(transaction);
-
-                           return transaction;
-                        },
-                        onError: (transaction, err) => {
-                           rej(err);
-
-                           return transaction;
-                        },
-                     });
-                  })
-                  .catch((err) => {
-                     rej(err);
-                  });
+               return executeTransaction(() =>
+                  writeContract({
+                     address: SLICE_FACTORY_ADDRESS,
+                     abi: sliceFactoryAbi,
+                     functionName: "deploySlice",
+                     args: [uuid.v4(), sliceDetails],
+                  }),
+               );
             });
       });
    };
@@ -389,7 +360,7 @@ export function useCreateSlice(sliceAddress?: `0x${string}`) {
       mutationFn: async ({ aTokens, amounts, deadlines, vs, rs, ss }) => {
          const tx = await executeTransaction(() =>
             writeContract({
-               contractId: ContractId.fromEvmAddress(0, 0, sliceAddress!),
+               address: sliceAddress!,
                abi: sliceAbi,
                functionName: "depositBatchWithSignatures",
                args: [aTokens, amounts, deadlines, vs, rs, ss],

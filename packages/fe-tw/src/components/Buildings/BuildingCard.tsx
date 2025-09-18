@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useEvmAddress } from "@buidlerlabs/hashgraph-react-wallets";
+import { useAccount } from "wagmi";
 
 interface BuildingCardProps {
    building: {
@@ -18,7 +18,7 @@ interface BuildingCardProps {
 }
 
 export function BuildingCard({ building, onClick }: BuildingCardProps) {
-   const { data: evmAddress } = useEvmAddress();
+   const { address: evmAddress } = useAccount();
 
    return (
       <Card

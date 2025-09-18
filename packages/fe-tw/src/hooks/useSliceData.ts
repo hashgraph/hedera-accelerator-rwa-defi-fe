@@ -9,12 +9,12 @@ import {
    getTokenSymbol,
 } from "@/services/erc20Service";
 import { readSliceAllocations, readSliceBaseToken } from "@/services/sliceService";
-import { useEvmAddress } from "@buidlerlabs/hashgraph-react-wallets";
 import { prepareStorageIPFSfileURL } from "@/utils/helpers";
 import { readBuildingDetails } from "./useBuildings";
 import { fetchJsonFromIpfs } from "@/services/ipfsService";
 import { sliceAbi } from "@/services/contracts/abi/sliceAbi";
 import { ethers } from "ethers";
+import { useAccount } from "wagmi";
 
 const calculateIdealAllocation = (totalAllocationsCount: number) => {
    switch (totalAllocationsCount) {
@@ -30,7 +30,7 @@ export const useSliceData = (
    buildingDeployedTokens?: BuildingToken[],
 ) => {
    const [sliceBuildings, setSliceBuildings] = useState<BuildingToken[]>([]);
-   const { data: evmAddress } = useEvmAddress();
+   const { address: evmAddress } = useAccount();
    const [totalDeposits, setTotalDeposits] = useState({
       user: 0,
       total: 0,
@@ -95,7 +95,7 @@ export const useSliceData = (
       queryKey: ["sliceTokenInfo"],
       queryFn: async () => {
          if (sliceBaseToken) {
-            const tokenBalance = await getTokenBalanceOf(sliceBaseToken, evmAddress);
+            const tokenBalance = await getTokenBalanceOf(sliceBaseToken, evmAddress!);
             const tokenName = await getTokenName(sliceBaseToken);
             const tokenDecimals = await getTokenDecimals(sliceBaseToken);
 

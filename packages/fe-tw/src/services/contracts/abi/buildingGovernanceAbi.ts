@@ -1,3 +1,5 @@
+import { Abi } from "viem";
+
 export const buildingGovernanceAbi = [
    {
       inputs: [],
@@ -1912,4 +1914,4 @@ export const buildingGovernanceAbi = [
       stateMutability: "payable",
       type: "receive",
    },
-];
+] as const satisfies Abi;

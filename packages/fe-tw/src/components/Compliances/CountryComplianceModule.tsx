@@ -30,12 +30,11 @@ import { toast } from "sonner";
 import { TxResultToastView } from "../CommonViews/TxResultView";
 import { useCompliance } from "./useCompliance";
 import { useCountryModule } from "./useCountryModule";
-import { useEvmAddress } from "@buidlerlabs/hashgraph-react-wallets";
 import { COMPLIANCE_MODULE_ADDRESSES } from "@/services/contracts/addresses";
 import { Badge } from "@/components/ui/badge";
 import { cx } from "class-variance-authority";
 import { tryCatch } from "@/services/tryCatch";
-import { TransactionExtended } from "@/types/common";
+import { useAccount } from "wagmi";
 
 countries.registerLocale(englishLocale);
 
@@ -55,7 +54,7 @@ export function CountryComplianceModule({
    buildingId,
    buildingAddress,
 }: CountryComplianceModuleProps) {
-   const { data: evmAddress } = useEvmAddress();
+   const { address: evmAddress } = useAccount();
    const [filterText, setFilterText] = useState("");
    const [currentPage, setCurrentPage] = useState(1);
    const [pendingCountriesAction, setPendingCountriesAction] = useState<

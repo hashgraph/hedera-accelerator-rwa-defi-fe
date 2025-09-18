@@ -1,3 +1,5 @@
+import { Abi } from "viem";
+
 export const autoCompounderAbi = [
    {
       inputs: [
@@ -744,4 +746,4 @@ export const autoCompounderAbi = [
       stateMutability: "nonpayable",
       type: "function",
    },
-];
+] as const satisfies Abi;

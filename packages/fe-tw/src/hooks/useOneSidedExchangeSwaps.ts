@@ -8,22 +8,21 @@ import type {
    SwapTokenPriceRequestBody,
    SwapTokenSwapRequestBody,
 } from "@/types/erc3643/types";
-import { useReadContract, useWatchTransactionReceipt } from "@buidlerlabs/hashgraph-react-wallets";
-import { ContractId } from "@hashgraph/sdk";
 import { useState } from "react";
 import useWriteContract from "./useWriteContract";
+import { readContract } from "wagmi/actions";
+import { config } from "@/config";
+import { executeTransaction } from "./useExecuteTransaction";
 
 export const useOneSidedExchangeSwaps = () => {
    const { writeContract } = useWriteContract();
-   const { watch } = useWatchTransactionReceipt();
-   const { readContract } = useReadContract();
 
    const [isSwapTokensLoading, setSwapTokensLoading] = useState(false);
    const [isAddLiquidityLoading, setAddLiquidityLoading] = useState(false);
    const [isSetPriceForTokenLoading, setIsSetPriceForTokenLoading] = useState(false);
 
    const checkBalanceOfLiquidityToken = async (token: `0x${string}`): Promise<bigint> => {
-      const balance = await readContract({
+      const balance = await readContract(config, {
          address: token,
          abi: tokenAbi,
          functionName: "balanceOf",
@@ -38,12 +37,12 @@ export const useOneSidedExchangeSwaps = () => {
       tokenB: `0x${string}`,
       amount: bigint,
    ) => {
-      const [tokenAAmount, tokenBAmount] = (await readContract({
+      const [tokenAAmount, tokenBAmount] = await readContract(config, {
          address: ONE_SIDED_EXCHANGE_ADDRESS,
          abi: useOneSidedExchangeFactoryAbi,
          functionName: "estimateTokenReturns",
          args: [tokenA, tokenB, amount],
-      })) as bigint[];
+      });
 
       return [tokenAAmount, tokenBAmount];
    };
@@ -51,123 +50,65 @@ export const useOneSidedExchangeSwaps = () => {
    const handleSetTokenPrice = (body: SwapTokenPriceRequestBody) => {
       setIsSetPriceForTokenLoading(true);
 
-      return new Promise((res, rej) => {
+      const result = executeTransaction(() =>
          writeContract({
-            contractId: ContractId.fromEvmAddress(0, 0, ONE_SIDED_EXCHANGE_ADDRESS),
+            address: ONE_SIDED_EXCHANGE_ADDRESS,
             abi: useOneSidedExchangeFactoryAbi,
             functionName: body.isSell ? "setSellPrice" : "setBuyPrice",
             args: [body.token, body.amount, body.thresholdIntervalInSeconds],
-         }).then((tx) => {
-            watch(tx as string, {
-               onSuccess: (transaction) => {
-                  res(transaction);
-                  setIsSetPriceForTokenLoading(false);
+         }),
+      );
+      setIsSetPriceForTokenLoading(false);
 
-                  return transaction;
-               },
-               onError: (transaction, err) => {
-                  rej(err);
-                  setIsSetPriceForTokenLoading(false);
-
-                  return transaction;
-               },
-            });
-         });
-      });
+      return result;
    };
 
-   const handleAddTokenLiquidity = (body: SwapTokenAddLiquidityRequestBody) => {
+   const handleAddTokenLiquidity = async (body: SwapTokenAddLiquidityRequestBody) => {
       setAddLiquidityLoading(true);
 
-      return new Promise((res, rej) => {
+      const approveTx = await executeTransaction(() =>
          writeContract({
-            contractId: ContractId.fromEvmAddress(0, 0, body.tokenA),
+            address: body.tokenA,
             abi: tokenAbi,
             functionName: "approve",
             args: [ONE_SIDED_EXCHANGE_ADDRESS, body.amount],
-         })
-            .then((approveTx) => {
-               const liquidityTxResults = {
-                  approval: "",
-                  liquidity: "",
-               };
+         }),
+      );
 
-               watch(approveTx as string, {
-                  onSuccess: (transaction) => {
-                     liquidityTxResults.approval = transaction.transaction_id;
+      const addLiquidityForTokenTx = await executeTransaction(() =>
+         writeContract({
+            address: ONE_SIDED_EXCHANGE_ADDRESS,
+            abi: useOneSidedExchangeFactoryAbi,
+            functionName: "addLiquidityForToken",
+            args: [body.tokenA, body.amount],
+         }),
+      );
 
-                     writeContract({
-                        contractId: ContractId.fromEvmAddress(0, 0, ONE_SIDED_EXCHANGE_ADDRESS),
-                        abi: useOneSidedExchangeFactoryAbi,
-                        functionName: "addLiquidityForToken",
-                        args: [body.tokenA, body.amount],
-                     }).then((addLiquidityForTokenTx) => {
-                        watch(addLiquidityForTokenTx as string, {
-                           onSuccess: (transaction) => {
-                              liquidityTxResults.liquidity = transaction.transaction_id;
+      setAddLiquidityLoading(false);
 
-                              setAddLiquidityLoading(false);
-                              res(liquidityTxResults);
+      const liquidityTxResults = {
+         approval: approveTx.transactionHash,
+         liquidity: addLiquidityForTokenTx.transactionHash,
+      };
 
-                              return transaction;
-                           },
-                           onError: (transaction, err) => {
-                              rej(err);
-                              setAddLiquidityLoading(false);
-
-                              return transaction;
-                           },
-                        });
-                     });
-
-                     return transaction;
-                  },
-                  onError: (transaction, err) => {
-                     rej(err);
-                     setAddLiquidityLoading(false);
-
-                     return transaction;
-                  },
-               });
-            })
-            .catch((err) => {
-               rej(err);
-               setAddLiquidityLoading(false);
-            });
-      });
+      return liquidityTxResults;
    };
 
    const handleSwapTokens = async (body: SwapTokenSwapRequestBody): Promise<string> => {
       setSwapTokensLoading(true);
 
-      return new Promise((res, rej) => {
+      const result = await executeTransaction(() =>
          writeContract({
-            contractId: ContractId.fromEvmAddress(0, 0, ONE_SIDED_EXCHANGE_ADDRESS),
+            address: ONE_SIDED_EXCHANGE_ADDRESS,
             abi: useOneSidedExchangeFactoryAbi,
             functionName: "swap",
             args: [body.tokenA, body.tokenB, body.amount],
-         })
-            .then((tx) => {
-               watch(tx as string, {
-                  onSuccess: (transaction) => {
-                     setSwapTokensLoading(false);
-                     res(transaction.transaction_id);
+         }),
+      );
 
-                     return transaction;
-                  },
-                  onError: (transaction, err) => {
-                     setSwapTokensLoading(false);
-                     rej(err);
+      setAddLiquidityLoading(false);
 
-                     return transaction;
-                  },
-               });
-            })
-            .catch((err) => {
-               rej(err);
-               setAddLiquidityLoading(false);
-            });
-      });
+      return result.transactionHash;
    };
 
    return {

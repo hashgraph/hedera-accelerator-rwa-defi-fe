@@ -35,17 +35,12 @@ import {
    DrawerTitle,
 } from "@/components/ui/drawer";
 import { Separator } from "@/components/ui/separator";
-import { useAccountId, useEvmAddress, useWallet } from "@buidlerlabs/hashgraph-react-wallets";
-import {
-   HashpackConnector,
-   MetamaskConnector,
-} from "@buidlerlabs/hashgraph-react-wallets/connectors";
-import { toast } from "sonner";
-import { shortEvmAddress } from "@/services/util";
 import { useWalkthrough, WalkthroughPromptCard, WalkthroughStep } from "../Walkthrough";
-import { step } from "viem/chains";
+import { useAccount } from "wagmi";
 
 export function Navbar() {
+   const { address, isConnected } = useAccount();
+
    const { currentGuide, PromptCardProps } = useWalkthrough([
       { guideId: "ADMIN_BUILDING_GUIDE", priority: 2 },
       { guideId: "USER_INVESTING_GUIDE", priority: 3 },
@@ -54,23 +49,23 @@ export function Navbar() {
    const { isSidebarTriggerVisible } = useSidebar();
    const [isOpen, setIsOpen] = React.useState(false);
 
-   const { isConnected: isConnectedHashpack, disconnect: disconnectHashpack } =
-      useWallet(HashpackConnector) || {};
+   // const { isConnected: isConnectedHashpack, disconnect: disconnectHashpack } =
+   //    useWallet(HashpackConnector) || {};
 
-   const { isConnected: isConnectedMetamask, disconnect: disconnectMetamask } =
-      useWallet(MetamaskConnector) || {};
+   // const { isConnected: isConnectedMetamask, disconnect: disconnectMetamask } =
+   //    useWallet(MetamaskConnector) || {};
 
-   const { data: accountId } = useAccountId();
-   const { data: evmAddress } = useEvmAddress();
+   // const { data: accountId } = useAccountId();
+   // const { data: evmAddress } = useEvmAddress();
 
-   const handleDisconnectHashpack = async () => {
-      await disconnectHashpack();
-      setTimeout(() => {
-         window.localStorage.removeItem("wagmi.store");
-      }, 100);
-      // Remove session info from local storage, because in the attempt of reconnect WalletConnect will throw an error
-      // Related issue: https://github.com/WalletConnect/walletconnect-monorepo/issues/315
-   };
+   // const handleDisconnectHashpack = async () => {
+   //    await disconnectHashpack();
+   //    setTimeout(() => {
+   //       window.localStorage.removeItem("wagmi.store");
+   //    }, 100);
+   //    // Remove session info from local storage, because in the attempt of reconnect WalletConnect will throw an error
+   //    // Related issue: https://github.com/WalletConnect/walletconnect-monorepo/issues/315
+   // };
 
    return (
       <>
@@ -282,7 +277,7 @@ export function Navbar() {
                         </NavigationMenuLink>
                      </NavigationMenuItem>
 
-                     {isConnectedHashpack || isConnectedMetamask ? (
+                     {/* {isConnectedHashpack || isConnectedMetamask ? (
                         <NavigationMenuItem>
                            <NavigationMenuTrigger className={navigationMenuTriggerStyle()}>
                               <UserCircle />
@@ -327,8 +322,10 @@ export function Navbar() {
                            </NavigationMenuContent>
                         </NavigationMenuItem>
                      ) : (
-                        <WalletConnectModalRW />
-                     )}
+                        <appkit-button balance="false" />
+                        // <WalletConnectModalRW />
+                     )} */}
+                     <appkit-button balance="false" />
                   </NavigationMenuList>
                </NavigationMenu>
             </div>

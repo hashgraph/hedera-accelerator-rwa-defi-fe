@@ -1,3 +1,5 @@
+import { Abi } from "viem";
+
 export const useOneSidedExchangeFactoryAbi = [
    {
       inputs: [],
@@ -406,4 +408,4 @@ export const useOneSidedExchangeFactoryAbi = [
       stateMutability: "nonpayable",
       type: "function",
    },
-];
+] as const satisfies Abi;

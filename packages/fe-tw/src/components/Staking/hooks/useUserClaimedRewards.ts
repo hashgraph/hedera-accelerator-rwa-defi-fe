@@ -1,4 +1,3 @@
-import { useEvmAddress } from "@buidlerlabs/hashgraph-react-wallets";
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import { basicVaultAbi } from "@/services/contracts/abi/basicVaultAbi";
@@ -6,10 +5,11 @@ import { reduce } from "lodash";
 import { watchContractEvent } from "@/services/contracts/watchContractEvent";
 import { getTokenDecimals, getTokenName, getTokenSymbol } from "@/services/erc20Service";
 import { UserClaimedReward } from "../types";
+import { useAccount } from "wagmi";
 
 export const useUserClaimedRewards = (vaultAddress: string | undefined) => {
    const [claimedRewards, setClaimedRewards] = useState<UserClaimedReward[]>([]);
-   const { data: evmAddress } = useEvmAddress();
+   const { address: evmAddress } = useAccount();
 
    useEffect(() => {
       const unsubscribe = watchContractEvent({

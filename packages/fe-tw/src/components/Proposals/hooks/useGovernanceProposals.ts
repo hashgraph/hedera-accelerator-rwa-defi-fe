@@ -7,26 +7,23 @@ import {
    ProposalType,
    ProposalVotes,
 } from "@/types/props";
-import { useWatchTransactionReceipt, useEvmAddress } from "@buidlerlabs/hashgraph-react-wallets";
 import { formatUnits } from "viem";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { readContract } from "@/services/contracts/readContract";
 import { watchContractEvent } from "@/services/contracts/watchContractEvent";
-import { ContractId, TransactionReceipt } from "@hashgraph/sdk";
 import { useState, useEffect, useMemo } from "react";
-import { tryCatch } from "@/services/tryCatch";
 import { tokenVotesAbi } from "@/services/contracts/abi/tokenVotesAbi";
-import { useExecuteTransaction } from "@/hooks/useExecuteTransaction";
+import { executeTransaction } from "@/hooks/useExecuteTransaction";
 import useWriteContract from "@/hooks/useWriteContract";
 import { TransactionExtended } from "@/types/common";
+import { useAccount } from "wagmi";
 
 export const useGovernanceProposals = (
    buildingGovernanceAddress?: `0x${string}`,
    buildingToken?: `0x${string}`,
 ) => {
    const { writeContract } = useWriteContract();
-   const { executeTransaction } = useExecuteTransaction();
-   const { data: evmAddress } = useEvmAddress();
+   const { address: evmAddress } = useAccount();
    const queryClient = useQueryClient();
    const [governanceCreatedProposals, setGovernanceCreatedProposals] = useState<Proposal[]>([]);
    const [governanceDefinedProposals, setGovernanceDefinedProposals] = useState<any[]>([]);
@@ -66,7 +63,7 @@ export const useGovernanceProposals = (
             functionName,
             args: [proposalId],
             abi: buildingGovernanceAbi,
-            contractId: ContractId.fromEvmAddress(0, 0, buildingGovernanceAddress),
+            address: buildingGovernanceAddress,
          }),
       );
 
@@ -85,7 +82,7 @@ export const useGovernanceProposals = (
             functionName: "createPaymentProposal",
             args: [proposalPayload.amount, proposalPayload.to, proposalPayload.description],
             abi: buildingGovernanceAbi,
-            contractId: ContractId.fromEvmAddress(0, 0, buildingGovernanceAddress),
+            address: buildingGovernanceAddress,
          }),
       );
 
@@ -104,7 +101,7 @@ export const useGovernanceProposals = (
             functionName: "createTextProposal",
             args: [0, proposalPayload.description],
             abi: buildingGovernanceAbi,
-            contractId: ContractId.fromEvmAddress(0, 0, buildingGovernanceAddress),
+            address: buildingGovernanceAddress,
          }),
       );
 
@@ -123,7 +120,7 @@ export const useGovernanceProposals = (
             functionName: "createChangeReserveProposal",
             args: [proposalPayload.amount, proposalPayload.description],
             abi: buildingGovernanceAbi,
-            contractId: ContractId.fromEvmAddress(0, 0, buildingGovernanceAddress),
+            address: buildingGovernanceAddress,
          }),
       );
 
@@ -141,7 +138,7 @@ export const useGovernanceProposals = (
          writeContract({
             functionName: "createAddAuditorProposal",
             abi: buildingGovernanceAbi,
-            contractId: ContractId.fromEvmAddress(0, 0, buildingGovernanceAddress),
+            address: buildingGovernanceAddress,
             args: [proposalPayload.auditorWalletAddress, proposalPayload.description],
          }),
       );
@@ -161,7 +158,7 @@ export const useGovernanceProposals = (
             functionName: "createRemoveAuditorProposal",
             args: [proposalPayload.auditorWalletAddress, proposalPayload.description],
             abi: buildingGovernanceAbi,
-            contractId: ContractId.fromEvmAddress(0, 0, buildingGovernanceAddress),
+            address: buildingGovernanceAddress,
          }),
       );
 
@@ -203,20 +200,16 @@ export const useGovernanceProposals = (
          throw new Error("Missing building token or user address");
       }
 
-      const { data: delegateTx, error: delegateTxError } = await tryCatch(
+      const tx = await executeTransaction(() =>
          writeContract({
-            contractId: ContractId.fromEvmAddress(0, 0, buildingToken as string),
+            address: buildingToken as `0x${string}`,
             abi: tokenVotesAbi,
             functionName: "delegate",
             args: [evmAddress],
          }),
       );
 
-      if (delegateTx) {
-         return { data: delegateTx };
-      } else {
-         return { error: delegateTxError };
-      }
+      return { data: tx };
    };
 
    const voteProposal = async (proposalId: number, choice: 1 | 0): Promise<string | undefined> => {
@@ -228,11 +221,11 @@ export const useGovernanceProposals = (
             functionName: "castVote",
             args: [proposalId, choice],
             abi: buildingGovernanceAbi,
-            contractId: ContractId.fromEvmAddress(0, 0, buildingGovernanceAddress),
+            address: buildingGovernanceAddress,
          }),
       );
 
-      return tx?.transaction_id;
+      return tx?.transactionHash;
    };
 
    const watchDelegateChanges = () => {

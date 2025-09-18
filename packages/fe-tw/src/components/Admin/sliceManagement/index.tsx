@@ -33,7 +33,7 @@ import {
    validationSchema,
 } from "@/components/Admin/sliceManagement/constants";
 import { TxResultToastView } from "@/components/CommonViews/TxResultView";
-import { useEvmAddress } from "@buidlerlabs/hashgraph-react-wallets";
+import { useAccount } from "wagmi";
 import { useBuildings } from "@/hooks/useBuildings";
 import { getTokenBalanceOf } from "@/services/erc20Service";
 import { StepsStatus } from "../buildingManagement/types";
@@ -78,7 +78,7 @@ export const SliceManagement = () => {
       ipfsHashUploadingInProgress,
       addAllocationsToSliceMutation,
    } = useCreateSlice();
-   const { data: evmAddress } = useEvmAddress();
+   const { address: evmAddress } = useAccount();
 
    useEffect(() => {
       setAssetOptionsAsync();

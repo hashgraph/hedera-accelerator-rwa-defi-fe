@@ -9,33 +9,22 @@ import { fetchJsonFromIpfs } from "@/services/ipfsService";
 import { watchContractEvent } from "@/services/contracts/watchContractEvent";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import useWriteContract from "@/hooks/useWriteContract";
-import { useExecuteTransaction } from "./useExecuteTransaction";
+import { executeTransaction } from "./useExecuteTransaction";
 import { auditRegistryAbi } from "@/services/contracts/abi/auditRegistryAbi";
-import { ContractId } from "@hashgraph/sdk";
 import { useEffect, useState } from "react";
-import { useEvmAddress, useReadContract, useWallet } from "@buidlerlabs/hashgraph-react-wallets";
 import { useBuildingInfo } from "./useBuildingInfo";
-import { readContract as readContractAction } from "@buidlerlabs/hashgraph-react-wallets/actions";
 import { prepareStorageIPFSfileURL } from "@/utils/helpers";
 import { ethers } from "ethers";
 import { map } from "lodash";
 import { AuditFormValues } from "@/components/Audit/auditManagement/helpers";
-
-type AuditRecordDetails = {
-   building: `0x${string}`;
-   auditor: `0x${string}`;
-   timestamp: number;
-   revoked: boolean;
-   ipfsHash: string;
-};
+import { config } from "@/config";
+import { useAccount } from "wagmi";
+import { readContract } from "wagmi/actions";
 
 export function useBuildingAudit(buildingAddress: `0x${string}`) {
-   const wallet = useWallet();
-   const { executeTransaction } = useExecuteTransaction();
    const { writeContract } = useWriteContract();
-   const { readContract } = useReadContract();
    const [revokedRecords, setRevokedRecords] = useState<any[]>([]);
-   const { data: evmAddress } = useEvmAddress();
+   const { address: evmAddress } = useAccount();
    const { auditRegistryAddress, isLoading } = useBuildingInfo(buildingAddress);
 
    const getNonRevokedRecord = (recordsData: bigint[]) => {
@@ -75,7 +64,7 @@ export function useBuildingAudit(buildingAddress: `0x${string}`) {
          if (!buildingAddress || !auditRegistryAddress) {
          }
 
-         const result = (await readContract({
+         const result = (await readContract(config, {
             address: auditRegistryAddress!,
             abi: auditRegistryAbi,
             functionName: "getAuditRecordsByBuilding",
@@ -84,15 +73,12 @@ export function useBuildingAudit(buildingAddress: `0x${string}`) {
 
          const recordDetails = await Promise.all(
             map(result, async (recordId: bigint) => {
-               const details = (await readContractAction({
-                  wallet,
-                  parameters: {
-                     address: auditRegistryAddress!,
-                     abi: auditRegistryAbi,
-                     functionName: "getAuditRecordDetails",
-                     args: [recordId],
-                  },
-               })) as AuditRecordDetails;
+               const details = await readContract(config, {
+                  address: auditRegistryAddress!,
+                  abi: auditRegistryAbi,
+                  functionName: "getAuditRecordDetails",
+                  args: [recordId],
+               });
 
                let ipfsInfo = (await fetchJsonFromIpfs(details.ipfsHash)) as AuditFormValues;
 
@@ -118,27 +104,27 @@ export function useBuildingAudit(buildingAddress: `0x${string}`) {
    } | null>({
       queryKey: ["userRole", `userRole_${buildingAddress}`],
       queryFn: async () => {
-         const adminRole = await readContract({
+         const adminRole = await readContract(config, {
             address: auditRegistryAddress,
             abi: auditRegistryAbi,
             functionName: "DEFAULT_ADMIN_ROLE",
          });
-         const auditorRole = await readContract({
+         const auditorRole = await readContract(config, {
             address: auditRegistryAddress,
             abi: auditRegistryAbi,
             functionName: "AUDITOR_ROLE",
          });
-         const isAuditorRole = (await readContract({
+         const isAuditorRole = (await readContract(config, {
             address: auditRegistryAddress,
             abi: auditRegistryAbi,
             functionName: "hasRole",
-            args: [auditorRole, evmAddress],
+            args: [auditorRole, evmAddress!],
          })) as boolean;
-         const isAdminRole = (await readContract({
+         const isAdminRole = (await readContract(config, {
             address: auditRegistryAddress,
             abi: auditRegistryAbi,
             functionName: "hasRole",
-            args: [adminRole, evmAddress],
+            args: [adminRole, evmAddress!],
          })) as boolean;
 
          return { isAdminRole, isAuditorRole };
@@ -149,7 +135,7 @@ export function useBuildingAudit(buildingAddress: `0x${string}`) {
    const { data: auditors } = useQuery<`0x${string}`[] | null>({
       queryKey: ["auditors", buildingAddress, auditRegistryAddress],
       queryFn: async () => {
-         const auditorsList = await readContract({
+         const auditorsList = await readContract(config, {
             address: auditRegistryAddress,
             abi: auditRegistryAbi,
             functionName: "getAuditors",
@@ -191,7 +177,7 @@ export function useBuildingAudit(buildingAddress: `0x${string}`) {
       mutationFn: async (auditIPFSHash: string) => {
          const addAuditRecordResult = await executeTransaction(() =>
             writeContract({
-               contractId: ContractId.fromEvmAddress(0, 0, auditRegistryAddress),
+               address: auditRegistryAddress,
                abi: auditRegistryAbi,
                functionName: "addAuditRecord",
                args: [buildingAddress, auditIPFSHash],
@@ -212,7 +198,7 @@ export function useBuildingAudit(buildingAddress: `0x${string}`) {
       }) => {
          const updateAuditRecordResult = await executeTransaction(() =>
             writeContract({
-               contractId: ContractId.fromEvmAddress(0, 0, auditRegistryAddress),
+               address: auditRegistryAddress,
                abi: auditRegistryAbi,
                functionName: "updateAuditRecord",
                args: [auditRecordId, newAuditIPFSHash],
@@ -227,7 +213,7 @@ export function useBuildingAudit(buildingAddress: `0x${string}`) {
       mutationFn: async ({ auditRecordId }: { auditRecordId: bigint }) => {
          const revokeAuditRecordResult = await executeTransaction(() =>
             writeContract({
-               contractId: ContractId.fromEvmAddress(0, 0, auditRegistryAddress),
+               address: auditRegistryAddress,
                abi: auditRegistryAbi,
                functionName: "revokeAuditRecord",
                args: [auditRecordId],

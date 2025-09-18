@@ -22,9 +22,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { WalkthroughStep } from "@/components/Walkthrough";
 import { useWalkthroughStore } from "@/components/Walkthrough/WalkthroughStore";
 import { useBuildingInfo } from "@/hooks/useBuildingInfo";
-import { useBuildingOwner } from "@/hooks/useBuildingOwner";
 import { useTokenInfo } from "@/hooks/useTokenInfo";
-import { useEvmAddress } from "@buidlerlabs/hashgraph-react-wallets";
 import {
    Blocks,
    BookOpenCheck,
@@ -46,6 +44,7 @@ import {
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { MouseEvent, useEffect, useState } from "react";
+import { useAccount } from "wagmi";
 
 const UNPROTECTED_BUILDING_NAV_ITEMS = [
    { title: "Overview", href: "", icon: Building2 },
@@ -78,7 +77,7 @@ export function BuildingSidebar() {
    const { id } = useParams();
    const pathname = usePathname();
    const { identityData, isLoading: isIdentityLoading } = useIdentity(id as string);
-   const { data: evmAddress } = useEvmAddress();
+   const { address: evmAddress } = useAccount();
    const {
       tokenAddress,
       buildingOwnerAddress,

@@ -1,3 +1,5 @@
+import { Abi } from "viem";
+
 export const basicVaultAbi = [
    {
       inputs: [
@@ -1565,4 +1567,4 @@ export const basicVaultAbi = [
       stateMutability: "nonpayable",
       type: "function",
    },
-];
+] as const satisfies Abi;

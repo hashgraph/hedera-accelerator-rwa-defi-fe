@@ -1,3 +1,5 @@
+import type { Abi } from "viem";
+
 export const modularComplianceAbi = [
    {
       inputs: [],
@@ -377,4 +379,4 @@ export const modularComplianceAbi = [
       stateMutability: "nonpayable",
       type: "function",
    },
-];
+] as const satisfies Abi;

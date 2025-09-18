@@ -1,6 +1,5 @@
+"use client";
 import { useUploadImageToIpfs } from "@/hooks/useUploadImageToIpfs";
-import { useExecuteTransaction } from "@/hooks/useExecuteTransaction";
-import { useEvmAddress } from "@buidlerlabs/hashgraph-react-wallets";
 import { useState } from "react";
 import {
    BuildingFormProps,
@@ -12,17 +11,15 @@ import { BUILDING_FACTORY_ADDRESS, USDC_ADDRESS } from "@/services/contracts/add
 import { buildingFactoryAbi } from "@/services/contracts/abi/buildingFactoryAbi";
 import { tryCatch } from "@/services/tryCatch";
 import { uploadBuildingInfoToPinata } from "@/components/Admin/buildingManagement/helpers";
-import { ContractId } from "@hashgraph/sdk";
 import { getNewBuildingAddress, processError } from "./helpers";
-import useWriteContract from "@/hooks/useWriteContract";
 import { ethers } from "ethers";
 import { useTokenInfo } from "@/hooks/useTokenInfo";
+import { useWriteContract } from "wagmi";
+import { executeTransaction } from "@/hooks/useExecuteTransaction";
 
 export const useBuildingOrchestration = () => {
    const { uploadImage } = useUploadImageToIpfs();
-   const { executeTransaction } = useExecuteTransaction();
-   const { writeContract } = useWriteContract();
-   const { data: evmAddress } = useEvmAddress();
+   const { writeContractAsync: writeContract } = useWriteContract();
    const { decimals: usdcDecimals } = useTokenInfo(USDC_ADDRESS);
 
    const [currentDeploymentStep, setCurrentDeploymentStep] = useState<
@@ -81,7 +78,7 @@ export const useBuildingOrchestration = () => {
 
       setCurrentDeploymentStep([MajorBuildingStep.BUILDING, BuildingMinorStep.DEPLOY_BUILDING]);
       const { data: building, error: buildingDeploymentError } = await tryCatch<
-         string,
+         `0x${string}`,
          { args: string[] }
       >(deployBuilding(buildingDetails));
       if (buildingDeploymentError) return processError(buildingDeploymentError);
@@ -95,22 +92,23 @@ export const useBuildingOrchestration = () => {
       return building;
    };
 
-   const deployBuilding = async (buildingDetails: {}) => {
-      await executeTransaction(() =>
+   const deployBuilding = async (buildingDetails: any) => {
+      const hash = await executeTransaction(() =>
          writeContract({
-            contractId: ContractId.fromEvmAddress(0, 0, BUILDING_FACTORY_ADDRESS),
+            address: BUILDING_FACTORY_ADDRESS,
             abi: buildingFactoryAbi,
             functionName: "newBuilding",
             args: [buildingDetails],
          }),
       );
+
       return getNewBuildingAddress();
    };
 
-   const configNewBuilding = async (buildingAddress: string) => {
-      await executeTransaction(() =>
+   const configNewBuilding = async (buildingAddress: `0x${string}`) => {
+      const hash = await executeTransaction(() =>
          writeContract({
-            contractId: ContractId.fromEvmAddress(0, 0, BUILDING_FACTORY_ADDRESS),
+            address: BUILDING_FACTORY_ADDRESS,
             abi: buildingFactoryAbi,
             functionName: "configNewBuilding",
             args: [buildingAddress],

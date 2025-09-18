@@ -1,18 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useEvmAddress } from "@buidlerlabs/hashgraph-react-wallets";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import useWriteContract from "@/hooks/useWriteContract";
-import { useExecuteTransaction } from "@/hooks/useExecuteTransaction";
-import { useReadContract } from "@buidlerlabs/hashgraph-react-wallets";
+import { executeTransaction } from "@/hooks/useExecuteTransaction";
 import { buildingFactoryAbi } from "@/services/contracts/abi/buildingFactoryAbi";
 import { BUILDING_FACTORY_ADDRESS } from "@/services/contracts/addresses";
-import { ContractId } from "@hashgraph/sdk";
 import { ethers } from "ethers";
 import { watchContractEvent } from "@/services/contracts/watchContractEvent";
 import { find, isEmpty, toLower } from "lodash";
 import { TransactionExtended } from "@/types/common";
+import { useAccount } from "wagmi";
+import { config } from "@/config";
+import { readContract } from "wagmi/actions";
+import useWriteContract from "@/hooks/useWriteContract";
 
 export interface IdentityData {
    isDeployed: boolean;
@@ -22,10 +22,8 @@ export interface IdentityData {
 }
 
 export const useIdentity = (buildingAddress?: string) => {
-   const { data: evmAddress } = useEvmAddress();
+   const { address: evmAddress } = useAccount();
    const { writeContract } = useWriteContract();
-   const { executeTransaction } = useExecuteTransaction();
-   const { readContract } = useReadContract();
    const queryClient = useQueryClient();
    const [isIdentityRegistered, setIsIdentityRegistered] = useState<boolean>(false);
 
@@ -56,11 +54,11 @@ export const useIdentity = (buildingAddress?: string) => {
    } = useQuery({
       queryKey: ["identity", evmAddress],
       queryFn: async () => {
-         const data = await readContract({
+         const data = await readContract(config, {
             address: BUILDING_FACTORY_ADDRESS,
             abi: buildingFactoryAbi,
             functionName: "getIdentity",
-            args: [evmAddress],
+            args: [evmAddress!],
          });
 
          return data !== ethers.ZeroAddress;
@@ -77,14 +75,14 @@ export const useIdentity = (buildingAddress?: string) => {
 
    const deployIdentityMutation = useMutation({
       mutationFn: async (walletAddress: string) => {
-         const tx = (await executeTransaction(() =>
+         const tx = await executeTransaction(() =>
             writeContract({
-               contractId: ContractId.fromEvmAddress(0, 0, BUILDING_FACTORY_ADDRESS),
+               address: BUILDING_FACTORY_ADDRESS,
                abi: buildingFactoryAbi,
                functionName: "deployIdentityForWallet",
                args: [walletAddress],
             }),
-         )) as TransactionExtended;
+         );
 
          return tx;
       },
@@ -101,14 +99,14 @@ export const useIdentity = (buildingAddress?: string) => {
          buildingAddress: string;
          country: number;
       }) => {
-         const tx = (await executeTransaction(() =>
+         const tx = await executeTransaction(() =>
             writeContract({
-               contractId: ContractId.fromEvmAddress(0, 0, BUILDING_FACTORY_ADDRESS),
+               address: BUILDING_FACTORY_ADDRESS,
                abi: buildingFactoryAbi,
                functionName: "registerIdentity",
                args: [buildingAddress, evmAddress, country],
             }),
-         )) as TransactionExtended;
+         );
 
          return tx;
       },

@@ -1,4 +1,3 @@
-import { useEvmAddress, useReadContract } from "@buidlerlabs/hashgraph-react-wallets";
 import { useQuery } from "@tanstack/react-query";
 import { ethers } from "ethers";
 import { basicVaultAbi } from "@/services/contracts/abi/basicVaultAbi";
@@ -6,14 +5,16 @@ import { useTokenInfo } from "@/hooks/useTokenInfo";
 import { useEffect } from "react";
 import { watchContractEvent } from "@/services/contracts/watchContractEvent";
 import { autoCompounderAbi } from "@/services/contracts/abi/autoCompounderAbi";
+import { useAccount } from "wagmi";
+import { config } from "@/config";
+import { readContract } from "wagmi/actions";
 
 export const useUserRewards = (
    vaultAddress: string | undefined,
    rewardTokenAddress: string | undefined,
    autoCompounderAddress: string | undefined,
 ) => {
-   const { readContract } = useReadContract();
-   const { data: evmAddress } = useEvmAddress();
+   const { address: evmAddress } = useAccount();
    const { decimals: rewardsDecimals } = useTokenInfo(rewardTokenAddress as `0x${string}`);
 
    const autoCompounderQuery = useQuery({
@@ -24,14 +25,14 @@ export const useUserRewards = (
          vaultAddress,
       ],
       queryFn: async () => {
-         const rewards = await readContract({
+         const rewards = await readContract(config, {
             address: autoCompounderAddress as `0x${string}`,
             abi: autoCompounderAbi,
             functionName: "getPendingReward",
-            args: [evmAddress],
+            args: [evmAddress!],
          });
 
-         return Number(ethers.formatUnits(BigInt(rewards as string), 6));
+         return Number(ethers.formatUnits(BigInt(rewards), 6));
       },
       enabled:
          Boolean(vaultAddress) &&
@@ -45,12 +46,12 @@ export const useUserRewards = (
       queryFn: async () => {
          if (!vaultAddress || !rewardTokenAddress || !evmAddress || !rewardsDecimals) return 0;
 
-         const rewards = (await readContract({
+         const rewards = await readContract(config, {
             address: vaultAddress as `0x${string}`,
             abi: basicVaultAbi,
             functionName: "getAllRewards",
             args: [evmAddress],
-         })) as string[];
+         });
 
          return Number(ethers.formatUnits(BigInt(rewards[0]), 6));
       },

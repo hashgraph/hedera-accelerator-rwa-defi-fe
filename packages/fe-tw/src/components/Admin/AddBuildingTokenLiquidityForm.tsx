@@ -43,7 +43,7 @@ const validationSchema = Yup.object({
       .test("is-positive", "Amount must be greater than 0", (value) =>
          value ? parseFloat(value) > 0 : false,
       ),
-})
+});
 
 export function AddBuildingTokenLiquidityForm({ buildingAddress }: Props) {
    const { confirmUserFinishedGuide } = useWalkthrough();
@@ -61,7 +61,9 @@ export function AddBuildingTokenLiquidityForm({ buildingAddress }: Props) {
    } = useBuildingLiquidity();
 
    const { tokenAddress } = useBuildingInfo(buildingAddress);
-   const { name: tokenName } = useTokenInfo(tokenAddress);
+   const { name: tokenName, ...rest } = useTokenInfo(tokenAddress);
+
+   console.log("rest :>> ", rest);
 
    useEffect(() => {
       if (txHash) {
@@ -92,9 +94,9 @@ export function AddBuildingTokenLiquidityForm({ buildingAddress }: Props) {
    }, [pairCheckError]);
 
    const autoCheckPair = (values: {
-      tokenAAddress: string;
-      buildingAddress?: string;
-      tokenBAddress: string;
+      tokenAAddress: `0x${string}`;
+      buildingAddress?: `0x${string}`;
+      tokenBAddress: `0x${string}`;
       tokenAAmount: string;
       tokenBAmount: string;
    }) => {
@@ -232,7 +234,10 @@ export function AddBuildingTokenLiquidityForm({ buildingAddress }: Props) {
                            placeholder="Choose a Token"
                            onValueChange={(value) => {
                               setFieldValue("tokenAAddress", value);
-                              autoCheckPair({ ...values, tokenAAddress: value });
+                              autoCheckPair({
+                                 ...values,
+                                 tokenAAddress: value as `0x${string}`,
+                              } as any);
                            }}
                            value={values.tokenAAddress}
                            error={
@@ -270,7 +275,10 @@ export function AddBuildingTokenLiquidityForm({ buildingAddress }: Props) {
                                  {...getFieldProps("tokenAAmount")}
                                  onChange={(e) => {
                                     setFieldValue("tokenAAmount", e.target.value);
-                                    autoCheckPair({ ...values, tokenAAmount: e.target.value });
+                                    autoCheckPair({
+                                       ...values,
+                                       tokenAAmount: e.target.value,
+                                    } as any);
 
                                     if (!errors.tokenAAmount) {
                                        confirmUserPassedStep();
@@ -314,7 +322,10 @@ export function AddBuildingTokenLiquidityForm({ buildingAddress }: Props) {
                                  {...getFieldProps("tokenBAmount")}
                                  onChange={(e) => {
                                     setFieldValue("tokenBAmount", e.target.value);
-                                    autoCheckPair({ ...values, tokenBAmount: e.target.value });
+                                    autoCheckPair({
+                                       ...values,
+                                       tokenBAmount: e.target.value,
+                                    } as any);
 
                                     if (!errors.tokenBAmount) {
                                        confirmUserPassedStep();

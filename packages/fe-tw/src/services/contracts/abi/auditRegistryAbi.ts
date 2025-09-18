@@ -1,3 +1,5 @@
+import { Abi } from "viem";
+
 export const auditRegistryAbi = [
    {
       inputs: [
@@ -628,4 +630,4 @@ export const auditRegistryAbi = [
       stateMutability: "nonpayable",
       type: "function",
    },
-];
+] as const satisfies Abi;

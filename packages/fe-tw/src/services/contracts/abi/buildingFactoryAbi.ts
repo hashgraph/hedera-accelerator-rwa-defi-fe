@@ -1,3 +1,5 @@
+import { Abi } from "viem";
+
 export const buildingFactoryAbi = [
    {
       inputs: [],
@@ -741,4 +743,4 @@ export const buildingFactoryAbi = [
       stateMutability: "nonpayable",
       type: "function",
    },
-];
+] as const satisfies Abi;

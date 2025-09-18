@@ -78,7 +78,7 @@ export default function InfoCard({
                   href={`https://hashscan.io/testnet/transaction/${data.consensus_timestamp}`}
                   target="_blank"
                   rel="noopener noreferrer"
-               >
+               >sd
                   View transaction
                </a>
             </div>,
@@ -174,34 +174,35 @@ export default function InfoCard({
                               : "0.00"}
                         </p>
                      </div>
-                     {!isEmpty(autoCompounderRewards) && (
-                        <div className={cx("flex flex-wrap justify-end gap-1")}>
-                           <Button
-                              size="xs"
-                              variant="outline"
-                              className="bg-indigo-50 border-indigo-200 text-indigo-700"
-                              onClick={handleClaimAutoCompounderRewards}
-                              isLoading={isClaimingAutoCompounder}
-                              disabled={
-                                 isClaimingAutoCompounder || isClaimingAutoCompounderUserRewards
-                              }
-                           >
-                              Reinvest
-                           </Button>
-                           <Button
-                              size="xs"
-                              variant="outline"
-                              className="bg-indigo-50 border-indigo-200 text-indigo-700 "
-                              onClick={handleClaimAutoCompounderUserRewards}
-                              isLoading={isClaimingAutoCompounderUserRewards}
-                              disabled={
-                                 isClaimingAutoCompounderUserRewards || isClaimingAutoCompounder
-                              }
-                           >
-                              Claim
-                           </Button>
-                        </div>
-                     )}
+                     {autoCompounderRewards &&
+                        Number(autoCompounderRewards).toFixed(2) !== "0.00" && (
+                           <div className={cx("flex flex-wrap justify-end gap-1")}>
+                              <Button
+                                 size="xs"
+                                 variant="outline"
+                                 className="bg-indigo-50 border-indigo-200 text-indigo-700"
+                                 onClick={handleClaimAutoCompounderRewards}
+                                 isLoading={isClaimingAutoCompounder}
+                                 disabled={
+                                    isClaimingAutoCompounder || isClaimingAutoCompounderUserRewards
+                                 }
+                              >
+                                 Reinvest
+                              </Button>
+                              <Button
+                                 size="xs"
+                                 variant="outline"
+                                 className="bg-indigo-50 border-indigo-200 text-indigo-700 "
+                                 onClick={handleClaimAutoCompounderUserRewards}
+                                 isLoading={isClaimingAutoCompounderUserRewards}
+                                 disabled={
+                                    isClaimingAutoCompounderUserRewards || isClaimingAutoCompounder
+                                 }
+                              >
+                                 Claim
+                              </Button>
+                           </div>
+                        )}
                   </div>
                )}
             </div>

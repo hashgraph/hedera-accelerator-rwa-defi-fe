@@ -1,12 +1,9 @@
 "use client";
 
-import { toast } from "sonner";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useExecuteTransaction } from "./useExecuteTransaction";
-import { useWriteContract, useReadContract } from "@buidlerlabs/hashgraph-react-wallets";
+import { executeTransaction } from "./useExecuteTransaction";
 import { buildingTreasuryAbi } from "@/services/contracts/abi/buildingTreasuryAbi";
 import { watchContractEvent } from "@/services/contracts/watchContractEvent";
-import { ContractId } from "@hashgraph/sdk";
 import { useEffect, useState } from "react";
 import { buildingFactoryAbi } from "@/services/contracts/abi/buildingFactoryAbi";
 import { BUILDING_FACTORY_ADDRESS } from "@/services/contracts/addresses";
@@ -16,12 +13,13 @@ import { tokenAbi } from "@/services/contracts/abi/tokenAbi";
 import { ethers } from "ethers";
 import { StorageKeys, storageService } from "@/services/storageService";
 import { orderBy } from "lodash";
+import { readContract } from "wagmi/actions";
+import { config } from "@/config";
+import useWriteContract from "./useWriteContract";
 
 export function useBuildingTreasury(buildingAddress?: `0x${string}`) {
    const queryClient = useQueryClient();
-   const { executeTransaction } = useExecuteTransaction();
    const { writeContract } = useWriteContract();
-   const { readContract } = useReadContract();
    const [treasuryAddress, setTreasuryAddress] = useState<`0x${string}`>();
    const [expenses, setExpenses] = useState<ExpenseRecord[]>([]);
 
@@ -32,7 +30,7 @@ export function useBuildingTreasury(buildingAddress?: `0x${string}`) {
    } = useQuery({
       queryKey: ["treasuryData", treasuryAddress],
       queryFn: async () => {
-         const treasuryUsdcAddress = await readContract({
+         const treasuryUsdcAddress = await readContract(config, {
             address: treasuryAddress!,
             abi: buildingTreasuryAbi,
             functionName: "usdc",
@@ -41,13 +39,13 @@ export function useBuildingTreasury(buildingAddress?: `0x${string}`) {
          if (!treasuryUsdcAddress) return null;
 
          const [balance, decimals] = await Promise.all([
-            readContract({
+            readContract(config, {
                address: treasuryUsdcAddress as `0x${string}`,
                abi: tokenAbi,
                functionName: "balanceOf",
-               args: [treasuryAddress],
+               args: [treasuryAddress!],
             }),
-            readContract({
+            readContract(config, {
                address: treasuryUsdcAddress as `0x${string}`,
                abi: tokenAbi,
                functionName: "decimals",
@@ -55,7 +53,7 @@ export function useBuildingTreasury(buildingAddress?: `0x${string}`) {
          ]);
 
          return {
-            balance: Number(ethers.formatUnits(balance as bigint, decimals as bigint)),
+            balance: Number(ethers.formatUnits(balance as bigint, decimals)),
             usdcAddress: treasuryUsdcAddress,
             decimals,
          };
@@ -104,7 +102,7 @@ export function useBuildingTreasury(buildingAddress?: `0x${string}`) {
       mutationFn: async (payload: PaymentRequestPayload) => {
          const txAmount = ethers.parseUnits(
             parseFloat(payload.amount).toString(),
-            treasuryData?.decimals as string,
+            treasuryData?.decimals,
          );
 
          if (!treasuryAddress) {
@@ -116,7 +114,7 @@ export function useBuildingTreasury(buildingAddress?: `0x${string}`) {
                functionName: "makePayment",
                args: [payload.receiver, txAmount],
                abi: buildingTreasuryAbi,
-               contractId: ContractId.fromEvmAddress(0, 0, treasuryAddress!),
+               address: treasuryAddress,
             }),
          )) as { transaction_id: string };
 

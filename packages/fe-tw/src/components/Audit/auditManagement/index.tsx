@@ -2,12 +2,11 @@
 
 import { Form, Formik, FormikProps } from "formik";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 import { SelectItem } from "@/components/ui/select";
 import { FormSelect } from "@/components/ui/formSelect";
-import { useBuildings } from "@/hooks/useBuildings";
 import { pinata } from "@/utils/pinata";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -27,8 +26,8 @@ import { TransactionExtended } from "@/types/common";
 import { FormInput } from "@/components/ui/formInput";
 import { UploadFileButton } from "@/components/ui/upload-file-button";
 import { Separator } from "@/components/ui/separator";
-import { filter, find } from "lodash";
-import { useEvmAddress } from "@buidlerlabs/hashgraph-react-wallets";
+import { find } from "lodash";
+import { useAccount } from "wagmi";
 
 interface IProps {
    buildingAddress?: `0x${string}`;
@@ -37,7 +36,7 @@ interface IProps {
 
 export function AuditManagementForm({ buildingAddress, recordId }: IProps) {
    const isEdit = Boolean(buildingAddress) && Boolean(recordId);
-   const { data: evmAddress } = useEvmAddress();
+   const { address: evmAddress } = useAccount();
    const [selectedBuildingAddress, setSelectedBuildingAddress] = useState(buildingAddress ?? null);
    const [uploadingFile, setUploadingFile] = useState(false);
    const {
@@ -53,7 +52,7 @@ export function AuditManagementForm({ buildingAddress, recordId }: IProps) {
    } = useBuildingAudit(selectedBuildingAddress!);
 
    const auditRecordToEdit = find(auditRecords, { recordId });
-   const isUserAuditor = auditors?.includes(evmAddress);
+   const isUserAuditor = auditors?.includes(evmAddress!);
 
    const handleFileUpload = async (
       file: File,
@@ -283,13 +282,15 @@ export function AuditManagementForm({ buildingAddress, recordId }: IProps) {
                                                 setFieldValue("auditType", value)
                                              }
                                              value={values.auditType}
-                                             error={touched?.auditType && typeof errors.auditType === "string" ? errors.auditType : undefined}
+                                             error={
+                                                touched?.auditType &&
+                                                typeof errors.auditType === "string"
+                                                   ? errors.auditType
+                                                   : undefined
+                                             }
                                           >
                                              {auditTypeOptions.map((option) => (
-                                                <SelectItem
-                                                   key={option.value}
-                                                   value={option.value}
-                                                >
+                                                <SelectItem key={option.value} value={option.value}>
                                                    {option.label}
                                                 </SelectItem>
                                              ))}
@@ -355,13 +356,15 @@ export function AuditManagementForm({ buildingAddress, recordId }: IProps) {
                                                 setFieldValue("overallConditionRating", value)
                                              }
                                              value={values.overallConditionRating}
-                                             error={touched?.overallConditionRating && typeof errors.overallConditionRating === "string" ? errors.overallConditionRating : undefined}
+                                             error={
+                                                touched?.overallConditionRating &&
+                                                typeof errors.overallConditionRating === "string"
+                                                   ? errors.overallConditionRating
+                                                   : undefined
+                                             }
                                           >
                                              {conditionRatingOptions.map((option) => (
-                                                <SelectItem
-                                                   key={option.value}
-                                                   value={option.value}
-                                                >
+                                                <SelectItem key={option.value} value={option.value}>
                                                    {option.label}
                                                 </SelectItem>
                                              ))}
@@ -376,13 +379,15 @@ export function AuditManagementForm({ buildingAddress, recordId }: IProps) {
                                                 setFieldValue("immediateActionRequired", value)
                                              }
                                              value={values.immediateActionRequired}
-                                             error={touched?.immediateActionRequired && typeof errors.immediateActionRequired === "string" ? errors.immediateActionRequired : undefined}
+                                             error={
+                                                touched?.immediateActionRequired &&
+                                                typeof errors.immediateActionRequired === "string"
+                                                   ? errors.immediateActionRequired
+                                                   : undefined
+                                             }
                                           >
                                              {immediateActionOptions.map((option) => (
-                                                <SelectItem
-                                                   key={option.value}
-                                                   value={option.value}
-                                                >
+                                                <SelectItem key={option.value} value={option.value}>
                                                    {option.label}
                                                 </SelectItem>
                                              ))}

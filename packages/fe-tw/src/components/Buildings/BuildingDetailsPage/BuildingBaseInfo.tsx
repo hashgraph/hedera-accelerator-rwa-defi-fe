@@ -9,10 +9,9 @@ import { getBuildingStateSummary, useBuildingInfo } from "@/hooks/useBuildingInf
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { every, map, startCase } from "lodash";
 import { Button } from "@/components/ui/button";
-import { useWallet } from "@buidlerlabs/hashgraph-react-wallets";
-import { MetamaskConnector } from "@buidlerlabs/hashgraph-react-wallets/connectors";
 import { addTokenToMM } from "@/services/erc20Service";
 import { useTokenInfo } from "@/hooks/useTokenInfo";
+import { useAccount } from "wagmi";
 
 export const BuildingBaseInfo = ({
    id,
@@ -29,7 +28,7 @@ export const BuildingBaseInfo = ({
    } = useTokenInfo(buildingInfo.tokenAddress);
    const buildingState = getBuildingStateSummary(buildingInfo);
    const buildingComplete = every(buildingState, (value) => value);
-   const { isConnected: isMetamaskConnected } = useWallet(MetamaskConnector);
+   const { isConnected: isMetamaskConnected } = useAccount();
 
    const handleAddTokensToMM = async () => {
       if (isMetamaskConnected) {

@@ -6,14 +6,14 @@ import { ethers } from "ethers";
 import { useBuildingInfo } from "@/hooks/useBuildingInfo";
 import { useTokenInfo } from "@/hooks/useTokenInfo";
 import useWriteContract from "@/hooks/useWriteContract";
-import { useExecuteTransaction } from "@/hooks/useExecuteTransaction";
+import { executeTransaction } from "@/hooks/useExecuteTransaction";
 import { modularComplianceAbi } from "@/services/contracts/abi/modularComplianceAbi";
 import { COMPLIANCE_MODULE_ADDRESSES } from "@/services/contracts/addresses";
-import { ContractId } from "@hashgraph/sdk";
 import { countryAllowModuleAbi } from "@/services/contracts/abi/countryAllowModuleAbi";
 import countries from "i18n-iso-countries";
 import englishLocale from "i18n-iso-countries/langs/en.json";
-import { useReadContract } from "@buidlerlabs/hashgraph-react-wallets";
+import { readContract } from "wagmi/actions";
+import { config } from "@/config";
 
 countries.registerLocale(englishLocale);
 
@@ -26,13 +26,11 @@ export const useCountryModule = ({ buildingId, buildingAddress }: CountryModuleH
    const { writeContract } = useWriteContract();
    const { tokenAddress } = useBuildingInfo(buildingAddress);
    const { complianceAddress } = useTokenInfo(tokenAddress);
-   const { executeTransaction } = useExecuteTransaction();
-   const { readContract } = useReadContract();
 
    const { data: allowedCountries = [], refetch: refetchAllowedCountries } = useQuery({
       queryKey: ["allowedCountries", complianceAddress],
       queryFn: async () => {
-         const result = await readContract({
+         const result = await readContract(config, {
             address: COMPLIANCE_MODULE_ADDRESSES.COUNTRY_ALLOW_MODULE,
             abi: countryAllowModuleAbi,
             functionName: "getAllowedCountries",
@@ -52,7 +50,7 @@ export const useCountryModule = ({ buildingId, buildingAddress }: CountryModuleH
 
          const callModuleFunctionTx = await executeTransaction(() =>
             writeContract({
-               contractId: ContractId.fromEvmAddress(0, 0, complianceAddress!),
+               address: complianceAddress!,
                abi: modularComplianceAbi,
                functionName: "callModuleFunction",
                args: [callData, COMPLIANCE_MODULE_ADDRESSES.COUNTRY_ALLOW_MODULE],
@@ -73,7 +71,7 @@ export const useCountryModule = ({ buildingId, buildingAddress }: CountryModuleH
 
          const callModuleFunctionTx = await executeTransaction(() =>
             writeContract({
-               contractId: ContractId.fromEvmAddress(0, 0, complianceAddress!),
+               address: complianceAddress!,
                abi: modularComplianceAbi,
                functionName: "callModuleFunction",
                args: [callData, COMPLIANCE_MODULE_ADDRESSES.COUNTRY_ALLOW_MODULE],
