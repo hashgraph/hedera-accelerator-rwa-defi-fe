@@ -15,9 +15,7 @@ jest.mock("@/components/ui/tooltip", () => ({
 }));
 
 jest.mock("@/hooks/useBuildingAudit", () => ({ useBuildingAudit: jest.fn() }));
-jest.mock("@buidlerlabs/hashgraph-react-wallets", () => ({
-   useEvmAddress: jest.fn(() => ({ data: "0x123" })),
-}));
+// use wagmi global address injection from jest.setup.ts
 jest.mock("sonner", () => ({ toast: { success: jest.fn(), error: jest.fn() } }));
 jest.mock("@/components/CommonViews/TxResultView", () => ({
    TxResultToastView: ({ title }: { title: string }) => (
@@ -61,9 +59,11 @@ describe("AuditManagementForm", () => {
    const mockAdd = jest.fn();
    const mockUpdate = jest.fn();
    const mockRevoke = jest.fn();
+   const setAddress = (addr: string | null) => ((global as any).__TEST_WAGMI_ADDRESS__ = addr);
 
    beforeEach(() => {
       jest.clearAllMocks();
+      setAddress("0x123");
       global.fetch = jest.fn().mockResolvedValue({
          json: jest.fn().mockResolvedValue({ JWT: "test-jwt" }),
       });

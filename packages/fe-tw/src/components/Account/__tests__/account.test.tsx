@@ -24,10 +24,10 @@ jest.mock("next/navigation", () => ({
    useRouter: () => ({ back: mockRouterBack }),
 }));
 
-// EVM address mock
+// EVM address mock via wagmi
 let mockEvmAddress: string | null = null;
-jest.mock("@buidlerlabs/hashgraph-react-wallets", () => ({
-   useEvmAddress: () => ({ data: mockEvmAddress }),
+jest.mock("wagmi", () => ({
+   useAccount: () => ({ address: mockEvmAddress }),
 }));
 
 // useIdentity mock

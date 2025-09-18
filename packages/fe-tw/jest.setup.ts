@@ -1,6 +1,7 @@
 import "@testing-library/jest-dom";
 
 import { TextEncoder, TextDecoder } from "util";
+import type { Config } from "wagmi";
 
 // Polyfill for TextEncoder
 if (typeof global.TextEncoder === "undefined") {
@@ -32,4 +33,32 @@ Object.defineProperty(window, "matchMedia", {
       removeEventListener: jest.fn(),
       dispatchEvent: jest.fn(),
    })),
+});
+
+// Provide default mocks for wagmi to avoid requiring WagmiProvider in tests
+jest.mock("wagmi", () => {
+   // eslint-disable-next-line @typescript-eslint/no-var-requires
+   const actual = jest.requireActual("wagmi");
+   return {
+      ...actual,
+      useAccount: jest.fn(() => {
+         const addr = (global as any).__TEST_WAGMI_ADDRESS__ as string | undefined;
+         return { address: addr, isConnected: Boolean(addr) };
+      }),
+      WagmiProvider: actual.WagmiProvider,
+   } as typeof actual;
+});
+
+jest.mock("wagmi/actions", () => {
+   return {
+      readContract: jest.fn(async () => undefined),
+      writeContract: jest.fn(async (_config: Config, _params: any) => "0xdeadbeef"),
+      waitForTransactionReceipt: jest.fn(
+         async (_config: Config, { hash }: { hash: `0x${string}` }) => ({
+            transactionHash: hash ?? ("0xdeadbeef" as const),
+            status: "success",
+            logs: [],
+         }),
+      ),
+   };
 });

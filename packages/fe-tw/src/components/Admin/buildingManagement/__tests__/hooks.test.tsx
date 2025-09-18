@@ -5,7 +5,6 @@ import { INITIAL_VALUES } from "../constants";
 import * as helpers from "../helpers";
 import { useUploadImageToIpfs } from "@/hooks/useUploadImageToIpfs";
 import { useExecuteTransaction } from "@/hooks/useExecuteTransaction";
-import { ContractId } from "@hashgraph/sdk";
 import { BUILDING_FACTORY_ADDRESS } from "@/services/contracts/addresses";
 import { buildingFactoryAbi } from "@/services/contracts/abi/buildingFactoryAbi";
 import { tryCatch } from "@/services/tryCatch";
@@ -17,9 +16,11 @@ jest.mock("@/hooks/useUploadImageToIpfs");
 jest.mock("@/hooks/useExecuteTransaction");
 jest.mock("@/hooks/useWriteContract");
 jest.mock("@/hooks/useTokenInfo");
-jest.mock("@buidlerlabs/hashgraph-react-wallets", () => ({
-   __esModule: true,
-   useEvmAddress: jest.fn(() => ({ data: "0x_USER" })),
+jest.mock("wagmi", () => ({
+   useAccount: jest.fn(() => ({ address: "0x_USER" })),
+}));
+jest.mock("wagmi/actions", () => ({
+   readContract: jest.fn(),
 }));
 
 jest.mock("../helpers");
@@ -154,19 +155,25 @@ describe("useBuildingOrchestration", () => {
          vaultUnlockDuration: 60,
       } as const;
 
-      expect(mockWriteContract).toHaveBeenNthCalledWith(1, {
-         contractId: ContractId.fromEvmAddress(0, 0, BUILDING_FACTORY_ADDRESS),
-         abi: buildingFactoryAbi,
-         functionName: "newBuilding",
-         args: [expect.objectContaining(expectedBuildingDetails)],
-      });
+      expect(mockWriteContract).toHaveBeenNthCalledWith(
+         1,
+         expect.objectContaining({
+            address: BUILDING_FACTORY_ADDRESS,
+            abi: buildingFactoryAbi,
+            functionName: "newBuilding",
+            args: [expect.objectContaining(expectedBuildingDetails)],
+         }),
+      );
 
-      expect(mockWriteContract).toHaveBeenNthCalledWith(2, {
-         contractId: ContractId.fromEvmAddress(0, 0, BUILDING_FACTORY_ADDRESS),
-         abi: buildingFactoryAbi,
-         functionName: "configNewBuilding",
-         args: ["0x_MOCK_BUILDING_ADDRESS"],
-      });
+      expect(mockWriteContract).toHaveBeenNthCalledWith(
+         2,
+         expect.objectContaining({
+            address: BUILDING_FACTORY_ADDRESS,
+            abi: buildingFactoryAbi,
+            functionName: "configNewBuilding",
+            args: ["0x_MOCK_BUILDING_ADDRESS"],
+         }),
+      );
 
       expect(submissionResult).toEqual("0x_MOCK_BUILDING_ADDRESS");
    });

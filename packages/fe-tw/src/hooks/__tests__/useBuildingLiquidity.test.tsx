@@ -3,27 +3,16 @@ import React, { PropsWithChildren } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ethers } from "ethers";
 
-// Mocks
-let metamaskConnected = false;
-let hashpackConnected = false;
 const readContractMock = jest.fn();
-
-jest.mock("@buidlerlabs/hashgraph-react-wallets", () => ({
-   useWallet: (/* connector: any */) => ({ isConnected: connectorIsConnected() }),
-   useEvmAddress: () => ({ data: "0xabc0000000000000000000000000000000000000" as const }),
-   useReadContract: () => ({ readContract: readContractMock }),
+jest.mock("wagmi/actions", () => ({
+   readContract: (...args: any[]) => (readContractMock as any)(...args),
 }));
-
-jest.mock("@buidlerlabs/hashgraph-react-wallets/connectors", () => ({
-   MetamaskConnector: {} as any,
-   HashpackConnector: {} as any,
-}));
-
-const connectorIsConnected = () => metamaskConnected || hashpackConnected;
+const setAddress = (addr: string | null) => ((global as any).__TEST_WAGMI_ADDRESS__ = addr);
 
 const executeTransactionMock = jest.fn((fn: any) => fn());
 jest.mock("@/hooks/useExecuteTransaction", () => ({
    __esModule: true,
+   executeTransaction: (fn: any) => executeTransactionMock(fn),
    useExecuteTransaction: () => ({ executeTransaction: executeTransactionMock }),
 }));
 
@@ -77,14 +66,13 @@ describe("useBuildingLiquidity", () => {
 
    beforeEach(() => {
       jest.clearAllMocks();
-      metamaskConnected = false;
-      hashpackConnected = false;
+      setAddress(null);
    });
 
    describe("checkPairAndCalculateAmounts", () => {
       it("not exists and calculates desired amounts with 5% slippage", async () => {
          // Factory returns zero address => pair does not exist
-         readContractMock.mockImplementation(({ address, functionName }: any) => {
+         readContractMock.mockImplementation((_cfg: any, { address, functionName }: any) => {
             if (address === UNISWAP_FACTORY_ADDRESS && functionName === "getPair")
                return ethers.ZeroAddress;
             return undefined;
@@ -119,7 +107,7 @@ describe("useBuildingLiquidity", () => {
 
       it("exists and calculates proportional required amounts", async () => {
          const pairAddress = "0xpa1r000000000000000000000000000000000000";
-         readContractMock.mockImplementation(({ address, functionName }: any) => {
+         readContractMock.mockImplementation((_cfg: any, { address, functionName }: any) => {
             if (address === UNISWAP_FACTORY_ADDRESS && functionName === "getPair")
                return pairAddress;
             if (address === pairAddress && functionName === "getReserves")
@@ -152,7 +140,7 @@ describe("useBuildingLiquidity", () => {
    describe("addLiquidity", () => {
       it("errors when no wallet is connected", async () => {
          // Prepare pair data
-         readContractMock.mockImplementation(({ address, functionName }: any) => {
+         readContractMock.mockImplementation((_cfg: any, { address, functionName }: any) => {
             if (address === UNISWAP_FACTORY_ADDRESS && functionName === "getPair")
                return ethers.ZeroAddress;
             return undefined;
@@ -183,7 +171,7 @@ describe("useBuildingLiquidity", () => {
       });
 
       it("errors when pair info not checked", async () => {
-         metamaskConnected = true;
+         setAddress("0xabc0000000000000000000000000000000000000");
 
          const Wrapper = createWrapper();
          const { result } = renderHook(() => useBuildingLiquidity(), { wrapper: Wrapper });
@@ -203,9 +191,9 @@ describe("useBuildingLiquidity", () => {
       });
 
       it("errors on invalid building address", async () => {
-         metamaskConnected = true;
+         setAddress("0xabc0000000000000000000000000000000000000");
          // Prepare pair data (not used in validation directly, but ensures pairCheckResult exists)
-         readContractMock.mockImplementation(({ address, functionName }: any) => {
+         readContractMock.mockImplementation((_cfg: any, { address, functionName }: any) => {
             if (address === UNISWAP_FACTORY_ADDRESS && functionName === "getPair")
                return ethers.ZeroAddress;
             return undefined;
@@ -234,9 +222,9 @@ describe("useBuildingLiquidity", () => {
       });
 
       it("succeeds and sets txHash", async () => {
-         metamaskConnected = true;
+         setAddress("0xabc0000000000000000000000000000000000000");
          const pairAddress = "0xpa1r000000000000000000000000000000000000";
-         readContractMock.mockImplementation(({ address, functionName }: any) => {
+         readContractMock.mockImplementation((_cfg: any, { address, functionName }: any) => {
             if (address === UNISWAP_FACTORY_ADDRESS && functionName === "getPair")
                return pairAddress;
             if (address === pairAddress && functionName === "getReserves")

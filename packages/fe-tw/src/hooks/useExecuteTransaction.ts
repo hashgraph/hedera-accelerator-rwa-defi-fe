@@ -16,3 +16,6 @@ export const executeTransaction = async (transactionFn: () => Promise<WriteContr
       throw { error, transaction_id: hash, tx: hash }; // tx property left for temproral backwards compatibility
    }
 };
+
+// Backwards-compatible hook facade for tests that mock/use useExecuteTransaction
+export const useExecuteTransaction = () => ({ executeTransaction });

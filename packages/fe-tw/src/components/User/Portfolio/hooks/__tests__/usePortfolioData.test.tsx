@@ -19,9 +19,7 @@ jest.mock("@/services/contracts/readContract", () => ({
    readContract: jest.fn(),
 }));
 
-jest.mock("@buidlerlabs/hashgraph-react-wallets", () => ({
-   useEvmAddress: jest.fn(),
-}));
+// Use the global wagmi mocks from jest.setup.ts
 
 jest.mock("../../helpers", () => ({
    getUserReward: jest.fn(),
@@ -30,17 +28,20 @@ jest.mock("../../helpers", () => ({
 import { readBuildingDetails, readBuildingsList } from "@/services/buildingService";
 import { getTokenBalanceOf, getTokenDecimals, getTokenSymbol } from "@/services/erc20Service";
 import { readContract } from "@/services/contracts/readContract";
-import { useEvmAddress } from "@buidlerlabs/hashgraph-react-wallets";
+import { useAccount } from "wagmi";
 import { getUserReward } from "../../helpers";
 
 describe("usePortfolioData", () => {
    const mockReadBuildingsList = readBuildingsList as jest.MockedFunction<typeof readBuildingsList>;
-   const mockReadBuildingDetails = readBuildingDetails as jest.MockedFunction<typeof readBuildingDetails>;
+   const mockReadBuildingDetails = readBuildingDetails as jest.MockedFunction<
+      typeof readBuildingDetails
+   >;
    const mockGetTokenBalanceOf = getTokenBalanceOf as jest.MockedFunction<typeof getTokenBalanceOf>;
    const mockGetTokenDecimals = getTokenDecimals as jest.MockedFunction<typeof getTokenDecimals>;
    const mockGetTokenSymbol = getTokenSymbol as jest.MockedFunction<typeof getTokenSymbol>;
    const mockReadContract = readContract as jest.MockedFunction<typeof readContract>;
-   const mockUseEvmAddress = useEvmAddress as jest.MockedFunction<typeof useEvmAddress>;
+   // helper to set account
+   const setAddress = (addr: string | null) => ((global as any).__TEST_WAGMI_ADDRESS__ = addr);
    const mockGetUserReward = getUserReward as jest.MockedFunction<typeof getUserReward>;
 
    const createWrapper = () => {
@@ -58,7 +59,7 @@ describe("usePortfolioData", () => {
    });
 
    it("returns null when evmAddress is not available", async () => {
-      mockUseEvmAddress.mockReturnValue({ data: null });
+      setAddress(null);
 
       const Wrapper = createWrapper();
       const { result } = renderHook(() => usePortfolioData(), { wrapper: Wrapper });
@@ -68,7 +69,7 @@ describe("usePortfolioData", () => {
    });
 
    it("returns empty array when no buildings are found", async () => {
-      mockUseEvmAddress.mockReturnValue({ data: "0xuser000000000000000000000000000000000000" });
+      setAddress("0xuser000000000000000000000000000000000000");
       mockReadBuildingsList.mockResolvedValue([]);
 
       const Wrapper = createWrapper();
@@ -79,7 +80,7 @@ describe("usePortfolioData", () => {
    });
 
    it("returns empty array when buildings list is empty", async () => {
-      mockUseEvmAddress.mockReturnValue({ data: "0xuser000000000000000000000000000000000000" });
+      setAddress("0xuser000000000000000000000000000000000000");
       mockReadBuildingsList.mockResolvedValue([[]]);
 
       const Wrapper = createWrapper();
@@ -101,15 +102,10 @@ describe("usePortfolioData", () => {
       const vault2Address = "0xvault2000000000000000000000000000000000000";
       const rewardToken = "0xreward000000000000000000000000000000000000";
 
-      mockUseEvmAddress.mockReturnValue({ data: userAddress });
-      
+      setAddress(userAddress);
+
       // Mock buildings list
-      mockReadBuildingsList.mockResolvedValue([
-         [
-            [building1Address],
-            [building2Address],
-         ]
-      ]);
+      mockReadBuildingsList.mockResolvedValue([[[building1Address], [building2Address]]]);
 
       // Mock building details
       mockReadBuildingDetails
@@ -165,12 +161,12 @@ describe("usePortfolioData", () => {
       const vaultAddress = "0xvault1000000000000000000000000000000000000";
       const rewardToken = "0xreward000000000000000000000000000000000000";
 
-      mockUseEvmAddress.mockReturnValue({ data: userAddress });
+      setAddress(userAddress);
       mockReadBuildingsList.mockResolvedValue([[buildingAddress]]);
-      mockReadBuildingDetails.mockResolvedValue([[null, null, null, null, tokenAddress, treasuryAddress]]);
-      mockReadContract
-         .mockResolvedValueOnce([vaultAddress])
-         .mockResolvedValueOnce([rewardToken]);
+      mockReadBuildingDetails.mockResolvedValue([
+         [null, null, null, null, tokenAddress, treasuryAddress],
+      ]);
+      mockReadContract.mockResolvedValueOnce([vaultAddress]).mockResolvedValueOnce([rewardToken]);
 
       // Token with 6 decimals
       mockGetTokenBalanceOf.mockResolvedValue([BigInt("1000000")]); // 1 token with 6 decimals
@@ -200,12 +196,12 @@ describe("usePortfolioData", () => {
       const vaultAddress = "0xvault1000000000000000000000000000000000000";
       const rewardToken = "0xreward000000000000000000000000000000000000";
 
-      mockUseEvmAddress.mockReturnValue({ data: userAddress });
+      setAddress(userAddress);
       mockReadBuildingsList.mockResolvedValue([[buildingAddress]]);
-      mockReadBuildingDetails.mockResolvedValue([[null, null, null, null, tokenAddress, treasuryAddress]]);
-      mockReadContract
-         .mockResolvedValueOnce([vaultAddress])
-         .mockResolvedValueOnce([rewardToken]);
+      mockReadBuildingDetails.mockResolvedValue([
+         [null, null, null, null, tokenAddress, treasuryAddress],
+      ]);
+      mockReadContract.mockResolvedValueOnce([vaultAddress]).mockResolvedValueOnce([rewardToken]);
 
       mockGetTokenBalanceOf.mockResolvedValue([BigInt("1000000000000000000")]);
       mockGetTokenDecimals.mockResolvedValue([18]);
@@ -221,7 +217,7 @@ describe("usePortfolioData", () => {
    });
 
    it("is disabled when evmAddress is not available", () => {
-      mockUseEvmAddress.mockReturnValue({ data: null });
+      setAddress(null);
 
       const Wrapper = createWrapper();
       const { result } = renderHook(() => usePortfolioData(), { wrapper: Wrapper });
@@ -232,8 +228,8 @@ describe("usePortfolioData", () => {
 
    it("handles contract call errors gracefully", async () => {
       const userAddress = "0xuser000000000000000000000000000000000000";
-      
-      mockUseEvmAddress.mockReturnValue({ data: userAddress });
+
+      setAddress(userAddress);
       mockReadBuildingsList.mockRejectedValue(new Error("Failed to read buildings"));
 
       const Wrapper = createWrapper();
@@ -245,27 +241,25 @@ describe("usePortfolioData", () => {
 
    it("processes multiple buildings with mixed balances correctly", async () => {
       const userAddress = "0xuser000000000000000000000000000000000000";
-      const buildings = ["0xbuild1", "0xbuild2", "0xbuild3"].map(addr => addr.padEnd(42, '0'));
-      const tokens = ["0xtoken1", "0xtoken2", "0xtoken3"].map(addr => addr.padEnd(42, '0'));
-      const treasuries = ["0xtreas1", "0xtreas2", "0xtreas3"].map(addr => addr.padEnd(42, '0'));
-      const vaults = ["0xvault1", "0xvault2", "0xvault3"].map(addr => addr.padEnd(42, '0'));
-      const rewardToken = "0xreward".padEnd(42, '0');
+      const buildings = ["0xbuild1", "0xbuild2", "0xbuild3"].map((addr) => addr.padEnd(42, "0"));
+      const tokens = ["0xtoken1", "0xtoken2", "0xtoken3"].map((addr) => addr.padEnd(42, "0"));
+      const treasuries = ["0xtreas1", "0xtreas2", "0xtreas3"].map((addr) => addr.padEnd(42, "0"));
+      const vaults = ["0xvault1", "0xvault2", "0xvault3"].map((addr) => addr.padEnd(42, "0"));
+      const rewardToken = "0xreward".padEnd(42, "0");
 
-      mockUseEvmAddress.mockReturnValue({ data: userAddress });
+      setAddress(userAddress);
       mockReadBuildingsList.mockResolvedValue([buildings]);
 
       // Mock building details for each building
       buildings.forEach((building, i) => {
          mockReadBuildingDetails.mockResolvedValueOnce([
-            [null, null, null, null, tokens[i], treasuries[i]]
+            [null, null, null, null, tokens[i], treasuries[i]],
          ]);
       });
 
       // Mock vault and reward token calls
-      vaults.forEach(vault => {
-         mockReadContract
-            .mockResolvedValueOnce([vault])
-            .mockResolvedValueOnce([rewardToken]);
+      vaults.forEach((vault) => {
+         mockReadContract.mockResolvedValueOnce([vault]).mockResolvedValueOnce([rewardToken]);
       });
 
       // Mock token data: only first and third have balance

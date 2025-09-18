@@ -9,17 +9,23 @@ jest.mock("@/services/contracts/watchContractEvent", () => ({
    watchContractEvent: (...args: any[]) => (watchContractEventMock as any)(...args),
 }));
 
-const readContractMock = jest.fn();
-const writeContractMock = jest.fn();
-jest.mock("@buidlerlabs/hashgraph-react-wallets", () => ({
-   useWriteContract: () => ({ writeContract: writeContractMock }),
-   useReadContract: () => ({ readContract: readContractMock }),
+const readContractMock: jest.Mock = jest.fn();
+const writeContractMock: jest.Mock = jest.fn();
+jest.mock("wagmi/actions", () => ({
+   readContract: (...args: any[]) => (readContractMock as any)(...args),
 }));
+jest.mock("@/hooks/useWriteContract", () => ({
+   __esModule: true,
+   default: () => ({ writeContract: writeContractMock }),
+}));
+
+const setAddress = (addr: string | null) => ((global as any).__TEST_WAGMI_ADDRESS__ = addr);
 
 const executeTransactionMock = jest.fn((fn: any) => fn());
 jest.mock("@/hooks/useExecuteTransaction", () => ({
    __esModule: true,
-   useExecuteTransaction: () => ({ executeTransaction: executeTransactionMock }),
+   executeTransaction: (fn: any) => executeTransactionMock(fn),
+   useExecuteTransaction: () => ({ executeTransaction: (fn: any) => executeTransactionMock(fn) }),
 }));
 
 const storageRestoreMock = jest.fn();
@@ -38,7 +44,7 @@ jest.mock("@hashgraph/sdk", () => ({
    },
 }));
 
-import { useBuildingTreasury } from "@/hooks/useBuildingTreasury";
+import { useBuildingTreasury } from "../useBuildingTreasury";
 
 describe("useBuildingTreasury", () => {
    const buildingAddress = "0xdead000000000000000000000000000000000000" as const;
@@ -58,6 +64,7 @@ describe("useBuildingTreasury", () => {
 
    beforeEach(() => {
       jest.clearAllMocks();
+      setAddress("0xabc0000000000000000000000000000000000000");
       storageRestoreMock.mockResolvedValue(undefined);
       watchContractEventMock.mockImplementation(({ onLogs }: any) => {
          // Call onLogs with a matching NewBuilding event by default
@@ -68,7 +75,7 @@ describe("useBuildingTreasury", () => {
 
    describe("subscription & treasury data", () => {
       it("subscribes to NewBuilding, sets treasuryAddress and loads treasuryData", async () => {
-         readContractMock.mockImplementation(({ functionName }: any) => {
+         readContractMock.mockImplementation((_cfg: any, { functionName }: any) => {
             if (functionName === "usdc") return usdcAddr;
             if (functionName === "balanceOf") return BigInt(123450000); // with 6 decimals => 123.45
             if (functionName === "decimals") return BigInt(6);
@@ -94,7 +101,7 @@ describe("useBuildingTreasury", () => {
       });
 
       it("returns null treasuryData when usdc address is missing", async () => {
-         readContractMock.mockImplementation(({ functionName }: any) => {
+         readContractMock.mockImplementation((_cfg: any, { functionName }: any) => {
             if (functionName === "usdc") return null;
             return undefined;
          });
@@ -138,7 +145,7 @@ describe("useBuildingTreasury", () => {
          storageRestoreMock.mockResolvedValueOnce([other, e1, e2]);
 
          // Prevent treasury query noise
-         readContractMock.mockImplementation(({ functionName }: any) => {
+         readContractMock.mockImplementation((_cfg: any, { functionName }: any) => {
             if (functionName === "usdc") return null;
             return undefined;
          });
@@ -149,7 +156,7 @@ describe("useBuildingTreasury", () => {
          });
 
          await waitFor(() => expect(result.current.expenses.length).toBe(2));
-         expect(result.current.expenses.map((e) => e.title)).toEqual(["B", "A"]);
+         expect(result.current.expenses.map((e: any) => e.title)).toEqual(["B", "A"]);
       });
    });
 
@@ -161,7 +168,7 @@ describe("useBuildingTreasury", () => {
             return unsubscribeMock;
          });
 
-         readContractMock.mockImplementation(({ functionName }: any) => {
+         readContractMock.mockImplementation((_cfg: any, { functionName }: any) => {
             if (functionName === "usdc") return null;
             return undefined;
          });
@@ -179,7 +186,7 @@ describe("useBuildingTreasury", () => {
 
       it("succeeds, stores expense, reloads and invalidates query", async () => {
          // Setup treasury and token info
-         readContractMock.mockImplementation(({ functionName, args }: any) => {
+         readContractMock.mockImplementation((_cfg: any, { functionName, args }: any) => {
             if (functionName === "usdc") return usdcAddr;
             if (functionName === "balanceOf") return BigInt(0);
             if (functionName === "decimals") return BigInt(6);

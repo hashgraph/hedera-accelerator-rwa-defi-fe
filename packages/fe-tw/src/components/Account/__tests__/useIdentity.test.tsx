@@ -3,7 +3,6 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { PropsWithChildren } from "react";
 import { useIdentity } from "../useIdentity";
 import { BUILDING_FACTORY_ADDRESS } from "@/services/contracts/addresses";
-import { ContractId } from "@hashgraph/sdk";
 import { buildingFactoryAbi } from "@/services/contracts/abi/buildingFactoryAbi";
 
 const unsubscribeMock = jest.fn();
@@ -14,9 +13,11 @@ jest.mock("@/services/contracts/watchContractEvent", () => ({
 
 const EVM_ADDRESS = "0xEVM_ADDRESS";
 const readContractMock = jest.fn();
-jest.mock("@buidlerlabs/hashgraph-react-wallets", () => ({
-   useReadContract: () => ({ readContract: readContractMock }),
-   useEvmAddress: () => ({ data: EVM_ADDRESS }),
+jest.mock("wagmi", () => ({
+   useAccount: () => ({ address: EVM_ADDRESS }),
+}));
+jest.mock("wagmi/actions", () => ({
+   readContract: (...args: any[]) => readContractMock(...args),
 }));
 
 const writeContractMock = jest.fn();
@@ -25,9 +26,10 @@ jest.mock("@/hooks/useWriteContract", () => ({
    default: () => ({ writeContract: writeContractMock }),
 }));
 
-const executeTransactionMock = jest.fn((fn: any) => fn());
+const executeTransactionMock = jest.fn(async (fn: any) => await fn());
 jest.mock("@/hooks/useExecuteTransaction", () => ({
    __esModule: true,
+   executeTransaction: (fn: any) => executeTransactionMock(fn),
    useExecuteTransaction: () => ({ executeTransaction: executeTransactionMock }),
 }));
 
@@ -119,6 +121,7 @@ describe("useIdentity tests", () => {
          });
 
          expect(readContractMock).toHaveBeenCalledWith(
+            expect.anything(),
             expect.objectContaining({
                address: BUILDING_FACTORY_ADDRESS,
                functionName: "getIdentity",
@@ -143,7 +146,8 @@ describe("useIdentity tests", () => {
 
          expect(writeContractMock).toHaveBeenCalledWith(
             expect.objectContaining({
-               contractId: ContractId.fromEvmAddress(0, 0, BUILDING_FACTORY_ADDRESS),
+               address: BUILDING_FACTORY_ADDRESS,
+               abi: buildingFactoryAbi,
                functionName: "deployIdentityForWallet",
                args: [EVM_TO_DEPLOY],
             }),
@@ -161,7 +165,8 @@ describe("useIdentity tests", () => {
 
          expect(writeContractMock).toHaveBeenCalledWith(
             expect.objectContaining({
-               contractId: ContractId.fromEvmAddress(0, 0, BUILDING_FACTORY_ADDRESS),
+               address: BUILDING_FACTORY_ADDRESS,
+               abi: buildingFactoryAbi,
                functionName: "registerIdentity",
                args: [buildingAddress, EVM_ADDRESS, 804],
             }),

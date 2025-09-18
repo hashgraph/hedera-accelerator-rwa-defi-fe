@@ -3,16 +3,15 @@ import React, { PropsWithChildren } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useTokenPrice } from "@/components/Staking/hooks/useTokenPrice";
 
-// Mock dependencies
-jest.mock("@buidlerlabs/hashgraph-react-wallets", () => ({
-   useReadContract: jest.fn(),
+// Mock dependencies to match wagmi-based implementation
+jest.mock("wagmi/actions", () => ({
+   readContract: jest.fn(),
 }));
-
 jest.mock("@/hooks/useTokenInfo", () => ({
    useTokenInfo: jest.fn(),
 }));
 
-import { useReadContract } from "@buidlerlabs/hashgraph-react-wallets";
+import { readContract as wagmiReadContract } from "wagmi/actions";
 import { useTokenInfo } from "@/hooks/useTokenInfo";
 
 describe("useTokenPrice", () => {
@@ -31,9 +30,9 @@ describe("useTokenPrice", () => {
 
    beforeEach(() => {
       jest.clearAllMocks();
-      (useReadContract as jest.Mock).mockReturnValue({
-         readContract: mockReadContract,
-      });
+      (wagmiReadContract as unknown as jest.Mock).mockImplementation((...args: any[]) =>
+         mockReadContract(...(args as any)),
+      );
    });
 
    it("returns undefined when token address is undefined", async () => {
@@ -54,7 +53,10 @@ describe("useTokenPrice", () => {
       } as any);
 
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTokenPrice("0x1234567890123456789012345678901234567890", undefined), { wrapper: Wrapper });
+      const { result } = renderHook(
+         () => useTokenPrice("0x1234567890123456789012345678901234567890", undefined),
+         { wrapper: Wrapper },
+      );
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
       expect(result.current.data).toBeUndefined();
@@ -66,7 +68,10 @@ describe("useTokenPrice", () => {
       } as any);
 
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTokenPrice("0x1234567890123456789012345678901234567890", 18), { wrapper: Wrapper });
+      const { result } = renderHook(
+         () => useTokenPrice("0x1234567890123456789012345678901234567890", 18),
+         { wrapper: Wrapper },
+      );
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
       expect(result.current.data).toBeUndefined();
@@ -90,14 +95,16 @@ describe("useTokenPrice", () => {
       ]);
 
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTokenPrice(tokenAddress, tokenDecimals), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTokenPrice(tokenAddress, tokenDecimals), {
+         wrapper: Wrapper,
+      });
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       // Expected price: 2500000 / 10^6 = 2.5
       expect(result.current.data).toBe(2.5);
 
-      expect(mockReadContract).toHaveBeenCalledWith({
+      expect(mockReadContract).toHaveBeenCalledWith(expect.anything(), {
          address: expect.any(String), // UNISWAP_ROUTER_ADDRESS
          abi: expect.any(Array), // uniswapRouterAbi
          functionName: "getAmountsOut",
@@ -125,14 +132,16 @@ describe("useTokenPrice", () => {
       ]);
 
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTokenPrice(tokenAddress, tokenDecimals), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTokenPrice(tokenAddress, tokenDecimals), {
+         wrapper: Wrapper,
+      });
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       // Expected price: 50000000000 / 10^6 = 50000
       expect(result.current.data).toBe(50000);
 
-      expect(mockReadContract).toHaveBeenCalledWith({
+      expect(mockReadContract).toHaveBeenCalledWith(expect.anything(), {
          address: expect.any(String),
          abi: expect.any(Array),
          functionName: "getAmountsOut",
@@ -154,7 +163,9 @@ describe("useTokenPrice", () => {
       mockReadContract.mockRejectedValue(new Error("Contract call failed"));
 
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTokenPrice(tokenAddress, tokenDecimals), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTokenPrice(tokenAddress, tokenDecimals), {
+         wrapper: Wrapper,
+      });
 
       await waitFor(() => expect(result.current.isError).toBe(true));
       expect(result.current.error).toBeInstanceOf(Error);
@@ -166,13 +177,18 @@ describe("useTokenPrice", () => {
       } as any);
 
       const Wrapper = createWrapper();
-      
+
       // Test with undefined token address
-      const { result: result1 } = renderHook(() => useTokenPrice(undefined, 18), { wrapper: Wrapper });
+      const { result: result1 } = renderHook(() => useTokenPrice(undefined, 18), {
+         wrapper: Wrapper,
+      });
       expect(result1.current.isLoading).toBe(false);
 
       // Test with undefined token decimals
-      const { result: result2 } = renderHook(() => useTokenPrice("0x1234567890123456789012345678901234567890", undefined), { wrapper: Wrapper });
+      const { result: result2 } = renderHook(
+         () => useTokenPrice("0x1234567890123456789012345678901234567890", undefined),
+         { wrapper: Wrapper },
+      );
       expect(result2.current.isLoading).toBe(false);
    });
 
@@ -191,7 +207,9 @@ describe("useTokenPrice", () => {
       ]);
 
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTokenPrice(tokenAddress, tokenDecimals), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTokenPrice(tokenAddress, tokenDecimals), {
+         wrapper: Wrapper,
+      });
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
       expect(result.current.data).toBe(0);
@@ -213,7 +231,9 @@ describe("useTokenPrice", () => {
       ]);
 
       const Wrapper = createWrapper();
-      const { result } = renderHook(() => useTokenPrice(tokenAddress, tokenDecimals), { wrapper: Wrapper });
+      const { result } = renderHook(() => useTokenPrice(tokenAddress, tokenDecimals), {
+         wrapper: Wrapper,
+      });
 
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 

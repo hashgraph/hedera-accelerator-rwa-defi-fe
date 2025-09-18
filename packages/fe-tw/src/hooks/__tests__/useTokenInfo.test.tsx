@@ -4,21 +4,19 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useTokenInfo } from "@/hooks/useTokenInfo";
 
 // Mock the dependencies
-jest.mock("@buidlerlabs/hashgraph-react-wallets", () => ({
-   useEvmAddress: jest.fn(() => ({ data: "0xtest000000000000000000000000000000000000" })),
-   useReadContract: jest.fn(() => ({
-      readContract: jest.fn(),
-   })),
+jest.mock("wagmi/actions", () => ({
+   readContract: jest.fn(),
 }));
 
 jest.mock("@/services/erc20Service", () => ({
    getTokenDecimals: jest.fn(),
 }));
 
-import { useEvmAddress, useReadContract } from "@buidlerlabs/hashgraph-react-wallets";
+import { readContract } from "wagmi/actions";
 
 describe("useTokenInfo", () => {
-   const mockReadContract = jest.fn();
+   const mockReadContract = readContract as unknown as jest.Mock;
+   const setAddress = (addr: string | null) => ((global as any).__TEST_WAGMI_ADDRESS__ = addr);
    const createWrapper = () => {
       const queryClient = new QueryClient({
          defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
@@ -31,12 +29,8 @@ describe("useTokenInfo", () => {
 
    beforeEach(() => {
       jest.clearAllMocks();
-      (useReadContract as jest.Mock).mockReturnValue({
-         readContract: mockReadContract,
-      });
-      (useEvmAddress as jest.Mock).mockReturnValue({
-         data: "0xtest000000000000000000000000000000000000",
-      });
+      jest.clearAllMocks();
+      setAddress("0xtest000000000000000000000000000000000000");
    });
 
    it("returns default values when token address is undefined", () => {
@@ -53,8 +47,8 @@ describe("useTokenInfo", () => {
    });
 
    it("returns default values when evm address is not available", () => {
-      (useEvmAddress as jest.Mock).mockReturnValue({ data: null });
-      
+      setAddress(null);
+
       const Wrapper = createWrapper();
       const tokenAddress = "0x1234567890123456789012345678901234567890" as const;
       const { result } = renderHook(() => useTokenInfo(tokenAddress), { wrapper: Wrapper });
@@ -65,18 +59,26 @@ describe("useTokenInfo", () => {
 
    it("fetches token info when both token address and evm address are available", async () => {
       const tokenAddress = "0x1234567890123456789012345678901234567890" as const;
-      
+
       // Create a more predictable mock implementation
-      mockReadContract.mockImplementation((config) => {
+      mockReadContract.mockImplementation((_cfg: any, config: any) => {
          switch (config.functionName) {
-            case "decimals": return Promise.resolve(18);
-            case "name": return Promise.resolve("Test Token");
-            case "symbol": return Promise.resolve("TEST");
-            case "totalSupply": return Promise.resolve(BigInt("1000000000000000000000"));
-            case "balanceOf": return Promise.resolve(BigInt("100000000000000000000"));
-            case "owner": return Promise.resolve("0xowner000000000000000000000000000000000000");
-            case "compliance": return Promise.resolve("0xcomp0000000000000000000000000000000000000");
-            default: return Promise.reject(new Error("Unknown function"));
+            case "decimals":
+               return Promise.resolve(18);
+            case "name":
+               return Promise.resolve("Test Token");
+            case "symbol":
+               return Promise.resolve("TEST");
+            case "totalSupply":
+               return Promise.resolve(BigInt("1000000000000000000000"));
+            case "balanceOf":
+               return Promise.resolve(BigInt("100000000000000000000"));
+            case "owner":
+               return Promise.resolve("0xowner000000000000000000000000000000000000");
+            case "compliance":
+               return Promise.resolve("0xcomp0000000000000000000000000000000000000");
+            default:
+               return Promise.reject(new Error("Unknown function"));
          }
       });
 
@@ -100,18 +102,26 @@ describe("useTokenInfo", () => {
 
    it("handles partial failures gracefully", async () => {
       const tokenAddress = "0x1234567890123456789012345678901234567890" as const;
-      
+
       // Create a fresh mock that handles Promise.allSettled behavior
-      mockReadContract.mockImplementation((config) => {
+      mockReadContract.mockImplementation((_cfg: any, config: any) => {
          switch (config.functionName) {
-            case "decimals": return Promise.resolve(6);
-            case "name": return Promise.reject(new Error("Name call failed"));
-            case "symbol": return Promise.resolve("PART");
-            case "totalSupply": return Promise.reject(new Error("Total supply failed"));
-            case "balanceOf": return Promise.resolve(BigInt("50000000"));
-            case "owner": return Promise.reject(new Error("Owner call failed"));
-            case "compliance": return Promise.resolve("0xcomp0000000000000000000000000000000000000");
-            default: return Promise.reject(new Error("Unknown function"));
+            case "decimals":
+               return Promise.resolve(6);
+            case "name":
+               return Promise.reject(new Error("Name call failed"));
+            case "symbol":
+               return Promise.resolve("PART");
+            case "totalSupply":
+               return Promise.reject(new Error("Total supply failed"));
+            case "balanceOf":
+               return Promise.resolve(BigInt("50000000"));
+            case "owner":
+               return Promise.reject(new Error("Owner call failed"));
+            case "compliance":
+               return Promise.resolve("0xcomp0000000000000000000000000000000000000");
+            default:
+               return Promise.reject(new Error("Unknown function"));
          }
       });
 
@@ -130,23 +140,33 @@ describe("useTokenInfo", () => {
 
    it("fetches token price when token address is provided", async () => {
       const tokenAddress = "0x1234567890123456789012345678901234567890" as const;
-      
+
       // Mock contract calls for price query
-      mockReadContract.mockImplementation((config) => {
+      mockReadContract.mockImplementation((_cfg: any, config: any) => {
          switch (config.functionName) {
-            case "getPair": return Promise.resolve("0xpair000000000000000000000000000000000000");
-            case "getReserves": return Promise.resolve([BigInt("1000000000000000000"), BigInt("2000000000")]);
-            case "decimals": 
+            case "getPair":
+               return Promise.resolve("0xpair000000000000000000000000000000000000");
+            // reserves[0] -> USDC (6 decimals), reserves[1] -> Token (18 decimals)
+            case "getReserves":
+               return Promise.resolve([BigInt("2000000000"), BigInt("1000000000000000000")]);
+            case "decimals":
                // Return different decimals based on the address
                if (config.address === tokenAddress) return Promise.resolve(18);
                return Promise.resolve(6); // USDC decimals
-            case "name": return Promise.resolve("Test Token");
-            case "symbol": return Promise.resolve("TEST");
-            case "totalSupply": return Promise.resolve(BigInt("1000000000000000000000"));
-            case "balanceOf": return Promise.resolve(BigInt("100000000000000000000"));
-            case "owner": return Promise.resolve("0xowner000000000000000000000000000000000000");
-            case "compliance": return Promise.resolve("0xcomp0000000000000000000000000000000000000");
-            default: return Promise.reject(new Error("Unknown function"));
+            case "name":
+               return Promise.resolve("Test Token");
+            case "symbol":
+               return Promise.resolve("TEST");
+            case "totalSupply":
+               return Promise.resolve(BigInt("1000000000000000000000"));
+            case "balanceOf":
+               return Promise.resolve(BigInt("100000000000000000000"));
+            case "owner":
+               return Promise.resolve("0xowner000000000000000000000000000000000000");
+            case "compliance":
+               return Promise.resolve("0xcomp0000000000000000000000000000000000000");
+            default:
+               return Promise.reject(new Error("Unknown function"));
          }
       });
 
@@ -162,22 +182,31 @@ describe("useTokenInfo", () => {
 
    it("returns 0 price when reserves are empty", async () => {
       const tokenAddress = "0x1234567890123456789012345678901234567890" as const;
-      
+
       // Mock contract calls with empty reserves
-      mockReadContract.mockImplementation((config) => {
+      mockReadContract.mockImplementation((_cfg: any, config: any) => {
          switch (config.functionName) {
-            case "getPair": return Promise.resolve("0xpair000000000000000000000000000000000000");
-            case "getReserves": return Promise.resolve([BigInt("0"), BigInt("0")]); // empty reserves
-            case "decimals": 
+            case "getPair":
+               return Promise.resolve("0xpair000000000000000000000000000000000000");
+            case "getReserves":
+               return Promise.resolve([BigInt("0"), BigInt("0")]); // empty reserves
+            case "decimals":
                if (config.address === tokenAddress) return Promise.resolve(18);
                return Promise.resolve(6);
-            case "name": return Promise.resolve("Test Token");
-            case "symbol": return Promise.resolve("TEST");
-            case "totalSupply": return Promise.resolve(BigInt("1000000000000000000000"));
-            case "balanceOf": return Promise.resolve(BigInt("100000000000000000000"));
-            case "owner": return Promise.resolve("0xowner000000000000000000000000000000000000");
-            case "compliance": return Promise.resolve("0xcomp0000000000000000000000000000000000000");
-            default: return Promise.reject(new Error("Unknown function"));
+            case "name":
+               return Promise.resolve("Test Token");
+            case "symbol":
+               return Promise.resolve("TEST");
+            case "totalSupply":
+               return Promise.resolve(BigInt("1000000000000000000000"));
+            case "balanceOf":
+               return Promise.resolve(BigInt("100000000000000000000"));
+            case "owner":
+               return Promise.resolve("0xowner000000000000000000000000000000000000");
+            case "compliance":
+               return Promise.resolve("0xcomp0000000000000000000000000000000000000");
+            default:
+               return Promise.reject(new Error("Unknown function"));
          }
       });
 
@@ -191,17 +220,25 @@ describe("useTokenInfo", () => {
 
    it("provides refetch functionality", async () => {
       const tokenAddress = "0x1234567890123456789012345678901234567890" as const;
-      
+
       mockReadContract.mockImplementation((config) => {
          switch (config.functionName) {
-            case "decimals": return Promise.resolve(18);
-            case "name": return Promise.resolve("Test Token");
-            case "symbol": return Promise.resolve("TEST");
-            case "totalSupply": return Promise.resolve(BigInt("1000000000000000000000"));
-            case "balanceOf": return Promise.resolve(BigInt("100000000000000000000"));
-            case "owner": return Promise.resolve("0xowner000000000000000000000000000000000000");
-            case "compliance": return Promise.resolve("0xcomp0000000000000000000000000000000000000");
-            default: return Promise.reject(new Error("Unknown function"));
+            case "decimals":
+               return Promise.resolve(18);
+            case "name":
+               return Promise.resolve("Test Token");
+            case "symbol":
+               return Promise.resolve("TEST");
+            case "totalSupply":
+               return Promise.resolve(BigInt("1000000000000000000000"));
+            case "balanceOf":
+               return Promise.resolve(BigInt("100000000000000000000"));
+            case "owner":
+               return Promise.resolve("0xowner000000000000000000000000000000000000");
+            case "compliance":
+               return Promise.resolve("0xcomp0000000000000000000000000000000000000");
+            default:
+               return Promise.reject(new Error("Unknown function"));
          }
       });
 
@@ -211,7 +248,7 @@ describe("useTokenInfo", () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       expect(typeof result.current.refetch).toBe("function");
-      
+
       // Test refetch doesn't throw
       expect(() => result.current.refetch()).not.toThrow();
    });
