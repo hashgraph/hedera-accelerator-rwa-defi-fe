@@ -3,20 +3,22 @@ import { useWalkthrough } from "../useWalkthrough";
 
 // Mock the dependencies
 jest.mock("../WalkthroughStore", () => ({
-   useWalkthroughStore: jest.fn()
+   useWalkthroughStore: jest.fn(),
 }));
 
 jest.mock("../WalktroughSyncBarrier", () => ({
    walkthroughBarrier: {
       register: jest.fn(),
-      unregister: jest.fn()
-   }
+      unregister: jest.fn(),
+   },
 }));
 
 import { useWalkthroughStore } from "../WalkthroughStore";
 import { walkthroughBarrier } from "../WalktroughSyncBarrier";
 
-const mockedUseWalkthroughStore = useWalkthroughStore as jest.MockedFunction<typeof useWalkthroughStore>;
+const mockedUseWalkthroughStore = useWalkthroughStore as jest.MockedFunction<
+   typeof useWalkthroughStore
+>;
 const mockedWalkthroughBarrier = walkthroughBarrier as jest.Mocked<typeof walkthroughBarrier>;
 
 describe("useWalkthrough", () => {
@@ -28,15 +30,15 @@ describe("useWalkthrough", () => {
       setCurrentStep: jest.fn(),
       setHideAllGuides: jest.fn(),
       registerGuides: jest.fn(),
-      unregisterGuides: jest.fn()
+      unregisterGuides: jest.fn(),
    };
 
    beforeEach(() => {
       jest.clearAllMocks();
-      
+
       // Mock useWalkthroughStore to return different values based on selector
       mockedUseWalkthroughStore.mockImplementation((selector: any) => {
-         if (typeof selector === 'function') {
+         if (typeof selector === "function") {
             return selector(mockStoreState);
          }
          return mockStoreState;
@@ -58,7 +60,7 @@ describe("useWalkthrough", () => {
    it("should register guides when guides are provided", () => {
       const guides = [
          { guideId: "guide1", priority: 1 },
-         { guideId: "guide2", priority: 2 }
+         { guideId: "guide2", priority: 2 },
       ];
 
       const { result } = renderHook(() => useWalkthrough(guides));
@@ -70,11 +72,11 @@ describe("useWalkthrough", () => {
    it("should unregister guides on cleanup", () => {
       const guides = [
          { guideId: "guide1", priority: 1 },
-         { guideId: "guide2", priority: 2 }
+         { guideId: "guide2", priority: 2 },
       ];
 
       const { unmount } = renderHook(() => useWalkthrough(guides));
-      
+
       unmount();
 
       expect(mockStoreState.unregisterGuides).toHaveBeenCalledWith(guides);
@@ -83,7 +85,7 @@ describe("useWalkthrough", () => {
 
    it("should not register/unregister when guides is undefined", () => {
       const { unmount } = renderHook(() => useWalkthrough());
-      
+
       unmount();
 
       expect(mockStoreState.registerGuides).not.toHaveBeenCalled();
@@ -91,13 +93,16 @@ describe("useWalkthrough", () => {
    });
 
    it("should handle confirmUserPassedStep correctly", () => {
-      const { result } = renderHook(() => useWalkthrough());
+      const { result } = renderHook(() => useWalkthrough([{ guideId: "test-guide", priority: 1 }]));
+
+      expect(result.current.currentGuide).toBe("test-guide");
+      expect(result.current.currentStep).toBe(1);
 
       act(() => {
-         result.current.confirmUserPassedStep(2);
+         result.current.confirmUserPassedStep(1, "test-guide");
       });
 
-      expect(mockStoreState.setCurrentStep).toHaveBeenCalledWith(3);
+      expect(mockStoreState.setCurrentStep).toHaveBeenCalledWith(2);
    });
 
    it("should handle confirmUserFinishedGuide correctly when currentGuide matches", () => {
@@ -134,7 +139,7 @@ describe("useWalkthrough", () => {
          currentStep: 1,
          setCurrentStep: mockStoreState.setCurrentStep,
          confirmUserFinishedGuide: expect.any(Function),
-         setHideAllGuides: mockStoreState.setHideAllGuides
+         setHideAllGuides: mockStoreState.setHideAllGuides,
       });
    });
 
@@ -165,10 +170,9 @@ describe("useWalkthrough", () => {
       const initialGuides = [{ guideId: "guide1", priority: 1 }];
       const updatedGuides = [{ guideId: "guide2", priority: 2 }];
 
-      const { rerender } = renderHook(
-         ({ guides }) => useWalkthrough(guides),
-         { initialProps: { guides: initialGuides } }
-      );
+      const { rerender } = renderHook(({ guides }) => useWalkthrough(guides), {
+         initialProps: { guides: initialGuides },
+      });
 
       expect(mockStoreState.registerGuides).toHaveBeenCalledWith(initialGuides);
 

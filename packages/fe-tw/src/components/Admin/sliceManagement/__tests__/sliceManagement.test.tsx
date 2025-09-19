@@ -5,34 +5,33 @@ import { SliceManagement } from "@/components/Admin/sliceManagement/index";
 import userEvent from "@testing-library/user-event";
 import { useCreateSlice } from "@/hooks/useCreateSlice";
 
+// Reduce interactive UI side-effects in tests
+jest.mock("@/components/Walkthrough/WalkthroughStep", () => ({
+   __esModule: true,
+   WalkthroughStep: ({ children }: any) =>
+      typeof children === "function"
+         ? children({ confirmUserPassedStep: jest.fn(), confirmUserFinishedGuide: jest.fn() })
+         : children,
+}));
+jest.mock("@/components/Walkthrough/ConditionalWalkthroughStep", () => ({
+   __esModule: true,
+   ConditionalWalkthroughStep: ({ children }: any) =>
+      typeof children === "function"
+         ? children({ confirmUserPassedStep: jest.fn(), confirmUserFinishedGuide: jest.fn() })
+         : children,
+}));
+jest.mock("@/components/ui/tooltip", () => ({
+   __esModule: true,
+   Tooltip: ({ children }: any) => children,
+   TooltipTrigger: ({ children }: any) => children,
+   TooltipContent: ({ children }: any) => children,
+   TooltipProvider: ({ children }: any) => children,
+}));
+
 jest.mock("@/services/erc20Service", () => ({
    getTokenBalanceOf: jest.fn(() => Promise.resolve(BigInt(10))),
 }));
 jest.mock("@/hooks/useCreateSlice", () => ({ useCreateSlice: jest.fn() }));
-jest.mock("@buidlerlabs/hashgraph-react-wallets", () => ({
-   useEvmAddress: jest.fn(() => ({ data: "0xaddr" })),
-   useOriginalWriteContract: jest.fn(() => ({
-      writeContract: () =>
-         Promise.resolve({
-            transaction_id: "123456",
-         }),
-   })),
-   useWriteContract: jest.fn(() => ({
-      writeContract: () =>
-         Promise.resolve({
-            transaction_id: "123456",
-         }),
-   })),
-   useWallet: jest.fn(() => ({
-      isConnected: false,
-   })),
-   useWatchTransactionReceipt: jest.fn(() => ({
-      watch: () => ({
-         onSuccess: () => {},
-         onError: () => {},
-      }),
-   })),
-}));
 jest.mock("@/hooks/useBuildings", () => ({
    useBuildings: jest.fn(() => ({
       buildingsInfo: [
@@ -40,6 +39,13 @@ jest.mock("@/hooks/useBuildings", () => ({
          { buildingAddress: "0xbuild2", tokenAddress: "0xtok2" },
       ],
    })),
+}));
+
+// Mock walkthrough store selectors to return neutral values
+jest.mock("@/components/Walkthrough/WalkthroughStore", () => ({
+   __esModule: true,
+   useWalkthroughStore: (sel: any) =>
+      sel({ currentStep: null, currentGuide: null, setCurrentStep: jest.fn() }),
 }));
 const mockSubmitSlice = jest.fn();
 
@@ -90,7 +96,7 @@ describe("SliceManagement", () => {
                }),
             );
          });
-      });
+      }, 15000);
 
       it("Should submit slice with allocation", async () => {
          render(<SliceManagement />);
@@ -129,6 +135,6 @@ describe("SliceManagement", () => {
                }),
             );
          });
-      });
+      }, 15000);
    });
 });

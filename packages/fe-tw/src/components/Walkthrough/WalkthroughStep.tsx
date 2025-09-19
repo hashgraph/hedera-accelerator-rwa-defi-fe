@@ -72,6 +72,7 @@ export const WalkthroughStep = memo(
                steps,
                matches({ guideId: currentGuide, stepIndex: currentStep }),
             );
+            
             if (currentStepInfo) {
                setCurrentStep(currentStepInfo.stepIndex + 1);
             }

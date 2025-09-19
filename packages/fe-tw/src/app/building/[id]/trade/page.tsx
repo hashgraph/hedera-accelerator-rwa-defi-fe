@@ -3,8 +3,8 @@
 import { LoadingView } from "@/components/LoadingView/LoadingView";
 import TradeView from "@/components/Trade/TradeView";
 import { useBuilding } from "@/hooks/useBuildings";
-import { useEvmAddress } from "@buidlerlabs/hashgraph-react-wallets";
 import React, { use, type Usable } from "react";
+import { useAccount } from "wagmi";
 
 type Props = {
    params: Promise<{ id: string }>;
@@ -13,7 +13,7 @@ type Props = {
 export default function TradePage({ params }: Props) {
    const { id } = use<{ id: string }>(params as unknown as Usable<{ id: string }>);
    const { data: building, isLoading } = useBuilding(id);
-   const { data: evmAddress } = useEvmAddress();
+   const { address: evmAddress } = useAccount();
 
    if (isLoading) return <LoadingView isLoading />;
 

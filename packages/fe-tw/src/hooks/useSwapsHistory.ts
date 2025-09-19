@@ -7,20 +7,17 @@ import {
 } from "@/services/contracts/addresses";
 import { watchContractEvent } from "@/services/contracts/watchContractEvent";
 import type { SwapTradeItem } from "@/types/erc3643/types";
-import {
-   DEFAULT_TOKEN_DECIMALS,
-   useEvmAddress,
-   useReadContract,
-} from "@buidlerlabs/hashgraph-react-wallets";
 import { useQuery } from "@tanstack/react-query";
 import { ethers, ZeroAddress } from "ethers";
 import { useEffect, useState } from "react";
 import { uniswapFactoryAbi } from "@/services/contracts/abi/uniswapFactoryAbi";
 import { uniswapPairAbi } from "@/services/contracts/abi/uniswapPairAbi";
 import { type Log, QueryKeys } from "@/types/queries";
-import { tokens } from "@/consts/tokens";
 import { useTokenInfo } from "./useTokenInfo";
 import { readContract as oldReadContract } from "@/services/contracts/readContract";
+import { useAccount } from "wagmi";
+import { readContract } from "wagmi/actions";
+import { config } from "@/config";
 
 const filterSwapHistoryItems = (swapItems: Log[], trader: `0x${string}`) => {
    return swapItems
@@ -28,8 +25,8 @@ const filterSwapHistoryItems = (swapItems: Log[], trader: `0x${string}`) => {
       .map((item) => ({
          tokenA: item.args[1],
          tokenB: item.args[2],
-         tokenAAmount: ethers.formatUnits(item.args[3], DEFAULT_TOKEN_DECIMALS),
-         tokenBAmount: ethers.formatUnits(item.args[4], DEFAULT_TOKEN_DECIMALS),
+         tokenAAmount: ethers.formatUnits(item.args[3], 8),
+         tokenBAmount: ethers.formatUnits(item.args[4], 8),
       }));
 };
 
@@ -51,7 +48,6 @@ export const useSwapsHistory = (
       SwapTradeItem[]
    >([]);
    const [uniswapExchangeHistory, setUniswapExchangeHistory] = useState<SwapTradeItem[]>([]);
-   const { readContract } = useReadContract();
 
    const { data: pairAddressData } = useQuery({
       queryKey: [
@@ -66,20 +62,20 @@ export const useSwapsHistory = (
          selectedTokensPair?.tokenA !== ZeroAddress &&
          selectedTokensPair?.tokenB !== ZeroAddress,
       queryFn: async () => {
-         const pairAddress = (await readContract({
+         const pairAddress = (await readContract(config, {
             address: UNISWAP_FACTORY_ADDRESS,
             abi: uniswapFactoryAbi,
             functionName: "getPair",
-            args: [selectedTokensPair.tokenA, selectedTokensPair.tokenB],
+            args: [selectedTokensPair.tokenA!, selectedTokensPair.tokenB!],
          })) as `0x${string}`;
 
          const [token0, token1] = (await Promise.all([
-            readContract({
+            readContract(config, {
                address: pairAddress,
                abi: uniswapPairAbi,
                functionName: "token0",
             }),
-            readContract({
+            readContract(config, {
                address: pairAddress,
                abi: uniswapPairAbi,
                functionName: "token1",
@@ -97,7 +93,7 @@ export const useSwapsHistory = (
    const token0Info = useTokenInfo(pairAddressData?.token0);
    const token1Info = useTokenInfo(pairAddressData?.token1);
 
-   const { data: evmAddress } = useEvmAddress();
+   const { address: evmAddress } = useAccount();
 
    useEffect(() => {
       if (
@@ -142,7 +138,7 @@ export const useSwapsHistory = (
          onLogs: (data) => {
             setOneSidedExchangeSwapsHistory((prev) => [
                ...prev,
-               ...filterSwapHistoryItems(data, evmAddress),
+               ...filterSwapHistoryItems(data, evmAddress!),
             ]);
          },
       });
@@ -160,4 +156,3 @@ export const useSwapsHistory = (
 
    return { oneSidedExchangeSwapsHistory, uniswapExchangeHistory };
 };
-

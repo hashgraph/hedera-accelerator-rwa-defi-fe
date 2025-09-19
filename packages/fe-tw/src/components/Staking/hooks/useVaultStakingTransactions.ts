@@ -1,20 +1,19 @@
-import { useEvmAddress } from "@buidlerlabs/hashgraph-react-wallets";
 import { useMutation } from "@tanstack/react-query";
 import { tokenAbi } from "@/services/contracts/abi/tokenAbi";
 import { basicVaultAbi } from "@/services/contracts/abi/basicVaultAbi";
 import { ContractId } from "@hashgraph/sdk";
-import { useExecuteTransaction } from "@/hooks/useExecuteTransaction";
-import useWriteContract from "@/hooks/useWriteContract";
 import { useTokenInfo } from "@/hooks/useTokenInfo";
+import { useAccount } from "wagmi";
+import useWriteContract from "@/hooks/useWriteContract";
+import { executeTransaction } from "@/hooks/useExecuteTransaction";
 
 export const useVaultStakingTransactions = (
-   tokenAddress: string | undefined,
-   vaultAddress: string | undefined,
+   tokenAddress: `0x${string}` | undefined,
+   vaultAddress: `0x${string}` | undefined,
 ) => {
    const { decimals: tokenDecimals } = useTokenInfo(tokenAddress as `0x${string}`);
    const { writeContract } = useWriteContract();
-   const { executeTransaction } = useExecuteTransaction();
-   const { data: evmAddress } = useEvmAddress();
+   const { address: evmAddress } = useAccount();
 
    const parseAmount = (amount: number) => {
       if (!tokenDecimals) throw new Error("Token decimals not available");
@@ -31,7 +30,7 @@ export const useVaultStakingTransactions = (
 
          const approveTx = await executeTransaction(() =>
             writeContract({
-               contractId: ContractId.fromEvmAddress(0, 0, tokenAddress),
+               address: tokenAddress,
                abi: tokenAbi,
                functionName: "approve",
                args: [vaultAddress, bigIntAmount],
@@ -40,7 +39,7 @@ export const useVaultStakingTransactions = (
 
          const depositTx = await executeTransaction(() =>
             writeContract({
-               contractId: ContractId.fromEvmAddress(0, 0, vaultAddress),
+               address: vaultAddress,
                abi: basicVaultAbi,
                functionName: "deposit",
                args: [bigIntAmount, evmAddress],
@@ -54,14 +53,14 @@ export const useVaultStakingTransactions = (
    const unstake = useMutation({
       mutationFn: async ({ amount }: { amount: number }) => {
          if (!vaultAddress || !evmAddress) {
-            throw new Error("Required addresses not available"); 
+            throw new Error("Required addresses not available");
          }
 
          const bigIntAmount = parseAmount(amount);
 
          return await executeTransaction(() =>
             writeContract({
-               contractId: ContractId.fromEvmAddress(0, 0, vaultAddress),
+               address: vaultAddress,
                abi: basicVaultAbi,
                functionName: "withdraw",
                args: [bigIntAmount, evmAddress, evmAddress],
@@ -78,7 +77,7 @@ export const useVaultStakingTransactions = (
 
          return await executeTransaction(() =>
             writeContract({
-               contractId: ContractId.fromEvmAddress(0, 0, vaultAddress),
+               address: vaultAddress,
                abi: basicVaultAbi,
                functionName: "claimAllReward",
                args: [0, evmAddress],

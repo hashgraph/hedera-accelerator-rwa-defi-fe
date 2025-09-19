@@ -1,7 +1,6 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useEvmAddress, useReadContract } from "@buidlerlabs/hashgraph-react-wallets";
 import { tokenAbi } from "@/services/contracts/abi/tokenAbi";
 import { tokenVotesAbi } from "@/services/contracts/abi/tokenVotesAbi";
 import { UNISWAP_FACTORY_ADDRESS, USDC_ADDRESS } from "@/services/contracts/addresses";
@@ -9,6 +8,9 @@ import { uniswapFactoryAbi } from "@/services/contracts/abi/uniswapFactoryAbi";
 import { uniswapPairAbi } from "@/services/contracts/abi/uniswapPairAbi";
 import { getTokenDecimals } from "@/services/erc20Service";
 import { ethers } from "ethers";
+import { useAccount } from "wagmi";
+import { readContract } from "wagmi/actions";
+import { config } from "@/config";
 
 export interface TokenInfo {
    address: `0x${string}` | undefined;
@@ -24,39 +26,38 @@ export interface TokenInfo {
 }
 
 export const useTokenInfo = (tokenAddress: `0x${string}` | undefined) => {
-   const { readContract } = useReadContract();
-   const { data: evmAddress } = useEvmAddress();
+   const { address: evmAddress } = useAccount();
 
    const { data: tokenPriceInUSDC } = useQuery({
       queryKey: ["TOKEN_PRICE_INFO", tokenAddress],
       queryFn: async () => {
-         const pairAddress = await readContract({
+         const pairAddress = await readContract(config, {
             address: UNISWAP_FACTORY_ADDRESS,
             abi: uniswapFactoryAbi,
             functionName: "getPair",
-            args: [tokenAddress, USDC_ADDRESS],
+            args: [tokenAddress!, USDC_ADDRESS],
          });
 
          const [reserves, tokenDecimals, usdcDecimals] = (await Promise.all([
-            readContract({
+            readContract(config, {
                address: pairAddress as `0x${string}`,
                abi: uniswapPairAbi,
                functionName: "getReserves",
             }),
-            readContract({
+            readContract(config, {
                address: tokenAddress as `0x${string}`,
                abi: tokenAbi,
                functionName: "decimals",
             }),
-            readContract({
+            readContract(config, {
                address: USDC_ADDRESS,
                abi: tokenAbi,
                functionName: "decimals",
             }),
-         ])) as [string[], bigint, bigint];
+         ])) as [bigint[], number, number];
 
-         const convertedTokenAmount = Number(ethers.formatUnits(reserves[0], tokenDecimals));
-         const convertedUsdcAmount = Number(ethers.formatUnits(reserves[1], usdcDecimals));
+         const convertedTokenAmount = Number(ethers.formatUnits(reserves[1], tokenDecimals));
+         const convertedUsdcAmount = Number(ethers.formatUnits(reserves[0], usdcDecimals));
 
          return convertedUsdcAmount === 0 || convertedTokenAmount === 0
             ? 0
@@ -74,38 +75,38 @@ export const useTokenInfo = (tokenAddress: `0x${string}` | undefined) => {
 
          const [decimals, name, symbol, totalSupply, balanceOf, owner, complianceAddress] =
             await Promise.allSettled([
-               readContract({
+               readContract(config, {
                   address: tokenAddress,
                   abi: tokenAbi,
                   functionName: "decimals",
                }),
-               readContract({
+               readContract(config, {
                   address: tokenAddress,
                   abi: tokenAbi,
                   functionName: "name",
                }),
-               readContract({
+               readContract(config, {
                   address: tokenAddress,
                   abi: tokenAbi,
                   functionName: "symbol",
                }),
-               readContract({
+               readContract(config, {
                   address: tokenAddress,
                   abi: tokenAbi,
                   functionName: "totalSupply",
                }),
-               readContract({
+               readContract(config, {
                   address: tokenAddress,
                   abi: tokenAbi,
                   functionName: "balanceOf",
-                  args: [evmAddress],
+                  args: [evmAddress!],
                }),
-               readContract({
+               readContract(config, {
                   address: tokenAddress,
                   abi: tokenAbi,
                   functionName: "owner",
                }).catch(() => null),
-               readContract({
+               readContract(config, {
                   address: tokenAddress,
                   abi: tokenVotesAbi,
                   functionName: "compliance",

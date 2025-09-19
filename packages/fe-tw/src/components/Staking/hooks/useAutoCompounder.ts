@@ -1,51 +1,54 @@
-import { useEvmAddress, useReadContract } from "@buidlerlabs/hashgraph-react-wallets";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { tokenAbi } from "@/services/contracts/abi/tokenAbi";
-import { ContractId } from "@hashgraph/sdk";
-import { useExecuteTransaction } from "@/hooks/useExecuteTransaction";
+import { executeTransaction } from "@/hooks/useExecuteTransaction";
 import useWriteContract from "@/hooks/useWriteContract";
 import { BigNumberish, ethers } from "ethers";
 import { autoCompounderAbi } from "@/services/contracts/abi/autoCompounderAbi";
+import { useAccount } from "wagmi";
+import { config } from "@/config";
+import { readContract } from "wagmi/actions";
 
 export const useAutoCompounder = (
-   autoCompounderAddress: string | undefined,
-   tokenAddress: string | undefined,
+   autoCompounderAddress: `0x${string}` | undefined,
+   tokenAddress: `0x${string}` | undefined,
    tokenDecimals: number | undefined,
 ) => {
-   const { data: evmAddress } = useEvmAddress();
-   const { executeTransaction } = useExecuteTransaction();
+   const { address: evmAddress } = useAccount();
    const { writeContract } = useWriteContract();
-   const { readContract } = useReadContract();
 
    const { data: aTokenInfo, refetch } = useQuery({
       queryKey: ["A_TOKENS", autoCompounderAddress, evmAddress],
       queryFn: async () => {
          const [totalSupply, balanceOfAToken, decimals, exchangeRate] = await Promise.all([
-            readContract({
+            readContract(config, {
                address: autoCompounderAddress as `0x${string}`,
                abi: autoCompounderAbi,
                functionName: "totalSupply",
             }),
-            readContract({
+            readContract(config, {
                address: autoCompounderAddress as `0x${string}`,
                abi: autoCompounderAbi,
                functionName: "balanceOf",
-               args: [evmAddress],
+               args: [evmAddress!],
             }),
-            readContract({
+            readContract(config, {
                address: autoCompounderAddress as `0x${string}`,
                abi: autoCompounderAbi,
                functionName: "decimals",
             }),
-            readContract({
+            readContract(config, {
                address: autoCompounderAddress as `0x${string}`,
                abi: autoCompounderAbi,
                functionName: "exchangeRate",
             }),
          ]);
 
-         const aTokenBalance = Number(ethers.formatUnits(balanceOfAToken as BigNumberish, decimals as string));
-         const totalSupplyFormatted = Number(ethers.formatUnits(totalSupply as BigNumberish, decimals as string));
+         const aTokenBalance = Number(
+            ethers.formatUnits(balanceOfAToken as BigNumberish, decimals),
+         );
+         const totalSupplyFormatted = Number(
+            ethers.formatUnits(totalSupply as BigNumberish, decimals),
+         );
          const exchangeRateFormatted = Number(ethers.formatUnits(exchangeRate as BigNumberish, 18));
 
          return { totalSupplyFormatted, aTokenBalance, exchangeRate: exchangeRateFormatted };
@@ -59,9 +62,9 @@ export const useAutoCompounder = (
             throw new Error("Required addresses or token decimals not available");
          }
          const bigIntAmount = ethers.parseUnits(String(amount), tokenDecimals || 18);
-         return await executeTransaction(() =>
+         return executeTransaction(() =>
             writeContract({
-               contractId: ContractId.fromEvmAddress(0, 0, autoCompounderAddress),
+               address: autoCompounderAddress,
                abi: autoCompounderAbi,
                functionName: "withdraw",
                args: [bigIntAmount, evmAddress],
@@ -80,7 +83,7 @@ export const useAutoCompounder = (
 
          const approveTx = await executeTransaction(() =>
             writeContract({
-               contractId: ContractId.fromEvmAddress(0, 0, tokenAddress),
+               address: tokenAddress,
                abi: tokenAbi,
                functionName: "approve",
                args: [autoCompounderAddress, bigIntAmount],
@@ -89,7 +92,7 @@ export const useAutoCompounder = (
 
          const depositTx = await executeTransaction(() =>
             writeContract({
-               contractId: ContractId.fromEvmAddress(0, 0, autoCompounderAddress),
+               address: autoCompounderAddress,
                abi: autoCompounderAbi,
                functionName: "deposit",
                args: [bigIntAmount, evmAddress],
@@ -108,7 +111,7 @@ export const useAutoCompounder = (
 
          return await executeTransaction(() =>
             writeContract({
-               contractId: ContractId.fromEvmAddress(0, 0, autoCompounderAddress),
+               address: autoCompounderAddress,
                abi: autoCompounderAbi,
                functionName: "claim",
                args: [],
@@ -128,7 +131,7 @@ export const useAutoCompounder = (
 
          return await executeTransaction(() =>
             writeContract({
-               contractId: ContractId.fromEvmAddress(0, 0, autoCompounderAddress),
+               address: autoCompounderAddress,
                abi: autoCompounderAbi,
                functionName: "claimExactUserReward",
                args: [evmAddress],

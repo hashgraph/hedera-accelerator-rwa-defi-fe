@@ -11,9 +11,9 @@ import { FormSelect } from "@/components/ui/formSelect";
 import { Button } from "@/components/ui/button";
 import { tryCatch } from "@/services/tryCatch";
 import { StorageKeys, storageService } from "@/services/storageService";
-import { useEvmAddress } from "@buidlerlabs/hashgraph-react-wallets";
 import { TxResultToastView } from "../CommonViews/TxResultView";
 import * as uuid from "uuid";
+import { useAccount } from "wagmi";
 
 type PaymentFormProps = {
    isSubmitting: boolean;
@@ -33,7 +33,7 @@ export function PaymentForm({
    const [amount, setAmount] = useState("");
    const [revenueType, setRevenueType] = useState("rental");
    const [notes, setNotes] = useState("");
-   const { data: evmAddress } = useEvmAddress();
+   const { address: evmAddress } = useAccount();
 
    async function handleSubmit(e: React.FormEvent) {
       e.preventDefault();
@@ -103,11 +103,7 @@ export function PaymentForm({
          </div>
 
          <div className="hidden">
-            <FormSelect
-               name="revenueType"
-               label="Revenue Type"
-               placeholder="Revenue type"
-            >
+            <FormSelect name="revenueType" label="Revenue Type" placeholder="Revenue type">
                <SelectItem value="rental">Rental</SelectItem>
                <SelectItem value="parking">Parking Fees</SelectItem>
                <SelectItem value="advertising">Advertising Revenue</SelectItem>

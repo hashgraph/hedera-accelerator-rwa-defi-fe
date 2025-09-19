@@ -4,10 +4,11 @@ import { convertBuildingNFTsData, readBuildingsList } from "@/services/buildingS
 import { useQuery } from "@tanstack/react-query";
 import { fetchBuildingInfo, fetchBuildingNFTsMetadata, readBuildingDetails } from "./helpers";
 import { getTokenBalanceOf, getTokenDecimals, getTokenName } from "@/services/erc20Service";
-import { useEvmAddress } from "@buidlerlabs/hashgraph-react-wallets";
+import { useAccount } from "wagmi";
 
 export function useBuildings() {
-   const { data: evmAddress } = useEvmAddress();
+   const { address: evmAddress } = useAccount();
+
    const { data: buildingsList } = useQuery({
       queryKey: ["buildingsList"],
       queryFn: async () => {
@@ -60,7 +61,7 @@ export function useBuildings() {
                buildingsInfo?.map((info) => getTokenDecimals(info.tokenAddress!)),
             );
             const buildingTokenBalances = await Promise.allSettled(
-               buildingsInfo?.map((info) => getTokenBalanceOf(info.tokenAddress!, evmAddress)),
+               buildingsInfo?.map((info) => getTokenBalanceOf(info.tokenAddress!, evmAddress!)),
             );
 
             return buildingsInfo.map((info, index) => ({

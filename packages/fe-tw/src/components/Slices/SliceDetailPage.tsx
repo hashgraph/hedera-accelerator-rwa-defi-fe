@@ -5,12 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Formik } from "formik";
 import { toast } from "sonner";
 import { Loader, CheckCircle, Loader2 } from "lucide-react";
-import {
-   useChain,
-   useEvmAddress,
-   useReadContract,
-   useWallet,
-} from "@buidlerlabs/hashgraph-react-wallets";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useBuildings } from "@/hooks/useBuildings";
@@ -32,28 +26,25 @@ import {
 import { AddSliceAllocationForm } from "@/components/Admin/sliceManagement/AddSliceAllocationForm";
 import { TxResultToastView } from "@/components/CommonViews/TxResultView";
 import { useCreateSlice } from "@/hooks/useCreateSlice";
-import {
-   getTokenBalanceOf,
-   getTokenDecimals,
-   getTokenName,
-   getTokenSymbol,
-} from "@/services/erc20Service";
+import { getTokenBalanceOf } from "@/services/erc20Service";
 import { tryCatch } from "@/services/tryCatch";
 import { sliceRebalanceSchema } from "./helpers";
 import { DepositToSliceForm } from "../Admin/sliceManagement/DepositToSliceForm";
 import SliceDepositChart from "./SliceDepositChart";
-import { UNISWAP_FACTORY_ADDRESS, USDC_ADDRESS } from "@/services/contracts/addresses";
 import { readBuildingDetails } from "@/services/buildingService";
 import { basicVaultAbi } from "@/services/contracts/abi/basicVaultAbi";
 import { Checkbox } from "../ui/checkbox";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
-import { PieChart, TrendingUp, Wallet, Settings, Plus, BarChart3 } from "lucide-react";
+import { PieChart, TrendingUp, Settings, Plus, BarChart3 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AllocationBuildingCard } from "./AllocationBuildingCard";
 import { useQueryClient } from "@tanstack/react-query";
 import { useUSDCForSlice } from "@/hooks/useUSDCForSlice";
 import Image from "next/image";
+import { useAccount } from "wagmi";
+import { readContract } from "wagmi/actions";
+import { config } from "@/config";
 
 type Props = {
    slice: SliceData;
@@ -63,15 +54,13 @@ type Props = {
 
 export function SliceDetailPage({ slice, buildingId, isInBuildingContext = false }: Props) {
    const queryClient = useQueryClient();
-   const wallet = useWallet();
-   const { readContract } = useReadContract();
    const { buildingsInfo } = useBuildings();
    const { sliceAllocations, sliceBuildings, sliceBuildingsDetails, totalDeposits } = useSliceData(
       slice.address,
       buildingsInfo,
    );
 
-   const { data: evmAddress } = useEvmAddress();
+   const { address: evmAddress } = useAccount();
    const { rebalanceSliceMutation, addAllocationsToSliceMutation, depositWithPermits } =
       useCreateSlice(slice.address);
    const { investUSDCToSlice, currentStep, stepResults, steps, exchangeRates } = useUSDCForSlice(
@@ -107,7 +96,7 @@ export function SliceDetailPage({ slice, buildingId, isInBuildingContext = false
 
          return await Promise.all(
             sliceAllocationVaults.map((vault, id) =>
-               readContract({
+               readContract(config, {
                   address: vault.vault,
                   abi: basicVaultAbi,
                   functionName: "getAllRewards",
@@ -236,7 +225,7 @@ export function SliceDetailPage({ slice, buildingId, isInBuildingContext = false
    };
 
    const rebalanceDisabled = !!rewardsAvailableData?.length
-      ? !rewardsAvailableData.some((reward) => (reward as number) > 0)
+      ? !rewardsAvailableData.some((reward) => Number(reward) > 0)
       : false;
 
    const handleUSDCInvestment = async () => {

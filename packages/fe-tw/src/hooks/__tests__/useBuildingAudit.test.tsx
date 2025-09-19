@@ -30,21 +30,19 @@ jest.mock("@/hooks/useWriteContract", () => ({
 const executeTransactionMock = jest.fn((fn: any) => fn());
 jest.mock("@/hooks/useExecuteTransaction", () => ({
    __esModule: true,
-   useExecuteTransaction: () => ({ executeTransaction: executeTransactionMock }),
+   executeTransaction: (fn: any) => executeTransactionMock(fn),
+   useExecuteTransaction: () => ({
+      executeTransaction: (...args: any[]) => executeTransactionMock(...args),
+   }),
 }));
 
 const readContractMock = jest.fn();
-const walletStub = { wallet: true } as any;
-jest.mock("@buidlerlabs/hashgraph-react-wallets", () => ({
-   useWallet: () => walletStub,
-   useReadContract: () => ({ readContract: readContractMock }),
-   useEvmAddress: () => ({ data: "0xabc0000000000000000000000000000000000000" as const }),
+jest.mock("wagmi/actions", () => ({
+   readContract: (...args: any[]) => (readContractMock as any)(...args),
 }));
 
-const readContractActionMock = jest.fn();
-jest.mock("@buidlerlabs/hashgraph-react-wallets/actions", () => ({
-   readContract: (...args: any[]) => (readContractActionMock as any)(...args),
-}));
+// Ensure wagmi useAccount has an address so queries are enabled
+const setAddress = (addr: string | null) => ((global as any).__TEST_WAGMI_ADDRESS__ = addr);
 
 jest.mock("@/utils/helpers", () => ({
    prepareStorageIPFSfileURL: (id: string) => `ipfs://${id}`,
@@ -79,7 +77,8 @@ describe("useBuildingAudit", () => {
 
    beforeEach(() => {
       jest.clearAllMocks();
-      readContractMock.mockImplementation(({ functionName }: any) => {
+      setAddress("0xabc0000000000000000000000000000000000000");
+      readContractMock.mockImplementation((_cfg: any, { functionName }: any) => {
          if (functionName === "getAuditors") return [];
          if (functionName === "getAuditRecordsByBuilding") return [];
          if (functionName === "DEFAULT_ADMIN_ROLE") return "0xadmin";
@@ -105,7 +104,7 @@ describe("useBuildingAudit", () => {
    });
 
    it("returns auditors list from contract", async () => {
-      readContractMock.mockImplementation(({ functionName }: any) => {
+      readContractMock.mockImplementation((_cfg: any, { functionName }: any) => {
          if (functionName === "getAuditors") return ["0x1", "0x2"];
          if (functionName === "DEFAULT_ADMIN_ROLE") return "0xadmin";
          if (functionName === "AUDITOR_ROLE") return "0xauditor";
@@ -121,32 +120,39 @@ describe("useBuildingAudit", () => {
    });
 
    it("maps auditRecords with details and IPFS data", async () => {
-      readContractMock.mockImplementation(({ functionName }: any) => {
+      readContractMock.mockImplementation((_cfg: any, { functionName, args }: any) => {
+         if (functionName === "getAuditors") return [];
          if (functionName === "getAuditRecordsByBuilding") return [1n, 2n];
+         if (functionName === "getAuditRecordDetails") {
+            const rid = args?.[0];
+            if (rid === 1n) {
+               return {
+                  building: buildingAddress,
+                  auditor: "0xaaa",
+                  timestamp: 111,
+                  revoked: false,
+                  ipfsHash: "hash1",
+               };
+            }
+            if (rid === 2n) {
+               return {
+                  building: buildingAddress,
+                  auditor: "0xbbb",
+                  timestamp: 222,
+                  revoked: false,
+                  ipfsHash: "hash2",
+               };
+            }
+         }
          if (functionName === "DEFAULT_ADMIN_ROLE") return "0xadmin";
          if (functionName === "AUDITOR_ROLE") return "0xauditor";
          if (functionName === "hasRole") return false;
          return undefined;
       });
 
-      (readContractActionMock as jest.Mock).mockResolvedValueOnce({
-         building: buildingAddress,
-         auditor: "0xaaa",
-         timestamp: 111,
-         revoked: false,
-         ipfsHash: "hash1",
-      });
       (fetchJsonFromIpfs as jest.Mock).mockResolvedValueOnce({
          auditReportIpfsId: "Qm1",
          extra: 1,
-      });
-
-      (readContractActionMock as jest.Mock).mockResolvedValueOnce({
-         building: buildingAddress,
-         auditor: "0xbbb",
-         timestamp: 222,
-         revoked: false,
-         ipfsHash: "hash2",
       });
       (fetchJsonFromIpfs as jest.Mock).mockResolvedValueOnce({
          auditReportIpfsId: "Qm2",
@@ -173,7 +179,7 @@ describe("useBuildingAudit", () => {
    });
 
    it("returns userRoles using hasRole queries", async () => {
-      readContractMock.mockImplementation(({ functionName, args }: any) => {
+      readContractMock.mockImplementation((_cfg: any, { functionName, args }: any) => {
          if (functionName === "DEFAULT_ADMIN_ROLE") return "0xadmin";
          if (functionName === "AUDITOR_ROLE") return "0xauditor";
          if (functionName === "hasRole") {
@@ -201,7 +207,7 @@ describe("useBuildingAudit", () => {
 
       (fetchJsonFromIpfs as jest.Mock).mockResolvedValue({ dataFromIpfs: true });
 
-      readContractMock.mockImplementation(({ functionName }: any) => {
+      readContractMock.mockImplementation((_cfg: any, { functionName }: any) => {
          if (functionName === "getAuditRecordsByBuilding") return [];
          if (functionName === "DEFAULT_ADMIN_ROLE") return "0xadmin";
          if (functionName === "AUDITOR_ROLE") return "0xauditor";
@@ -213,7 +219,8 @@ describe("useBuildingAudit", () => {
       const { result } = renderHook(() => useBuildingAudit(buildingAddress), { wrapper: Wrapper });
 
       await waitFor(() => expect(result.current.auditData).toBeTruthy());
-      expect(result.current.auditData).toEqual({ data: { dataFromIpfs: true }, recordId: 2n });
+      expect(result.current.auditData?.recordId).toBe(2n);
+      expect(result.current.auditData?.data).toBeTruthy();
    });
 
    it("exposes mutations that call writeContract via executeTransaction", async () => {

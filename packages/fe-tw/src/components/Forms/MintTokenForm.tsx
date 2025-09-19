@@ -4,28 +4,26 @@ import { Form, Formik } from "formik";
 import * as Yup from "yup";
 import { useState } from "react";
 import { CoinsIcon } from "lucide-react";
-import { useEvmAddress, useWriteContract } from "@buidlerlabs/hashgraph-react-wallets";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { tokenAbi } from "@/services/contracts/abi/tokenAbi";
-import { ContractId } from "@hashgraph/sdk";
 import { useBuildingInfo } from "@/hooks/useBuildingInfo";
 import { getTokenDecimals } from "@/services/erc20Service";
-import { useExecuteTransaction } from "@/hooks/useExecuteTransaction";
+import { executeTransaction } from "@/hooks/useExecuteTransaction";
 import { tryCatch } from "@/services/tryCatch";
-import { TransactionExtended } from "@/types/common";
 import { TxResultToastView } from "../CommonViews/TxResultView";
 import { toast } from "sonner";
 import { FormInput } from "../ui/formInput";
 import { USDC_ADDRESS } from "@/services/contracts/addresses";
 import { ethers } from "ethers";
+import { useAccount } from "wagmi";
+import useWriteContract from "@/hooks/useWriteContract";
 
 type Props = { buildingId: string };
 
 export const MintTokenForm = ({ buildingId }: Props) => {
    const { writeContract } = useWriteContract();
-   const { executeTransaction } = useExecuteTransaction();
-   const { data: evmAddress } = useEvmAddress();
+   const { address: evmAddress } = useAccount();
    const { tokenAddress } = useBuildingInfo(buildingId);
    const [isLoading, setIsLoading] = useState(false);
 
@@ -33,14 +31,14 @@ export const MintTokenForm = ({ buildingId }: Props) => {
       const { data: decimals, error } = await tryCatch(getTokenDecimals(tokenAddress));
       if (decimals) {
          const amountAsBigInt = ethers.parseUnits(values.tokensAmount!, Number(decimals));
-         const tx = (await executeTransaction(() =>
+         const tx = await executeTransaction(() =>
             writeContract({
-               contractId: ContractId.fromEvmAddress(0, 0, USDC_ADDRESS),
-               args: [evmAddress as `0x${string}`, amountAsBigInt],
+               address: USDC_ADDRESS,
                functionName: "mint",
                abi: tokenAbi,
+               args: [evmAddress as `0x${string}`, amountAsBigInt],
             }),
-         )) as TransactionExtended;
+         );
 
          toast.success(<TxResultToastView title="Tokens minted successfully!" txSuccess={tx} />);
       }

@@ -1,7 +1,6 @@
 "use client";
 import { isEmpty, isNumber } from "lodash";
-import { BigNumberish, ethers } from "ethers";
-import { useEvmAddress } from "@buidlerlabs/hashgraph-react-wallets";
+import { ethers } from "ethers";
 import { useQuery } from "@tanstack/react-query";
 import { readBuildingDetails } from "@/hooks/useBuildings";
 import { getTokenBalanceOf, getTokenDecimals } from "@/services/erc20Service";
@@ -9,12 +8,13 @@ import { QueryKeys } from "@/types/queries";
 import { readUniswapPairs } from "@/hooks/useSwapsHistory";
 import { USDC_ADDRESS } from "@/services/contracts/addresses";
 import { useBuildingOwner } from "./useBuildingOwner";
+import { useAccount } from "wagmi";
 
 export const useBuildingInfo = (id?: string) => {
    const { buildingOwnerAddress, isLoading: buildingOwnerLoading } = useBuildingOwner(
       id as `0x${string}`,
    );
-   const { data: evmAddress } = useEvmAddress();
+   const { address: evmAddress } = useAccount();
 
    const { data: buildingDetails, isLoading: buildingLoading } = useQuery({
       queryKey: ["BUILDING_DETAILS", id],
@@ -40,7 +40,7 @@ export const useBuildingInfo = (id?: string) => {
       queryFn: async () => {
          const [[decimals], [tokenAmountMinted]] = await Promise.all([
             getTokenDecimals(buildingDetails?.tokenAddress),
-            getTokenBalanceOf(buildingDetails?.tokenAddress, evmAddress),
+            getTokenBalanceOf(buildingDetails?.tokenAddress, evmAddress!),
          ]);
 
          const tokenAmountMintedFormatted = Number(ethers.formatUnits(tokenAmountMinted, decimals));

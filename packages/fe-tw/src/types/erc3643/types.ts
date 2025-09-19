@@ -257,14 +257,14 @@ export type SwapTokenPriceRequestBody = {
 };
 
 export type SwapTokenAddLiquidityRequestBody = {
-   tokenA: string;
-   tokenB?: string;
+   tokenA: `0x${string}`;
+   tokenB?: `0x${string}`;
    amount: bigint;
 };
 
 export type SwapTokenSwapRequestBody = {
-   tokenA: string;
-   tokenB: string;
+   tokenA: `0x${string}`;
+   tokenB: `0x${string}`;
    amount: bigint;
 };
 

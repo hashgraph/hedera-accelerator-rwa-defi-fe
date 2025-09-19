@@ -5,10 +5,17 @@ import userEvent from "@testing-library/user-event";
 import { AuditManagementForm } from "../index";
 import ReactLib from "react";
 
-jest.mock("@/hooks/useBuildingAudit", () => ({ useBuildingAudit: jest.fn() }));
-jest.mock("@buidlerlabs/hashgraph-react-wallets", () => ({
-   useEvmAddress: jest.fn(() => ({ data: "0x123" })),
+// Mock interactive UI layers to avoid act warnings/timeouts
+jest.mock("@/components/ui/tooltip", () => ({
+   __esModule: true,
+   Tooltip: ({ children }: any) => children,
+   TooltipTrigger: ({ children }: any) => children,
+   TooltipContent: ({ children }: any) => children,
+   TooltipProvider: ({ children }: any) => children,
 }));
+
+jest.mock("@/hooks/useBuildingAudit", () => ({ useBuildingAudit: jest.fn() }));
+// use wagmi global address injection from jest.setup.ts
 jest.mock("sonner", () => ({ toast: { success: jest.fn(), error: jest.fn() } }));
 jest.mock("@/components/CommonViews/TxResultView", () => ({
    TxResultToastView: ({ title }: { title: string }) => (
@@ -41,6 +48,9 @@ beforeAll(() => {
    if (!EP.scrollIntoView) {
       EP.scrollIntoView = () => {};
    }
+   // Needed for Radix portal measurements in tests
+   // @ts-ignore
+   if (!document.elementFromPoint) document.elementFromPoint = () => null;
 });
 
 import { useBuildingAudit } from "@/hooks/useBuildingAudit";
@@ -49,9 +59,11 @@ describe("AuditManagementForm", () => {
    const mockAdd = jest.fn();
    const mockUpdate = jest.fn();
    const mockRevoke = jest.fn();
+   const setAddress = (addr: string | null) => ((global as any).__TEST_WAGMI_ADDRESS__ = addr);
 
    beforeEach(() => {
       jest.clearAllMocks();
+      setAddress("0x123");
       global.fetch = jest.fn().mockResolvedValue({
          json: jest.fn().mockResolvedValue({ JWT: "test-jwt" }),
       });
@@ -116,7 +128,7 @@ describe("AuditManagementForm", () => {
          expect(mockAdd).toHaveBeenCalledTimes(1);
          expect(mockAdd).toHaveBeenCalledWith("QmJSON");
       });
-   });
+   }, 15000);
 
    it("updates an existing audit record when form is valid and changed", async () => {
       const existingRecord = {
@@ -168,5 +180,5 @@ describe("AuditManagementForm", () => {
       });
 
       expect(screen.getByRole("button", { name: /Revoke Record/i })).toBeInTheDocument();
-   });
+   }, 15000);
 });

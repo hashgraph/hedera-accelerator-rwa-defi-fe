@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import { ethers } from "ethers";
 import Select from "react-select";
 import { useOneSidedExchangeSwaps } from "@/hooks/useOneSidedExchangeSwaps";
-import { TransactionLink } from "@/components/Typography/TransactionLink";
 import { Input } from "@/components/ui/input";
 import { colourStyles } from "@/consts/theme";
 
@@ -64,8 +63,8 @@ export default function TradeFormOneSidedExchange({ buildingTokens }: Props) {
 
             if (isSwapAllowed) {
                const transactionId = await handleSwapTokens({
-                  tokenA: tradeFormData.tokenA,
-                  tokenB: tokenB,
+                  tokenA: tradeFormData.tokenA as `0x${string}`,
+                  tokenB: tokenB as `0x${string}`,
                   amount: ethers.parseEther(amount.toString()),
                });
 
@@ -169,14 +168,6 @@ export default function TradeFormOneSidedExchange({ buildingTokens }: Props) {
                   Swap tokens
                </button>
             </div>
-
-            {txResult && (
-               <div className="flex mt-5">
-                  <p className="text-md font-bold text-purple-600">
-                     <TransactionLink hash={txResult} />
-                  </p>
-               </div>
-            )}
 
             {txError && (
                <div className="flex mt-5">

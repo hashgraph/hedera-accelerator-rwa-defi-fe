@@ -1,3 +1,5 @@
+import { Abi } from "viem";
+
 export const uniswapRouterAbi = [
    {
       inputs: [
@@ -1056,4 +1058,4 @@ export const uniswapRouterAbi = [
       stateMutability: "payable",
       type: "receive",
    },
-];
+] as const satisfies Abi;

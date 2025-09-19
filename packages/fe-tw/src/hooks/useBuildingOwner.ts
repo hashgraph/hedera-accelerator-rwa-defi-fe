@@ -12,7 +12,7 @@ export const useBuildingOwner = (buildingAddress: `0x${string}`) => {
             functionName: "owner",
             args: [],
          });
-         return data;
+         return data?.toLowerCase();
       },
       enabled: Boolean(buildingAddress),
    });

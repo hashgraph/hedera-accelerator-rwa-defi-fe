@@ -1,8 +1,6 @@
 "use client";
-
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { CreateProposalForm } from "./CreateProposalForm";
 import { ProposalsList } from "./ProposalsList";
 import { Button } from "@/components/ui/button";
@@ -14,13 +12,11 @@ import {
    DialogHeader,
    DialogTitle,
 } from "@/components/ui/dialog";
-import { ethers } from "ethers";
-import { LoadingView } from "../LoadingView/LoadingView";
 import { useGovernanceProposals } from "./hooks/useGovernanceProposals";
 import { ProposalState } from "@/types/props";
 import { useBuildingInfo } from "@/hooks/useBuildingInfo";
-import { buildingGovernanceAbi } from "@/services/contracts/abi/buildingGovernanceAbi";
 import WhyProposals from "./WhyProposals";
+import { tryCatch } from "@/services/tryCatch";
 
 type Props = {
    buildingAddress: `0x${string}`;
@@ -35,8 +31,6 @@ const activeProposalStatuses = [
 
 export function ProposalsView(props: Props) {
    const [showModal, setShowModal] = useState(false);
-   const [pageLoading, setPageLoading] = useState(true);
-   const { replace } = useRouter();
    const {
       governanceAddress: buildingGovernance,
       tokenAddress: buildingToken,
@@ -75,21 +69,15 @@ export function ProposalsView(props: Props) {
    }, [governanceCreatedProposals, proposalStates, governanceDefinedProposals]);
 
    const handleDelegate = async () => {
-      try {
-         const result = await delegateTokens();
-         if (result?.data) {
-            toast.success("Tokens delegated successfully! You can now vote on future proposals.");
-         } else if (result?.error) {
-            toast.error(`Failed to delegate tokens: ${result.error.message}`);
-         }
-      } catch (error) {
-         toast.error(`Failed to delegate tokens: ${(error as Error).message}`);
+      const { data, error } = await tryCatch(delegateTokens());
+      if (data) {
+         toast.success("Tokens delegated successfully! You can now vote on future proposals.");
+      } else if (error) {
+         toast.error(`Failed to delegate tokens: ${error.message}`);
       }
    };
 
-   return pageLoading ? (
-      <LoadingView isLoading />
-   ) : (
+   return (
       <div className="p-2">
          <WhyProposals />
          {!isDelegated && (

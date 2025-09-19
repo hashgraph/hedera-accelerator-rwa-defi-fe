@@ -1,3 +1,5 @@
+import { Abi } from "viem";
+
 export const sliceAbi = [
    {
       inputs: [
@@ -1101,7 +1103,7 @@ export const sliceAbi = [
             name: "from",
             type: "address",
          },
-         { 
+         {
             internalType: "address",
             name: "to",
             type: "address",
@@ -1168,4 +1170,4 @@ export const sliceAbi = [
       stateMutability: "nonpayable",
       type: "function",
    },
-];
+] as const satisfies Abi;

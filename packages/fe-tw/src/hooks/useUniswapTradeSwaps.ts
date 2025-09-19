@@ -2,22 +2,18 @@ import { tokenAbi } from "@/services/contracts/abi/tokenAbi";
 import { uniswapRouterAbi } from "@/services/contracts/abi/uniswapRouterAbi";
 import { UNISWAP_ROUTER_ADDRESS } from "@/services/contracts/addresses";
 import type { SwapUniswapTokensRequestBody } from "@/types/erc3643/types";
-import {
-   useReadContract,
-   useWatchTransactionReceipt,
-   useEvmAddress,
-} from "@buidlerlabs/hashgraph-react-wallets";
-import { ContractId } from "@hashgraph/sdk";
 import useWriteContract from "./useWriteContract";
+import { useAccount } from "wagmi";
+import { executeTransaction } from "./useExecuteTransaction";
+import { readContract } from "wagmi/actions";
+import { config } from "@/config";
 
 export const useUniswapTradeSwaps = () => {
-   const { watch } = useWatchTransactionReceipt();
    const { writeContract } = useWriteContract();
-   const { readContract } = useReadContract();
-   const { data: evmAddress } = useEvmAddress();
+   const { address: evmAddress } = useAccount();
 
    const getAmountsOut = (amount: bigint, tokens: `0x${string}`[]): Promise<bigint[]> => {
-      return readContract({
+      return readContract(config, {
          address: UNISWAP_ROUTER_ADDRESS,
          abi: uniswapRouterAbi,
          functionName: "getAmountsOut",
@@ -25,60 +21,26 @@ export const useUniswapTradeSwaps = () => {
       }) as Promise<bigint[]>;
    };
 
-   const giveAllowance = async (token: string, amount: bigint) => {
-      return new Promise((res, rej) => {
+   const giveAllowance = async (token: `0x${string}`, amount: bigint) => {
+      return executeTransaction(() =>
          writeContract({
-            contractId: ContractId.fromEvmAddress(0, 0, token),
+            address: token,
             abi: tokenAbi,
             functionName: "approve",
             args: [UNISWAP_ROUTER_ADDRESS, amount],
-         })
-            .then((tx) => {
-               watch(tx as string, {
-                  onSuccess: (transaction) => {
-                     res(transaction.transaction_id);
-
-                     return transaction;
-                  },
-                  onError: (transaction, err) => {
-                     rej(err);
-
-                     return transaction;
-                  },
-               });
-            })
-            .catch((err) => {
-               rej(err);
-            });
-      });
+         }),
+      );
    };
 
    const handleSwap = async (payload: SwapUniswapTokensRequestBody): Promise<any> => {
-      return new Promise((res, rej) => {
+      return executeTransaction(() =>
          writeContract({
-            contractId: ContractId.fromEvmAddress(0, 0, UNISWAP_ROUTER_ADDRESS),
+            address: UNISWAP_ROUTER_ADDRESS,
             abi: uniswapRouterAbi,
             functionName: "swapExactTokensForTokens",
             args: [payload.amountIn, payload.amountOut, payload.path, evmAddress, payload.deadline],
-         })
-            .then((tx) => {
-               watch(tx as string, {
-                  onSuccess: (transaction) => {
-                     res(transaction);
-
-                     return transaction;
-                  },
-                  onError: (transaction, err) => {
-                     rej({ err, transaction });
-
-                     return transaction;
-                  },
-               });
-            })
-            .catch((err) => {
-               rej(err);
-            });
-      });
+         }),
+      );
    };
 
    return { handleSwap, getAmountsOut, giveAllowance };

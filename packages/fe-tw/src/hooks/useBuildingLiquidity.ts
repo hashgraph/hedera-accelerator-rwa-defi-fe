@@ -1,28 +1,23 @@
 "use client";
 
-import { useEvmAddress, useWallet, useReadContract } from "@buidlerlabs/hashgraph-react-wallets";
-import {
-   HashpackConnector,
-   MetamaskConnector,
-} from "@buidlerlabs/hashgraph-react-wallets/connectors";
-import { ContractId } from "@hashgraph/sdk";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 
 import { tokens } from "@/consts/tokens";
-import { buildingAbi } from "@/services/contracts/abi/buildingAbi";
-import { tokenAbi } from "@/services/contracts/abi/tokenAbi";
 import { uniswapFactoryAbi } from "@/services/contracts/abi/uniswapFactoryAbi";
 import { uniswapPairAbi } from "@/services/contracts/abi/uniswapPairAbi";
 import { getTokenDecimals } from "@/services/erc20Service";
-import { useExecuteTransaction } from "./useExecuteTransaction";
+import { executeTransaction } from "./useExecuteTransaction";
 import useWriteContract from "./useWriteContract";
 import { TransactionExtended } from "@/types/common";
 import { UNISWAP_ROUTER_ADDRESS, UNISWAP_FACTORY_ADDRESS } from "@/services/contracts/addresses";
 import { uniswapRouterAbi } from "@/services/contracts/abi/uniswapRouterAbi";
 import { ethers } from "ethers";
 import { useTokenPermitSignature } from "./useTokenPermitSignature";
+import { useAccount } from "wagmi";
+import { readContract } from "wagmi/actions";
+import { config } from "@/config";
 
 type HederaWriteContractResult =
    | string
@@ -55,19 +50,15 @@ interface CalculatedAmounts {
 }
 
 interface PairCheckParams {
-   tokenAAddress: string;
-   tokenBAddress: string;
+   tokenAAddress: `0x${string}`;
+   tokenBAddress: `0x${string}`;
    tokenAAmount: string;
    tokenBAmount: string;
 }
 
 export function useBuildingLiquidity() {
-   const { isConnected: isMetamaskConnected } = useWallet(MetamaskConnector);
-   const { isConnected: isHashpackConnected } = useWallet(HashpackConnector);
    const { writeContract } = useWriteContract({ shouldEstimateGas: true });
-   const { executeTransaction } = useExecuteTransaction();
-   const { data: evmAddress } = useEvmAddress();
-   const { readContract } = useReadContract();
+   const { address: evmAddress, isConnected } = useAccount();
 
    const [isAddingLiquidity, setIsAddingLiquidity] = useState(false);
    const [txHash, setTxHash] = useState<TransactionExtended>();
@@ -76,8 +67,11 @@ export function useBuildingLiquidity() {
 
    const { getPermitSignature } = useTokenPermitSignature();
 
-   async function checkPairExists(tokenAAddress: string, tokenBAddress: string): Promise<PairInfo> {
-      const pairAddress = (await readContract({
+   async function checkPairExists(
+      tokenAAddress: `0x${string}`,
+      tokenBAddress: `0x${string}`,
+   ): Promise<PairInfo> {
+      const pairAddress = (await readContract(config, {
          address: UNISWAP_FACTORY_ADDRESS,
          abi: uniswapFactoryAbi,
          functionName: "getPair",
@@ -99,17 +93,17 @@ export function useBuildingLiquidity() {
 
       // Get pair contract details
       const [reserves, token0, token1] = await Promise.all([
-         readContract({
+         readContract(config, {
             address: pairAddress as `0x${string}`,
             abi: uniswapPairAbi,
             functionName: "getReserves",
          }) as Promise<[bigint, bigint, number]>,
-         readContract({
+         readContract(config, {
             address: pairAddress as `0x${string}`,
             abi: uniswapPairAbi,
             functionName: "token0",
          }) as Promise<string>,
-         readContract({
+         readContract(config, {
             address: pairAddress as `0x${string}`,
             abi: uniswapPairAbi,
             functionName: "token1",
@@ -188,14 +182,10 @@ export function useBuildingLiquidity() {
          let decimalsB = tokenBData?.decimals;
 
          if (!decimalsA) {
-            decimalsA = (await getTokenDecimals(
-               tokenAAddress as `0x${string}`,
-            )) as unknown as number;
+            decimalsA = (await getTokenDecimals(tokenAAddress)) as unknown as number;
          }
          if (!decimalsB) {
-            decimalsB = (await getTokenDecimals(
-               tokenBAddress as `0x${string}`,
-            )) as unknown as number;
+            decimalsB = (await getTokenDecimals(tokenBAddress)) as unknown as number;
          }
 
          const desiredTokenA = BigInt(
@@ -228,8 +218,8 @@ export function useBuildingLiquidity() {
    });
 
    const checkPairAndCalculateAmounts = (
-      tokenAAddress: string,
-      tokenBAddress: string,
+      tokenAAddress: `0x${string}`,
+      tokenBAddress: `0x${string}`,
       tokenAAmount: string,
       tokenBAmount: string,
    ) => {
@@ -252,7 +242,7 @@ export function useBuildingLiquidity() {
          setIsAddingLiquidity(true);
          setTxHash(undefined);
 
-         if (!isMetamaskConnected && !isHashpackConnected) {
+         if (!isConnected) {
             toast.error("No wallet connected. Please connect first.");
             return;
          }
@@ -285,7 +275,7 @@ export function useBuildingLiquidity() {
 
          const tx = await executeTransaction(() =>
             writeContract({
-               contractId: ContractId.fromSolidityAddress(UNISWAP_ROUTER_ADDRESS),
+               address: UNISWAP_ROUTER_ADDRESS,
                abi: uniswapRouterAbi,
                functionName: "addLiquidityWithPermit",
                args: [

@@ -1,14 +1,15 @@
-import { useEvmAddress, useReadContract } from "@buidlerlabs/hashgraph-react-wallets";
 import { useQuery } from "@tanstack/react-query";
 import { basicVaultAbi } from "@/services/contracts/abi/basicVaultAbi";
 import { VaultInfo } from "@/components/Staking/types";
+import { useAccount } from "wagmi";
+import { config } from "@/config";
+import { readContract } from "wagmi/actions";
 
 export const useVaultData = (
    vaultAddress: string | undefined,
    tokenDecimals: number | undefined,
 ) => {
-   const { readContract } = useReadContract();
-   const { data: evmAddress } = useEvmAddress();
+   const { address: evmAddress } = useAccount();
 
    return useQuery({
       queryKey: ["VAULT_INFO", vaultAddress, evmAddress],
@@ -16,18 +17,18 @@ export const useVaultData = (
          if (!vaultAddress || !evmAddress || !tokenDecimals) return null;
 
          const [totalAssets, myBalance, rewardTokens] = await Promise.all([
-            readContract({
+            readContract(config, {
                address: vaultAddress as `0x${string}`,
                abi: basicVaultAbi,
                functionName: "totalAssets",
             }),
-            readContract({
+            readContract(config, {
                address: vaultAddress as `0x${string}`,
                abi: basicVaultAbi,
                functionName: "balanceOf",
                args: [evmAddress],
             }),
-            readContract({
+            readContract(config, {
                address: vaultAddress as `0x${string}`,
                abi: basicVaultAbi,
                functionName: "getRewardTokens",

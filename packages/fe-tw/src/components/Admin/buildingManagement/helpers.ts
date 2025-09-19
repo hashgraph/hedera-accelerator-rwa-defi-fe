@@ -68,7 +68,7 @@ export const uploadBuildingInfoToPinata = async (
 
 export const getNewBuildingAddress = async () => {
    const buildings = await readBuildingsList();
-   const lastBuilding: string[] | undefined = last(last(buildings));
+   const lastBuilding: `0x${string}`[] | undefined = last(last(buildings));
 
    if (!lastBuilding) {
       throw new Error("No building found");

@@ -23,10 +23,6 @@ jest.mock("@/services/sliceService", () => ({
    readSliceBaseToken: jest.fn(),
 }));
 
-jest.mock("@buidlerlabs/hashgraph-react-wallets", () => ({
-   useEvmAddress: () => ({ data: "0xme00000000000000000000000000000000000000" as const }),
-}));
-
 jest.mock("@/utils/helpers", () => ({
    prepareStorageIPFSfileURL: (id: string) => `ipfs://converted/${id}`,
 }));
@@ -52,6 +48,7 @@ import { fetchJsonFromIpfs } from "@/services/ipfsService";
 
 describe("useSliceData", () => {
    const sliceAddress = "0x51ice000000000000000000000000000000000000" as const;
+   const setAddress = (addr: string | null) => ((global as any).__TEST_WAGMI_ADDRESS__ = addr);
 
    const createWrapper = () => {
       const queryClient = new QueryClient({
@@ -66,6 +63,7 @@ describe("useSliceData", () => {
    beforeEach(() => {
       jest.clearAllMocks();
       depositLogs = null;
+      setAddress("0xme00000000000000000000000000000000000000");
    });
 
    it("loads sliceBaseToken and token info when evm address is available", async () => {

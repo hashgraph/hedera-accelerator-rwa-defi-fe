@@ -1,11 +1,11 @@
+import { config } from "@/config";
 import { tokenVotesAbi } from "@/services/contracts/abi/tokenVotesAbi";
-import { useChain, useEvmAddress, useReadContract } from "@buidlerlabs/hashgraph-react-wallets";
 import { ethers, TypedDataDomain } from "ethers";
+import { useAccount } from "wagmi";
+import { readContract, signTypedData } from "wagmi/actions";
 
 export const useTokenPermitSignature = () => {
-   const { data: evmAddress } = useEvmAddress();
-   const { readContract } = useReadContract();
-   const { data: chainData } = useChain();
+   const { address: evmAddress, chain } = useAccount();
 
    const getPermitSignature = async (
       tokenAddress: `0x${string}`,
@@ -13,34 +13,34 @@ export const useTokenPermitSignature = () => {
       spender: `0x${string}`,
       deadline?: number,
    ) => {
-      const [tokenName, tokenDecimals, nonce] = (await Promise.all([
-         readContract({
+      const [tokenName, tokenDecimals, nonce] = await Promise.all([
+         readContract(config, {
             abi: tokenVotesAbi,
             functionName: "name",
             address: tokenAddress,
             args: [],
          }),
-         readContract({
+         readContract(config, {
             abi: tokenVotesAbi,
             functionName: "decimals",
             address: tokenAddress,
             args: [],
          }),
-         readContract({
+         readContract(config, {
             address: tokenAddress,
             abi: tokenVotesAbi,
             functionName: "nonces",
-            args: [evmAddress],
+            args: [evmAddress!],
          }),
-      ])) as [string, string, bigint];
+      ]);
 
       const amountInWei =
          typeof amount === "bigint" ? amount : ethers.parseUnits(String(amount), tokenDecimals);
 
-      const domain: TypedDataDomain = {
+      const domain = {
          name: tokenName,
          version: "1",
-         chainId: chainData.chain.id,
+         chainId: chain?.id!,
          verifyingContract: tokenAddress,
       };
 
@@ -53,6 +53,7 @@ export const useTokenPermitSignature = () => {
             { name: "deadline", type: "uint256" },
          ],
       };
+      const primaryType = "Permit";
 
       const ddLine = deadline === undefined ? Math.floor(Date.now() / 1000 + 600) : deadline;
 
@@ -64,13 +65,12 @@ export const useTokenPermitSignature = () => {
          deadline: ddLine,
       };
 
-      if (!window.ethereum) {
-         throw new Error("Ethereum provider not found");
-      }
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-
-      const signatureHash = await signer.signTypedData(domain, types, message);
+      const signatureHash = await signTypedData(config, {
+         domain,
+         types,
+         primaryType,
+         message,
+      });
 
       const { v, r, s } = ethers.Signature.from(signatureHash);
 

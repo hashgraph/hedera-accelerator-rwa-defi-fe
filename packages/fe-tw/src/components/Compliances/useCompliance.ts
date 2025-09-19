@@ -1,14 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useBuildingInfo } from "@/hooks/useBuildingInfo";
-import { useReadContract } from "@buidlerlabs/hashgraph-react-wallets";
 import { useTokenInfo } from "@/hooks/useTokenInfo";
-import useWriteContract from "@/hooks/useWriteContract";
-import { useExecuteTransaction } from "@/hooks/useExecuteTransaction";
+import { executeTransaction } from "@/hooks/useExecuteTransaction";
 import { modularComplianceAbi } from "@/services/contracts/abi/modularComplianceAbi";
-import { ContractId } from "@hashgraph/sdk";
+import useWriteContract from "@/hooks/useWriteContract";
+import { readContract } from "wagmi/actions";
+import { config } from "@/config";
 
 type ComplianceHookParams = {
    buildingId: string;
@@ -18,15 +17,13 @@ type ComplianceHookParams = {
 
 export const useCompliance = ({ buildingAddress, moduleAddress }: ComplianceHookParams) => {
    const { writeContract } = useWriteContract();
-   const { readContract } = useReadContract();
    const { tokenAddress } = useBuildingInfo(buildingAddress);
    const { complianceAddress } = useTokenInfo(tokenAddress);
-   const { executeTransaction } = useExecuteTransaction();
 
    const { data: modules = [], refetch: refetchModules } = useQuery({
       queryKey: ["getModules", complianceAddress],
       queryFn: async () => {
-         const result = (await readContract({
+         const result = (await readContract(config, {
             address: complianceAddress!,
             abi: modularComplianceAbi,
             functionName: "getModules",
@@ -42,7 +39,7 @@ export const useCompliance = ({ buildingAddress, moduleAddress }: ComplianceHook
       mutationFn: async () => {
          const addModuleTX = await executeTransaction(() =>
             writeContract({
-               contractId: ContractId.fromEvmAddress(0, 0, complianceAddress!),
+               address: complianceAddress!,
                abi: modularComplianceAbi,
                functionName: "addModule",
                args: [moduleAddress],
@@ -57,7 +54,7 @@ export const useCompliance = ({ buildingAddress, moduleAddress }: ComplianceHook
       mutationFn: async () => {
          const removeModuleTX = await executeTransaction(() =>
             writeContract({
-               contractId: ContractId.fromEvmAddress(0, 0, complianceAddress!),
+               address: complianceAddress!,
                abi: modularComplianceAbi,
                functionName: "removeModule",
                args: [moduleAddress],

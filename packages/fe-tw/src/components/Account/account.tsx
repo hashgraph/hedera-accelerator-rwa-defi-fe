@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Shield, CheckCheck, AlertCircle } from "lucide-react";
-import { useEvmAddress } from "@buidlerlabs/hashgraph-react-wallets";
+import { useAccount } from "wagmi";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -15,11 +15,16 @@ import { useRouter } from "next/navigation";
 
 const Account = () => {
    const router = useRouter();
-   const { data: evmAddress } = useEvmAddress();
+   const { address: evmAddress } = useAccount();
    const { identityData, deployIdentity } = useIdentity();
    const [isDeploying, setIsDeploying] = useState(false);
 
    const handleDeployIdentity = async ({ onSuccess }: { onSuccess?: () => void }) => {
+      if (!evmAddress) {
+         toast.error("No wallet address available");
+         return;
+      }
+
       setIsDeploying(true);
 
       const { data: result, error } = await tryCatch<TransactionExtended, { message: string }>(

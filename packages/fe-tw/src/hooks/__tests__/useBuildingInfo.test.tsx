@@ -16,9 +16,8 @@ jest.mock("@/hooks/useSwapsHistory", () => ({
    readUniswapPairs: jest.fn(),
 }));
 
-
-jest.mock("@buidlerlabs/hashgraph-react-wallets", () => ({
-   useEvmAddress: () => ({ data: "0xabc0000000000000000000000000000000000000" as const }),
+jest.mock("wagmi", () => ({
+   useAccount: () => ({ address: "0xabc0000000000000000000000000000000000000" as const }),
 }));
 
 jest.mock("@/hooks/useBuildingOwner", () => ({
@@ -35,6 +34,7 @@ import { getTokenBalanceOf, getTokenDecimals } from "@/services/erc20Service";
 import { readUniswapPairs } from "@/hooks/useSwapsHistory";
 
 describe("useBuildingInfo", () => {
+   const setAddress = (addr: string | null) => ((global as any).__TEST_WAGMI_ADDRESS__ = addr);
    const createWrapper = () => {
       const queryClient = new QueryClient({
          defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
@@ -47,6 +47,7 @@ describe("useBuildingInfo", () => {
 
    beforeEach(() => {
       jest.clearAllMocks();
+      setAddress("0xabc0000000000000000000000000000000000000");
    });
 
    it("returns building details, owner, tokenAmountMinted and pair address", async () => {

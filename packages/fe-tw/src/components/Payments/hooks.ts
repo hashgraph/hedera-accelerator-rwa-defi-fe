@@ -1,18 +1,21 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useReadContract, useWriteContract } from "@buidlerlabs/hashgraph-react-wallets";
 import { BigNumberish, ethers } from "ethers";
 import { ContractId } from "@hashgraph/sdk";
 import { useEffect, useState } from "react";
-import { useExecuteTransaction } from "@/hooks/useExecuteTransaction";
 import { buildingTreasuryAbi } from "@/services/contracts/abi/buildingTreasuryAbi";
 import { tokenAbi } from "@/services/contracts/abi/tokenAbi";
 import { StorageKeys, storageService } from "@/services/storageService";
 import { orderBy } from "lodash";
+import { useWriteContract } from "wagmi";
+import { readContract, waitForTransactionReceipt } from "wagmi/actions";
+import { config } from "@/config";
+import { executeTransaction } from "@/hooks/useExecuteTransaction";
 
-export const useTreasuryData = (treasuryAddress: string | undefined, buildingId?: string) => {
-   const { readContract } = useReadContract();
-   const { writeContract } = useWriteContract();
-   const { executeTransaction } = useExecuteTransaction();
+export const useTreasuryData = (
+   treasuryAddress: `0x${string}` | undefined,
+   buildingId?: string,
+) => {
+   const { writeContractAsync: writeContract } = useWriteContract();
    const [payments, setPayments] = useState<any[]>([]);
 
    useEffect(() => {
@@ -40,12 +43,12 @@ export const useTreasuryData = (treasuryAddress: string | undefined, buildingId?
       queryFn: async () => {
          if (!treasuryAddress) return null;
          const [treasuryUsdcAddress, reserve] = await Promise.all([
-            readContract({
+            readContract(config, {
                address: treasuryAddress as `0x${string}`,
                abi: buildingTreasuryAbi,
                functionName: "usdc",
             }),
-            readContract({
+            readContract(config, {
                address: treasuryAddress as `0x${string}`,
                abi: buildingTreasuryAbi,
                functionName: "reserve",
@@ -55,21 +58,21 @@ export const useTreasuryData = (treasuryAddress: string | undefined, buildingId?
          if (!treasuryUsdcAddress) return null;
 
          const [balance, decimals] = await Promise.all([
-            readContract({
+            readContract(config, {
                address: treasuryUsdcAddress as `0x${string}`,
                abi: tokenAbi,
                functionName: "balanceOf",
                args: [treasuryAddress],
             }),
-            readContract({
+            readContract(config, {
                address: treasuryUsdcAddress as `0x${string}`,
                abi: tokenAbi,
                functionName: "decimals",
             }),
          ]);
 
-         const formatted = Number(ethers.formatUnits(balance as BigNumberish, decimals as string));
-         const reserveFormatted = Number(ethers.formatUnits(reserve as BigNumberish, decimals as string));
+         const formatted = Number(ethers.formatUnits(balance as BigNumberish, decimals));
+         const reserveFormatted = Number(ethers.formatUnits(reserve as BigNumberish, decimals));
 
          return {
             balance: formatted,
@@ -90,11 +93,11 @@ export const useTreasuryData = (treasuryAddress: string | undefined, buildingId?
             throw new Error("Treasury data (decimals or USDC address) not loaded yet.");
          }
 
-         const bigIntAmount = ethers.parseUnits(amount.toString(), data.decimals as string);
+         const bigIntAmount = ethers.parseUnits(amount.toString(), data.decimals);
 
          const approveTx = await executeTransaction(() =>
             writeContract({
-               contractId: ContractId.fromEvmAddress(0, 0, data.usdcAddress as string),
+               address: data.usdcAddress,
                abi: tokenAbi,
                functionName: "approve",
                args: [treasuryAddress as `0x${string}`, bigIntAmount],
@@ -103,7 +106,7 @@ export const useTreasuryData = (treasuryAddress: string | undefined, buildingId?
 
          const depositTx = await executeTransaction(() =>
             writeContract({
-               contractId: ContractId.fromEvmAddress(0, 0, treasuryAddress),
+               address: treasuryAddress,
                abi: buildingTreasuryAbi,
                functionName: "deposit",
                args: [bigIntAmount],
