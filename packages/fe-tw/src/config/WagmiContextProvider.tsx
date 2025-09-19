@@ -23,6 +23,9 @@ const modal = createAppKit({
    defaultNetwork: hederaTestnet,
    metadata: metadata,
    themeMode: "light",
+   themeVariables: {
+      "--w3m-font-family": "geistMono sans-serif",
+   },
 });
 
 const WagmiContextProvider = ({

@@ -442,12 +442,6 @@ export function AuditManagementForm({ buildingAddress, recordId }: IProps) {
                                              Upload the complete audit report (PDF format
                                              recommended)
                                           </p>
-                                          {touched?.auditReportIpfsId &&
-                                             typeof errors.auditReportIpfsId === "string" && (
-                                                <div className="text-red-600 text-sm mt-1">
-                                                   {errors.auditReportIpfsId}
-                                                </div>
-                                             )}
                                        </div>
                                     </div>
 

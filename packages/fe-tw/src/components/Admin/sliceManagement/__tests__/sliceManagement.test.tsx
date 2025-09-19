@@ -32,30 +32,6 @@ jest.mock("@/services/erc20Service", () => ({
    getTokenBalanceOf: jest.fn(() => Promise.resolve(BigInt(10))),
 }));
 jest.mock("@/hooks/useCreateSlice", () => ({ useCreateSlice: jest.fn() }));
-jest.mock("@buidlerlabs/hashgraph-react-wallets", () => ({
-   useEvmAddress: jest.fn(() => ({ data: "0xaddr" })),
-   useOriginalWriteContract: jest.fn(() => ({
-      writeContract: () =>
-         Promise.resolve({
-            transaction_id: "123456",
-         }),
-   })),
-   useWriteContract: jest.fn(() => ({
-      writeContract: () =>
-         Promise.resolve({
-            transaction_id: "123456",
-         }),
-   })),
-   useWallet: jest.fn(() => ({
-      isConnected: false,
-   })),
-   useWatchTransactionReceipt: jest.fn(() => ({
-      watch: () => ({
-         onSuccess: () => {},
-         onError: () => {},
-      }),
-   })),
-}));
 jest.mock("@/hooks/useBuildings", () => ({
    useBuildings: jest.fn(() => ({
       buildingsInfo: [

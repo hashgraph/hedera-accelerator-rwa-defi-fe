@@ -88,7 +88,7 @@ export function BuildingSidebar() {
    const [isModalOpened, setIsModalOpened] = useState(false);
    const [isIdentityNotDeployedModalOpened, setIsIdentityNotDeployedModalOpened] = useState(false);
 
-   const isOwner = buildingOwnerAddress === evmAddress;
+   const isOwner = buildingOwnerAddress === evmAddress?.toLowerCase();
    const hasTokens = balanceOf !== BigInt(0);
 
    const handleItemClick = (e: MouseEvent<HTMLAnchorElement>) => {

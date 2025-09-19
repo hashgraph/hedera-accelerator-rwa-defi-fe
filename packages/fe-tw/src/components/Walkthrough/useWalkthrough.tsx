@@ -50,8 +50,10 @@ export const useWalkthrough = (guides?: IProps) => {
       };
    };
 
-   const confirmUserPassedStep = (step: number) => {
-      setCurrentStep(step + 1);
+   const confirmUserPassedStep = (step: number, guideId?: string) => {
+      if (currentGuide === guideId && currentStep === step) {
+         setCurrentStep(step + 1);
+      }
    };
 
    const confirmUserFinishedGuide = (guideId: string) => {

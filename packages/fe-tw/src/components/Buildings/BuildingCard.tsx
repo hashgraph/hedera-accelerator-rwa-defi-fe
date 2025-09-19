@@ -39,7 +39,7 @@ export function BuildingCard({ building, onClick }: BuildingCardProps) {
                <CardContent>
                   <h3 className="text-lg font-semibold flex flex-wrap gap-2">
                      {building.title ?? "Untitled Building"}
-                     {building.owner === evmAddress && (
+                     {building.owner?.toLowerCase() === evmAddress?.toLowerCase() && (
                         <Badge variant="default" color="indigo">
                            Owner
                         </Badge>

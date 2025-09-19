@@ -239,9 +239,15 @@ export const useGovernanceProposals = (
                const delegator = args[0];
                const toDelegate = args[2];
 
-               if (delegator === evmAddress && toDelegate === evmAddress) {
+               if (
+                  delegator.toLowerCase() === evmAddress?.toLowerCase() &&
+                  toDelegate.toLowerCase() === evmAddress?.toLowerCase()
+               ) {
                   setIsDelegated(true);
-               } else if (delegator === evmAddress && toDelegate !== evmAddress) {
+               } else if (
+                  delegator.toLowerCase() === evmAddress?.toLowerCase() &&
+                  toDelegate.toLowerCase() !== evmAddress?.toLowerCase()
+               ) {
                   setIsDelegated(false);
                }
             });

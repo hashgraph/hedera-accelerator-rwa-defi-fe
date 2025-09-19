@@ -43,7 +43,7 @@ export const useSliceData = (
          eventName: "Deposit",
          onLogs: (logs) => {
             const userDeposits = logs
-               .filter((log) => log.args[1] === evmAddress)
+               .filter((log) => log.args[1].toLowerCase() === evmAddress?.toLowerCase())
                .reduce((acc, log) => {
                   return (acc += Number(ethers.formatUnits(log.args[2], 18)));
                }, 0);

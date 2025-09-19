@@ -12,19 +12,7 @@ import {
    navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
-import {
-   Building,
-   Earth,
-   Radar,
-   Slice,
-   Menu,
-   UserCircle,
-   LogOut,
-   ChartNoAxesColumnIncreasing,
-   FileStack, // Added icon
-   Coins, // Added icon
-} from "lucide-react";
-import { WalletConnectModalRW } from "../Wallets/WalletConnectModalRW";
+import { Building, Earth, Radar, Slice, Menu, Coins } from "lucide-react";
 import { SidebarTrigger, useSidebar } from "../ui/sidebar";
 import {
    Drawer,
@@ -37,6 +25,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useWalkthrough, WalkthroughPromptCard, WalkthroughStep } from "../Walkthrough";
 import { useAccount } from "wagmi";
+import ReownConnectButton from "./ReownConnectButton";
 
 export function Navbar() {
    const { address, isConnected } = useAccount();
@@ -48,24 +37,6 @@ export function Navbar() {
    ]);
    const { isSidebarTriggerVisible } = useSidebar();
    const [isOpen, setIsOpen] = React.useState(false);
-
-   // const { isConnected: isConnectedHashpack, disconnect: disconnectHashpack } =
-   //    useWallet(HashpackConnector) || {};
-
-   // const { isConnected: isConnectedMetamask, disconnect: disconnectMetamask } =
-   //    useWallet(MetamaskConnector) || {};
-
-   // const { data: accountId } = useAccountId();
-   // const { data: evmAddress } = useEvmAddress();
-
-   // const handleDisconnectHashpack = async () => {
-   //    await disconnectHashpack();
-   //    setTimeout(() => {
-   //       window.localStorage.removeItem("wagmi.store");
-   //    }, 100);
-   //    // Remove session info from local storage, because in the attempt of reconnect WalletConnect will throw an error
-   //    // Related issue: https://github.com/WalletConnect/walletconnect-monorepo/issues/315
-   // };
 
    return (
       <>
@@ -114,7 +85,6 @@ export function Navbar() {
                         <Link href="/admin" onClick={() => setIsOpen(false)}>
                            Admin
                         </Link>
-                        <WalletConnectModalRW />
                      </div>
                   </DrawerContent>
                </Drawer>
@@ -179,7 +149,7 @@ export function Navbar() {
                               },
                               {
                                  guideId: "USER_LOGIN_FLOW",
-                                 stepIndex: 3,
+                                 stepIndex: 2,
                                  title: "Let's get USDC",
                                  description:
                                     "Hover on this panel and select 'Get Demo USDC' to mint test USDC tokens for development and testing.",
@@ -206,7 +176,6 @@ export function Navbar() {
                         </WalkthroughStep>
                         <NavigationMenuContent asChild data-state="open">
                            <ul className="grid w-[400px] gap-2 p-1 md:w-[300px] md:grid-cols-1 lg:w-[400px]">
-                              {/* Building creation entry point for the admin walkthrough */}
                               <WalkthroughStep
                                  guideId="ADMIN_BUILDING_GUIDE"
                                  stepIndex={2}
@@ -245,7 +214,7 @@ export function Navbar() {
                               </WalkthroughStep>
                               <WalkthroughStep
                                  guideId={"USER_LOGIN_FLOW"}
-                                 stepIndex={4}
+                                 stepIndex={3}
                                  title="Click here"
                                  description="This will lead you to the page where you can mint test USDC tokens for development and testing."
                                  side="left"
@@ -277,55 +246,7 @@ export function Navbar() {
                         </NavigationMenuLink>
                      </NavigationMenuItem>
 
-                     {/* {isConnectedHashpack || isConnectedMetamask ? (
-                        <NavigationMenuItem>
-                           <NavigationMenuTrigger className={navigationMenuTriggerStyle()}>
-                              <UserCircle />
-                           </NavigationMenuTrigger>
-                           <NavigationMenuContent asChild data-state="open">
-                              <div>
-                                 <div className="flex justify-center items-center text-center gap-2 p-2 text-sm text-muted-foreground">
-                                    AccountID: {accountId}
-                                    <span title={evmAddress}>
-                                       EVM Address: {shortEvmAddress(evmAddress)}
-                                    </span>
-                                 </div>
-
-                                 <ul className="grid w-[400px] gap-2 p-1 md:w-[300px] md:grid-cols-1 lg:w-[400px]">
-                                    <ListItem icon={<UserCircle />} title="Account" href="/account">
-                                       Review and manage your account settings
-                                    </ListItem>
-                                    <ListItem
-                                       icon={<ChartNoAxesColumnIncreasing />}
-                                       title="Portfolio"
-                                       href="/portfolio"
-                                    >
-                                       Review portfolio, explore your assets and track performance
-                                    </ListItem>
-                                    <ListItem
-                                       icon={<LogOut />}
-                                       title="Disconnect"
-                                       onClick={async () => {
-                                          if (isConnectedHashpack) {
-                                             await handleDisconnectHashpack();
-                                             toast.success("Disconnected from Hashpack");
-                                          }
-
-                                          if (isConnectedMetamask) {
-                                             disconnectMetamask();
-                                             toast.success("Disconnected from Metamask");
-                                          }
-                                       }}
-                                    />
-                                 </ul>
-                              </div>
-                           </NavigationMenuContent>
-                        </NavigationMenuItem>
-                     ) : (
-                        <appkit-button balance="false" />
-                        // <WalletConnectModalRW />
-                     )} */}
-                     <appkit-button balance="false" />
+                     <ReownConnectButton />
                   </NavigationMenuList>
                </NavigationMenu>
             </div>

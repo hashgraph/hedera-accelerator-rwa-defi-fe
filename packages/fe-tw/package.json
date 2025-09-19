@@ -14,7 +14,6 @@
       "test:watch": "jest --watch"
    },
    "dependencies": {
-      "@buidlerlabs/hashgraph-react-wallets": "^2.5.0",
       "@emotion/react": "^11.14.0",
       "@emotion/styled": "^11.14.0",
       "@fortawesome/fontawesome-free": "^6.7.2",

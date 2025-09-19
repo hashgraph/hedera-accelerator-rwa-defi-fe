@@ -23,10 +23,6 @@ jest.mock("@/services/sliceService", () => ({
    readSliceBaseToken: jest.fn(),
 }));
 
-jest.mock("@buidlerlabs/hashgraph-react-wallets", () => ({
-   useEvmAddress: () => ({ data: "0xme00000000000000000000000000000000000000" as const }),
-}));
-
 jest.mock("@/utils/helpers", () => ({
    prepareStorageIPFSfileURL: (id: string) => `ipfs://converted/${id}`,
 }));

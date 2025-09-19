@@ -63,8 +63,6 @@ export function AddBuildingTokenLiquidityForm({ buildingAddress }: Props) {
    const { tokenAddress } = useBuildingInfo(buildingAddress);
    const { name: tokenName, ...rest } = useTokenInfo(tokenAddress);
 
-   console.log("rest :>> ", rest);
-
    useEffect(() => {
       if (txHash) {
          toast.success(

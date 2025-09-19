@@ -82,7 +82,7 @@ export const MintUSDCButton = () => {
 
          <WalkthroughStep
             guideId={"USER_LOGIN_FLOW"}
-            stepIndex={5}
+            stepIndex={4}
             title="Mint yourself some USDC"
             description={"Now you are ready to experience the platform."}
             side="right"

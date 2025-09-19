@@ -2,7 +2,7 @@ import { config } from "@/config";
 import { tokenVotesAbi } from "@/services/contracts/abi/tokenVotesAbi";
 import { ethers, TypedDataDomain } from "ethers";
 import { useAccount } from "wagmi";
-import { readContract } from "wagmi/actions";
+import { readContract, signTypedData } from "wagmi/actions";
 
 export const useTokenPermitSignature = () => {
    const { address: evmAddress, chain } = useAccount();
@@ -37,10 +37,10 @@ export const useTokenPermitSignature = () => {
       const amountInWei =
          typeof amount === "bigint" ? amount : ethers.parseUnits(String(amount), tokenDecimals);
 
-      const domain: TypedDataDomain = {
+      const domain = {
          name: tokenName,
          version: "1",
-         chainId: chain?.id,
+         chainId: chain?.id!,
          verifyingContract: tokenAddress,
       };
 
@@ -53,6 +53,7 @@ export const useTokenPermitSignature = () => {
             { name: "deadline", type: "uint256" },
          ],
       };
+      const primaryType = "Permit";
 
       const ddLine = deadline === undefined ? Math.floor(Date.now() / 1000 + 600) : deadline;
 
@@ -64,13 +65,12 @@ export const useTokenPermitSignature = () => {
          deadline: ddLine,
       };
 
-      if (!window.ethereum) {
-         throw new Error("Ethereum provider not found");
-      }
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-
-      const signatureHash = await signer.signTypedData(domain, types, message);
+      const signatureHash = await signTypedData(config, {
+         domain,
+         types,
+         primaryType,
+         message,
+      });
 
       const { v, r, s } = ethers.Signature.from(signatureHash);
 
