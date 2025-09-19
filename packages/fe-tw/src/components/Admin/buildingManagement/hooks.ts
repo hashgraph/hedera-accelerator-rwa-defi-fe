@@ -14,12 +14,12 @@ import { uploadBuildingInfoToPinata } from "@/components/Admin/buildingManagemen
 import { getNewBuildingAddress, processError } from "./helpers";
 import { ethers } from "ethers";
 import { useTokenInfo } from "@/hooks/useTokenInfo";
-import { useWriteContract } from "wagmi";
+import useWriteContract from "@/hooks/useWriteContract";
 import { executeTransaction } from "@/hooks/useExecuteTransaction";
 
 export const useBuildingOrchestration = () => {
    const { uploadImage } = useUploadImageToIpfs();
-   const { writeContractAsync: writeContract } = useWriteContract();
+   const { writeContract } = useWriteContract();
    const { decimals: usdcDecimals } = useTokenInfo(USDC_ADDRESS);
 
    const [currentDeploymentStep, setCurrentDeploymentStep] = useState<

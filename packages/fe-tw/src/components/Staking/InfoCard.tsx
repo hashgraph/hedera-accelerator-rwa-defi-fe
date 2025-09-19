@@ -78,7 +78,7 @@ export default function InfoCard({
                   href={`https://hashscan.io/testnet/transaction/${data.consensus_timestamp}`}
                   target="_blank"
                   rel="noopener noreferrer"
-               >sd
+               >
                   View transaction
                </a>
             </div>,

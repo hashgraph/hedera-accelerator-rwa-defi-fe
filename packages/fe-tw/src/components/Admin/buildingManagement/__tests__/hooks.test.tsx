@@ -4,7 +4,9 @@ import { MajorBuildingStep, BuildingMinorStep } from "../types";
 import { INITIAL_VALUES } from "../constants";
 import * as helpers from "../helpers";
 import { useUploadImageToIpfs } from "@/hooks/useUploadImageToIpfs";
-import { useExecuteTransaction } from "@/hooks/useExecuteTransaction";
+// The implementation now uses a named function executeTransaction (not a hook),
+// so we mock that named export instead of attempting to mock a (non-existent) hook.
+// import { executeTransaction } from "@/hooks/useExecuteTransaction"; // (import not required for the mock to work)
 import { BUILDING_FACTORY_ADDRESS } from "@/services/contracts/addresses";
 import { buildingFactoryAbi } from "@/services/contracts/abi/buildingFactoryAbi";
 import { tryCatch } from "@/services/tryCatch";
@@ -13,7 +15,12 @@ import { useTokenInfo } from "@/hooks/useTokenInfo";
 import { ethers } from "ethers";
 
 jest.mock("@/hooks/useUploadImageToIpfs");
-jest.mock("@/hooks/useExecuteTransaction");
+const mockExecuteTransaction = jest.fn().mockImplementation(async (cb) => {
+   return cb();
+});
+jest.mock("@/hooks/useExecuteTransaction", () => ({
+   executeTransaction: (...args: any[]) => mockExecuteTransaction(...args),
+}));
 jest.mock("@/hooks/useWriteContract");
 jest.mock("@/hooks/useTokenInfo");
 jest.mock("wagmi", () => ({
@@ -29,10 +36,7 @@ jest.mock("@/services/tryCatch", () => ({
 }));
 
 const mockUploadImage = jest.fn();
-const mockExecuteTransaction = jest.fn().mockImplementation(async (cb) => {
-   const result = await cb();
-   return { data: result, error: null };
-});
+// mockExecuteTransaction already defined above with a simpler passthrough implementation
 const mockWriteContract = jest.fn();
 let mockHelperUploadBuildingInfoToPinata: jest.Mock;
 let mockGetNewBuildingAddress: jest.Mock;
@@ -42,9 +46,7 @@ describe("useBuildingOrchestration", () => {
       jest.clearAllMocks();
 
       (useUploadImageToIpfs as jest.Mock).mockReturnValue({ uploadImage: mockUploadImage });
-      (useExecuteTransaction as jest.Mock).mockReturnValue({
-         executeTransaction: mockExecuteTransaction,
-      });
+      // executeTransaction is a direct named function; nothing additional to set up here.
       (useWriteContract as jest.Mock).mockReturnValue({ writeContract: mockWriteContract });
       (useTokenInfo as jest.Mock).mockReturnValue({ decimals: 6 });
 
@@ -126,7 +128,6 @@ describe("useBuildingOrchestration", () => {
          "0x_MOCK_IMAGE_IPFS_HASH",
       );
       expect(tryCatch).toHaveBeenCalledWith(expect.any(Promise));
-
       expect(mockExecuteTransaction).toHaveBeenCalledTimes(2);
 
       const expectedBuildingDetails = {
