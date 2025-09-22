@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 export default async function RootLayout({
    children,
 }: Readonly<{
-   children: React.ReactElement;
+   children: React.ReactNode;
 }>) {
    const headersObj = await headers();
    const cookies = headersObj.get("cookie");
