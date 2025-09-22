@@ -28,8 +28,6 @@ import { useAccount } from "wagmi";
 import ReownConnectButton from "./ReownConnectButton";
 
 export function Navbar() {
-   const { address, isConnected } = useAccount();
-
    const { currentGuide, PromptCardProps } = useWalkthrough([
       { guideId: "ADMIN_BUILDING_GUIDE", priority: 2 },
       { guideId: "USER_INVESTING_GUIDE", priority: 3 },
@@ -37,6 +35,7 @@ export function Navbar() {
    ]);
    const { isSidebarTriggerVisible } = useSidebar();
    const [isOpen, setIsOpen] = React.useState(false);
+   const { address, isConnected } = useAccount();
 
    return (
       <>

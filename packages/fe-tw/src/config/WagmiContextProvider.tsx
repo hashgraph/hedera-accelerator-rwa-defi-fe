@@ -11,7 +11,7 @@ const metadata = {
    icons: ["http://localhost:3000/logo192.png"],
 };
 
-const modal = createAppKit({
+export const AppKitModal = createAppKit({
    features: {
       emailShowWallets: false,
       email: false,

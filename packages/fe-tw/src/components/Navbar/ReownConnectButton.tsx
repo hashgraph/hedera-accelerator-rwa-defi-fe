@@ -1,7 +1,13 @@
-import { useAccountEffect } from "wagmi";
+"use client";
+import { useAccountEffect, useAccount } from "wagmi";
+import { useAppKit } from "@reown/appkit/react";
 import { useWalkthrough, WalkthroughPromptCard, WalkthroughStep } from "../Walkthrough";
+import { Button } from "../ui/button";
+import { CircleUser, Wallet } from "lucide-react";
+import { AppKitModal } from "@/config/WagmiContextProvider";
 
 const ReownConnectButton = ({ balance = "false", ...rest }) => {
+   const { isConnected } = useAccount();
    const { PromptCardProps, confirmUserPassedStep } = useWalkthrough([
       {
          guideId: "USER_LOGIN_FLOW",
@@ -23,12 +29,29 @@ const ReownConnectButton = ({ balance = "false", ...rest }) => {
             title={"Click here to open login dialog"}
             description={"This will open Reown connect modal with lots of options to authenticate"}
          >
-            {({ confirmUserPassedStep }) => (
-               <div onClick={confirmUserPassedStep}>
-                  {/* @ts-ignore */}
-                  <appkit-button balance={balance} {...rest} />
-               </div>
-            )}
+            {({ confirmUserPassedStep }) =>
+               isConnected ? (
+                  <Button
+                     variant="secondary"
+                     onClick={() => {
+                        AppKitModal.open({ view: "Account" });
+                     }}
+                  >
+                     <CircleUser />
+                  </Button>
+               ) : (
+                  <Button
+                     variant={"default"}
+                     onClick={() => {
+                        AppKitModal.open({ view: "Connect" });
+                        confirmUserPassedStep();
+                     }}
+                  >
+                     <Wallet />
+                     Connect Wallet
+                  </Button>
+               )
+            }
          </WalkthroughStep>
 
          <WalkthroughPromptCard
