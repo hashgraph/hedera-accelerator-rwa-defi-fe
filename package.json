@@ -9,7 +9,11 @@
   "resolutions": {
     "elliptic": "6.6.1",
     "crypto-js": "4.2.0",
-    "@radix-ui/react-focus-scope": "1.1.1"
+    "@radix-ui/react-focus-scope": "1.1.1",
+    "@noble/hashes": "^1.7.2",
+    "@noble/curves": "^1.8.0",
+    "**/@noble/hashes": "^1.7.2",
+    "**/@noble/curves": "^1.8.0"
   },
   "scripts": {
     "dev": "yarn workspace fe-tw run turbo",
