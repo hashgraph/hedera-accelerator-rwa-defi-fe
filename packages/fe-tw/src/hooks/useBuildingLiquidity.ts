@@ -280,6 +280,8 @@ export function useBuildingLiquidity() {
                calculatedAmounts.tokenARequired,
                UNISWAP_ROUTER_ADDRESS,
                deadline,
+               "ERC20Permit",
+               "1.0.0",
             ),
          ]);
 

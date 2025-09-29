@@ -5,44 +5,6 @@ export const vaultFactoryAbi = [
       type: "constructor",
    },
    {
-      inputs: [
-         {
-            internalType: "address",
-            name: "owner",
-            type: "address",
-         },
-      ],
-      name: "OwnableInvalidOwner",
-      type: "error",
-   },
-   {
-      inputs: [
-         {
-            internalType: "address",
-            name: "account",
-            type: "address",
-         },
-      ],
-      name: "OwnableUnauthorizedAccount",
-      type: "error",
-   },
-   {
-      inputs: [
-         {
-            internalType: "uint256",
-            name: "value",
-            type: "uint256",
-         },
-         {
-            internalType: "uint256",
-            name: "length",
-            type: "uint256",
-         },
-      ],
-      name: "StringsInsufficientHexLength",
-      type: "error",
-   },
-   {
       anonymous: false,
       inputs: [
          {
@@ -77,6 +39,12 @@ export const vaultFactoryAbi = [
             type: "address",
          },
          {
+            indexed: true,
+            internalType: "address",
+            name: "deployer",
+            type: "address",
+         },
+         {
             indexed: false,
             internalType: "string",
             name: "name",
@@ -88,83 +56,58 @@ export const vaultFactoryAbi = [
             name: "symbol",
             type: "string",
          },
+         {
+            indexed: false,
+            internalType: "uint8",
+            name: "decimals",
+            type: "uint8",
+         },
+         {
+            indexed: false,
+            internalType: "uint256",
+            name: "lockPeriod",
+            type: "uint256",
+         },
       ],
-      name: "VaultDeployed",
+      name: "VaultCreated",
       type: "event",
    },
    {
       inputs: [
          {
-            internalType: "string",
-            name: "salt",
-            type: "string",
-         },
-         {
             components: [
                {
-                  internalType: "address",
-                  name: "stakingToken",
+                  internalType: "contract IERC20",
+                  name: "asset",
                   type: "address",
                },
                {
                   internalType: "string",
-                  name: "shareTokenName",
+                  name: "name",
                   type: "string",
                },
                {
                   internalType: "string",
-                  name: "shareTokenSymbol",
+                  name: "symbol",
                   type: "string",
                },
                {
-                  internalType: "address",
-                  name: "vaultRewardController",
-                  type: "address",
-               },
-               {
-                  internalType: "address",
-                  name: "feeConfigController",
-                  type: "address",
-               },
-               {
-                  internalType: "uint32",
-                  name: "cliff",
-                  type: "uint32",
-               },
-               {
-                  internalType: "uint32",
-                  name: "unlockDuration",
-                  type: "uint32",
-               },
-            ],
-            internalType: "struct IVaultFactory.VaultDetails",
-            name: "vaultDetails",
-            type: "tuple",
-         },
-         {
-            components: [
-               {
-                  internalType: "address",
-                  name: "receiver",
-                  type: "address",
-               },
-               {
-                  internalType: "address",
-                  name: "token",
-                  type: "address",
+                  internalType: "uint8",
+                  name: "decimals",
+                  type: "uint8",
                },
                {
                   internalType: "uint256",
-                  name: "feePercentage",
+                  name: "lockPeriod",
                   type: "uint256",
                },
             ],
-            internalType: "struct FeeConfiguration.FeeConfig",
-            name: "feeConfig",
+            internalType: "struct RewardsVault4626Factory.VaultCreationParams",
+            name: "params",
             type: "tuple",
          },
       ],
-      name: "deployVault",
+      name: "createVault",
       outputs: [
          {
             internalType: "address",
@@ -172,7 +115,218 @@ export const vaultFactoryAbi = [
             type: "address",
          },
       ],
-      stateMutability: "payable",
+      stateMutability: "nonpayable",
+      type: "function",
+   },
+   {
+      inputs: [
+         {
+            internalType: "contract IERC20",
+            name: "asset",
+            type: "address",
+         },
+         {
+            internalType: "string",
+            name: "name",
+            type: "string",
+         },
+         {
+            internalType: "string",
+            name: "symbol",
+            type: "string",
+         },
+         {
+            internalType: "uint8",
+            name: "decimals",
+            type: "uint8",
+         },
+         {
+            internalType: "uint256",
+            name: "lockPeriod",
+            type: "uint256",
+         },
+      ],
+      name: "createVaultWithParams",
+      outputs: [
+         {
+            internalType: "address",
+            name: "vault",
+            type: "address",
+         },
+      ],
+      stateMutability: "nonpayable",
+      type: "function",
+   },
+   {
+      inputs: [
+         {
+            internalType: "uint256",
+            name: "",
+            type: "uint256",
+         },
+      ],
+      name: "deployedVaults",
+      outputs: [
+         {
+            internalType: "address",
+            name: "",
+            type: "address",
+         },
+      ],
+      stateMutability: "view",
+      type: "function",
+   },
+   {
+      inputs: [],
+      name: "getAllVaults",
+      outputs: [
+         {
+            internalType: "address[]",
+            name: "",
+            type: "address[]",
+         },
+      ],
+      stateMutability: "view",
+      type: "function",
+   },
+   {
+      inputs: [],
+      name: "getFactoryStats",
+      outputs: [
+         {
+            internalType: "uint256",
+            name: "totalVaults",
+            type: "uint256",
+         },
+         {
+            internalType: "uint256",
+            name: "uniqueAssets",
+            type: "uint256",
+         },
+         {
+            internalType: "uint256",
+            name: "totalTVL",
+            type: "uint256",
+         },
+      ],
+      stateMutability: "view",
+      type: "function",
+   },
+   {
+      inputs: [],
+      name: "getVaultCount",
+      outputs: [
+         {
+            internalType: "uint256",
+            name: "",
+            type: "uint256",
+         },
+      ],
+      stateMutability: "view",
+      type: "function",
+   },
+   {
+      inputs: [
+         {
+            internalType: "address",
+            name: "vault",
+            type: "address",
+         },
+      ],
+      name: "getVaultInfo",
+      outputs: [
+         {
+            components: [
+               {
+                  internalType: "address",
+                  name: "asset",
+                  type: "address",
+               },
+               {
+                  internalType: "string",
+                  name: "name",
+                  type: "string",
+               },
+               {
+                  internalType: "string",
+                  name: "symbol",
+                  type: "string",
+               },
+               {
+                  internalType: "uint8",
+                  name: "decimals",
+                  type: "uint8",
+               },
+               {
+                  internalType: "uint256",
+                  name: "lockPeriod",
+                  type: "uint256",
+               },
+               {
+                  internalType: "address",
+                  name: "deployer",
+                  type: "address",
+               },
+               {
+                  internalType: "uint256",
+                  name: "deploymentTime",
+                  type: "uint256",
+               },
+               {
+                  internalType: "bool",
+                  name: "exists",
+                  type: "bool",
+               },
+            ],
+            internalType: "struct RewardsVault4626Factory.VaultInfo",
+            name: "info",
+            type: "tuple",
+         },
+      ],
+      stateMutability: "view",
+      type: "function",
+   },
+   {
+      inputs: [
+         {
+            internalType: "address",
+            name: "asset",
+            type: "address",
+         },
+      ],
+      name: "getVaultsByAsset",
+      outputs: [
+         {
+            internalType: "address[]",
+            name: "",
+            type: "address[]",
+         },
+      ],
+      stateMutability: "view",
+      type: "function",
+   },
+   {
+      inputs: [
+         {
+            internalType: "address",
+            name: "user",
+            type: "address",
+         },
+      ],
+      name: "getUserReward",
+      outputs: [
+         {
+            internalType: "address[]",
+            name: "tokens",
+            type: "address[]",
+         },
+         {
+            internalType: "uint256[]",
+            name: "amounts",
+            type: "uint256[]",
+         },
+      ],
+      stateMutability: "view",
       type: "function",
    },
    {
@@ -182,26 +336,64 @@ export const vaultFactoryAbi = [
             name: "deployer",
             type: "address",
          },
+      ],
+      name: "getVaultsByDeployer",
+      outputs: [
          {
-            internalType: "address",
-            name: "token",
-            type: "address",
+            internalType: "address[]",
+            name: "vaults",
+            type: "address[]",
+         },
+      ],
+      stateMutability: "view",
+      type: "function",
+   },
+   {
+      inputs: [
+         {
+            internalType: "uint256",
+            name: "offset",
+            type: "uint256",
          },
          {
             internalType: "uint256",
-            name: "nonce",
+            name: "limit",
             type: "uint256",
          },
       ],
-      name: "generateSalt",
+      name: "getVaultsPaginated",
       outputs: [
          {
-            internalType: "string",
-            name: "",
-            type: "string",
+            internalType: "address[]",
+            name: "vaults",
+            type: "address[]",
+         },
+         {
+            internalType: "uint256",
+            name: "total",
+            type: "uint256",
          },
       ],
-      stateMutability: "pure",
+      stateMutability: "view",
+      type: "function",
+   },
+   {
+      inputs: [
+         {
+            internalType: "address",
+            name: "",
+            type: "address",
+         },
+      ],
+      name: "isDeployedVault",
+      outputs: [
+         {
+            internalType: "bool",
+            name: "",
+            type: "bool",
+         },
+      ],
+      stateMutability: "view",
       type: "function",
    },
    {
@@ -218,18 +410,11 @@ export const vaultFactoryAbi = [
       type: "function",
    },
    {
-      inputs: [],
-      name: "renounceOwnership",
-      outputs: [],
-      stateMutability: "nonpayable",
-      type: "function",
-   },
-   {
       inputs: [
          {
-            internalType: "bytes4",
-            name: "interfaceId",
-            type: "bytes4",
+            internalType: "address",
+            name: "vault",
+            type: "address",
          },
       ],
       name: "supportsInterface",
@@ -259,12 +444,107 @@ export const vaultFactoryAbi = [
    {
       inputs: [
          {
-            internalType: "string",
-            name: "",
-            type: "string",
+            internalType: "address",
+            name: "vault",
+            type: "address",
+         },
+         {
+            internalType: "address",
+            name: "newOwner",
+            type: "address",
          },
       ],
-      name: "vaultDeployed",
+      name: "transferVaultOwnership",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+   },
+   {
+      inputs: [
+         {
+            internalType: "address",
+            name: "vault",
+            type: "address",
+         },
+         {
+            internalType: "bool",
+            name: "status",
+            type: "bool",
+         },
+      ],
+      name: "updateVaultTracking",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+   },
+   {
+      inputs: [
+         {
+            internalType: "address",
+            name: "",
+            type: "address",
+         },
+      ],
+      name: "vaultInfo",
+      outputs: [
+         {
+            internalType: "address",
+            name: "asset",
+            type: "address",
+         },
+         {
+            internalType: "string",
+            name: "name",
+            type: "string",
+         },
+         {
+            internalType: "string",
+            name: "symbol",
+            type: "string",
+         },
+         {
+            internalType: "uint8",
+            name: "decimals",
+            type: "uint8",
+         },
+         {
+            internalType: "uint256",
+            name: "lockPeriod",
+            type: "uint256",
+         },
+         {
+            internalType: "address",
+            name: "deployer",
+            type: "address",
+         },
+         {
+            internalType: "uint256",
+            name: "deploymentTime",
+            type: "uint256",
+         },
+         {
+            internalType: "bool",
+            name: "exists",
+            type: "bool",
+         },
+      ],
+      stateMutability: "view",
+      type: "function",
+   },
+   {
+      inputs: [
+         {
+            internalType: "address",
+            name: "",
+            type: "address",
+         },
+         {
+            internalType: "uint256",
+            name: "",
+            type: "uint256",
+         },
+      ],
+      name: "vaultsByAsset",
       outputs: [
          {
             internalType: "address",

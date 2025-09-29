@@ -36,7 +36,7 @@ const ScientificNotation = ({ value }: { value: number }) => {
 
 export const BuildingDetailInfo = (props: BuildingInfo) => {
    const { id } = useParams();
-   const { tokenAddress, treasuryAddress } = useBuildingInfo(id as string);
+   const { tokenAddress, treasuryAddress, autoCompounderAddress } = useBuildingInfo(id as string);
    const { tokenPriceInUSDC, totalSupply, balanceOf, isLoading } = useTokenInfo(tokenAddress);
    const { reserve } = useTreasuryData(treasuryAddress, id as string);
    const { userStakedTokens, aTokenBalance, userClaimedRewards } = useStaking({

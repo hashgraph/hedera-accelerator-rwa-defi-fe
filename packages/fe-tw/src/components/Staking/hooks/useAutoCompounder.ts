@@ -44,8 +44,12 @@ export const useAutoCompounder = (
             }),
          ]);
 
-         const aTokenBalance = Number(ethers.formatUnits(balanceOfAToken as BigNumberish, decimals as string));
-         const totalSupplyFormatted = Number(ethers.formatUnits(totalSupply as BigNumberish, decimals as string));
+         const aTokenBalance = Number(
+            ethers.formatUnits(balanceOfAToken as BigNumberish, decimals as string),
+         );
+         const totalSupplyFormatted = Number(
+            ethers.formatUnits(totalSupply as BigNumberish, decimals as string),
+         );
          const exchangeRateFormatted = Number(ethers.formatUnits(exchangeRate as BigNumberish, 18));
 
          return { totalSupplyFormatted, aTokenBalance, exchangeRate: exchangeRateFormatted };
@@ -110,7 +114,7 @@ export const useAutoCompounder = (
             writeContract({
                contractId: ContractId.fromEvmAddress(0, 0, autoCompounderAddress),
                abi: autoCompounderAbi,
-               functionName: "claim",
+               functionName: "autoCompound",
                args: [],
             }),
          );
@@ -130,8 +134,8 @@ export const useAutoCompounder = (
             writeContract({
                contractId: ContractId.fromEvmAddress(0, 0, autoCompounderAddress),
                abi: autoCompounderAbi,
-               functionName: "claimExactUserReward",
-               args: [evmAddress],
+               functionName: "claimUserRewards",
+               args: [],
             }),
          );
       },

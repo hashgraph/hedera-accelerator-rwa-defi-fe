@@ -68,7 +68,7 @@ export default function StakingValueInfo({
                         <div>
                            <p className="font-semibold text-gray-900">aTokens (Auto-compound)</p>
                            <p className="text-sm text-gray-600">
-                              {aTokenBalance?.toFixed(2)} aTokens / {aTokenExchangeRate?.toFixed(2)}{" "}
+                              {aTokenBalance?.toFixed(2)} aTokens * {aTokenExchangeRate?.toFixed(2)}{" "}
                               rate
                            </p>
                            <p className="text-xs text-gray-500">Converted to building tokens</p>

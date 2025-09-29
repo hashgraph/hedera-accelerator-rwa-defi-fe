@@ -20,8 +20,8 @@ export const useUserClaimedRewards = (vaultAddress: string | undefined) => {
             const userRewards = reduce(
                rewards,
                (acc: Array<{ tokenAddress: string; amount: bigint }>, log) => {
-                  const tokenAddress = log.args[0];
-                  const owner = log.args[1];
+                  const tokenAddress = log.args[1];
+                  const owner = log.args[0];
                   const amount = log.args[2];
 
                   if (owner.toLowerCase() === evmAddress?.toLowerCase() && amount > BigInt(1)) {

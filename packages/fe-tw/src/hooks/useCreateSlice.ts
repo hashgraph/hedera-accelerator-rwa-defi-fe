@@ -1,6 +1,6 @@
 import { useEvmAddress, useWatchTransactionReceipt } from "@buidlerlabs/hashgraph-react-wallets";
 import { ContractId } from "@hashgraph/sdk";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as uuid from "uuid";
 import { MaxUint256, parseUnits, ethers, TypedDataDomain } from "ethers";
 import { useExecuteTransaction } from "./useExecuteTransaction";
@@ -35,6 +35,7 @@ import { useEffect, useState } from "react";
 import { useTokenPermitSignature } from "./useTokenPermitSignature";
 
 export function useCreateSlice(sliceAddress?: `0x${string}`) {
+   const queryClient = useQueryClient();
    const { writeContract } = useWriteContract();
    const { watch } = useWatchTransactionReceipt();
    const { executeTransaction } = useExecuteTransaction();
@@ -191,37 +192,8 @@ export function useCreateSlice(sliceAddress?: `0x${string}`) {
       return txResults;
    };
 
-   const addRewardInBatch = async (
-      assets: string[],
-      assetId: number,
-      txResults: string[],
-      rewardsAmount: BigInt,
-   ) => {
-      if (assets[assetId]) {
-         const result = await executeTransaction(() =>
-            writeContract({
-               functionName: "addReward",
-               args: [USDC_ADDRESS, rewardsAmount],
-               abi: basicVaultAbi,
-               contractId: ContractId.fromEvmAddress(0, 0, assets[assetId]),
-            }),
-         );
-
-         return addRewardInBatch(
-            assets,
-            assetId + 1,
-            [...txResults, (result as { transaction_id: string }).transaction_id],
-            rewardsAmount,
-         );
-      }
-
-      return txResults;
-   };
-
    const rebalanceSliceMutation = useMutation({
       mutationFn: async (values: { sliceAllocation: AddSliceAllocationRequestBody }) => {
-         
-
          const data = executeTransaction(() =>
             writeContract({
                functionName: "rebalance",
@@ -232,6 +204,9 @@ export function useCreateSlice(sliceAddress?: `0x${string}`) {
          );
 
          return data;
+      },
+      onSuccess: () => {
+         queryClient.invalidateQueries({ queryKey: ["sliceAllocations", sliceAddress] });
       },
    });
 
@@ -245,6 +220,7 @@ export function useCreateSlice(sliceAddress?: `0x${string}`) {
          const buildingDetails = await Promise.all(
             tokenAssets?.map((building) => readBuildingDetails(building)),
          );
+
          const vaultsInfo = buildingDetails.map((detailLog) => ({
             address: detailLog[0][0],
             token: detailLog[0][4],
@@ -252,9 +228,7 @@ export function useCreateSlice(sliceAddress?: `0x${string}`) {
             ac: detailLog[0][8],
             allocation: Number(tokenAssetAmounts[detailLog[0][0]]),
          }));
-         const rewardsAmountToInUSDC = parseUnits(rewardAmount, 6);
-         const rewardsAmountToInStaking = parseUnits(rewardAmount, 18);
-         const tokensToApprove = [...vaultsInfo.map((v) => v.token), USDC_ADDRESS];
+
          let txHashes = [];
 
          const addAllocationsHashes = await addAllocationInBatch(
@@ -301,7 +275,6 @@ export function useCreateSlice(sliceAddress?: `0x${string}`) {
 
                if (last && !slices.find((slice) => slice.address === last)) {
                   res(last);
-                  unsubscribe();
                }
             },
          });
@@ -398,7 +371,55 @@ export function useCreateSlice(sliceAddress?: `0x${string}`) {
 
          return tx;
       },
+      onSuccess: () => {
+         queryClient.invalidateQueries({ queryKey: ["sliceAllocations", sliceAddress] });
+      },
    });
+
+   const depositInBatch = useMutation<
+      unknown,
+      unknown,
+      {
+         aTokens: string[];
+         amounts: BigInt[];
+      }
+   >({
+      mutationFn: async ({ aTokens, amounts }) => {
+         const txResults: unknown[] = [];
+
+         for (let i = 0; i < aTokens.length; i++) {
+            const tx = await executeTransaction(() =>
+               writeContract({
+                  contractId: ContractId.fromEvmAddress(0, 0, sliceAddress!),
+                  abi: sliceAbi,
+                  functionName: "deposit",
+                  args: [aTokens[i], amounts[i]],
+               }),
+            );
+            txResults.push(tx);
+         }
+
+         return txResults;
+      },
+   });
+
+   const deposit = async (
+      tokensData: Array<{
+         tokenAddress: `0x${string}`;
+         aToken: `0x${string}`;
+         amount: number | bigint;
+      }>,
+   ) => {
+      const aTokens = tokensData.map((token) => token.aToken);
+      const amounts = tokensData.map((token) =>
+         typeof token.amount === "bigint" ? token.amount : BigInt(token.amount),
+      );
+
+      return depositInBatch.mutateAsync({
+         aTokens,
+         amounts,
+      });
+   };
 
    const depositWithPermits = async (
       tokensData: Array<{
@@ -409,7 +430,14 @@ export function useCreateSlice(sliceAddress?: `0x${string}`) {
    ) => {
       const signatures = await Promise.all(
          tokensData.map(({ tokenAddress, amount }) =>
-            getPermitSignature(tokenAddress, amount, sliceAddress!),
+            getPermitSignature(
+               tokenAddress,
+               amount,
+               sliceAddress!,
+               undefined,
+               "ERC20Permit",
+               "1.0.0",
+            ),
          ),
       );
 
@@ -436,6 +464,7 @@ export function useCreateSlice(sliceAddress?: `0x${string}`) {
       ipfsHashUploadingInProgress,
       addAllocationsToSliceMutation,
       rebalanceSliceMutation,
+      deposit,
       depositWithPermits,
    };
 }

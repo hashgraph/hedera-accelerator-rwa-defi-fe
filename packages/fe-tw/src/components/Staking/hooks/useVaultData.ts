@@ -15,7 +15,7 @@ export const useVaultData = (
       queryFn: async (): Promise<VaultInfo | null> => {
          if (!vaultAddress || !evmAddress || !tokenDecimals) return null;
 
-         const [totalAssets, myBalance, rewardTokens] = await Promise.all([
+         const [totalAssets, myBalance] = await Promise.all([
             readContract({
                address: vaultAddress as `0x${string}`,
                abi: basicVaultAbi,
@@ -27,17 +27,17 @@ export const useVaultData = (
                functionName: "balanceOf",
                args: [evmAddress],
             }),
-            readContract({
-               address: vaultAddress as `0x${string}`,
-               abi: basicVaultAbi,
-               functionName: "getRewardTokens",
-            }),
+            // readContract({
+            //    address: vaultAddress as `0x${string}`,
+            //    abi: basicVaultAbi,
+            //    functionName: "getRewardTokens",
+            // }),
          ]);
 
          return {
             totalStakedTokens: Number(totalAssets) / 10 ** tokenDecimals,
             userStakedTokens: Number(myBalance) / 10 ** tokenDecimals,
-            rewardTokens: rewardTokens as string[],
+            rewardTokens: [],
          };
       },
       enabled: Boolean(vaultAddress) && Boolean(evmAddress) && Boolean(tokenDecimals),

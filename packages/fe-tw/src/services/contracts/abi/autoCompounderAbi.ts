@@ -2,194 +2,92 @@ export const autoCompounderAbi = [
    {
       inputs: [
          {
-            internalType: "address",
-            name: "uniswapV2Router_",
-            type: "address",
-         },
-         {
-            internalType: "address",
-            name: "vault_",
-            type: "address",
-         },
-         {
-            internalType: "address",
-            name: "usdc_",
+            internalType: "contract RewardsVault4626",
+            name: "_vault",
             type: "address",
          },
          {
             internalType: "string",
-            name: "name_",
+            name: "_name",
             type: "string",
          },
          {
             internalType: "string",
-            name: "symbol_",
+            name: "_symbol",
             type: "string",
          },
          {
-            internalType: "address",
-            name: "operator_",
+            internalType: "uint256",
+            name: "_minimumClaimThreshold",
+            type: "uint256",
+         },
+         {
+            internalType: "contract IUniswapV2Router02",
+            name: "_uniswapRouter",
             type: "address",
+         },
+         {
+            internalType: "address",
+            name: "_intermediateToken",
+            type: "address",
+         },
+         {
+            internalType: "uint256",
+            name: "_maxSlippage",
+            type: "uint256",
          },
       ],
-      stateMutability: "payable",
+      stateMutability: "nonpayable",
       type: "constructor",
    },
    {
-      inputs: [
-         {
-            internalType: "address",
-            name: "target",
-            type: "address",
-         },
-      ],
-      name: "AddressEmptyCode",
-      type: "error",
-   },
-   {
-      inputs: [
-         {
-            internalType: "address",
-            name: "account",
-            type: "address",
-         },
-      ],
-      name: "AddressInsufficientBalance",
-      type: "error",
-   },
-   {
-      inputs: [
-         {
-            internalType: "address",
-            name: "spender",
-            type: "address",
-         },
-         {
-            internalType: "uint256",
-            name: "allowance",
-            type: "uint256",
-         },
-         {
-            internalType: "uint256",
-            name: "needed",
-            type: "uint256",
-         },
-      ],
-      name: "ERC20InsufficientAllowance",
-      type: "error",
-   },
-   {
-      inputs: [
-         {
-            internalType: "address",
-            name: "sender",
-            type: "address",
-         },
-         {
-            internalType: "uint256",
-            name: "balance",
-            type: "uint256",
-         },
-         {
-            internalType: "uint256",
-            name: "needed",
-            type: "uint256",
-         },
-      ],
-      name: "ERC20InsufficientBalance",
-      type: "error",
-   },
-   {
-      inputs: [
-         {
-            internalType: "address",
-            name: "approver",
-            type: "address",
-         },
-      ],
-      name: "ERC20InvalidApprover",
-      type: "error",
-   },
-   {
-      inputs: [
-         {
-            internalType: "address",
-            name: "receiver",
-            type: "address",
-         },
-      ],
-      name: "ERC20InvalidReceiver",
-      type: "error",
-   },
-   {
-      inputs: [
-         {
-            internalType: "address",
-            name: "sender",
-            type: "address",
-         },
-      ],
-      name: "ERC20InvalidSender",
-      type: "error",
-   },
-   {
-      inputs: [
-         {
-            internalType: "address",
-            name: "spender",
-            type: "address",
-         },
-      ],
-      name: "ERC20InvalidSpender",
+      inputs: [],
+      name: "InsufficientBalance",
       type: "error",
    },
    {
       inputs: [],
-      name: "FailedInnerCall",
+      name: "InvalidAmount",
       type: "error",
    },
    {
-      inputs: [
-         {
-            internalType: "uint256",
-            name: "reward",
-            type: "uint256",
-         },
-      ],
-      name: "InsufficientReward",
+      inputs: [],
+      name: "InvalidNewOwner",
       type: "error",
    },
    {
-      inputs: [
-         {
-            internalType: "address",
-            name: "owner",
-            type: "address",
-         },
-      ],
-      name: "OwnableInvalidOwner",
+      inputs: [],
+      name: "InvalidReceiver",
       type: "error",
    },
    {
-      inputs: [
-         {
-            internalType: "address",
-            name: "account",
-            type: "address",
-         },
-      ],
-      name: "OwnableUnauthorizedAccount",
+      inputs: [],
+      name: "InvalidSlippage",
       type: "error",
    },
    {
-      inputs: [
-         {
-            internalType: "address",
-            name: "token",
-            type: "address",
-         },
-      ],
-      name: "SafeERC20FailedOperation",
+      inputs: [],
+      name: "InvalidSwapPath",
+      type: "error",
+   },
+   {
+      inputs: [],
+      name: "NotOwner",
+      type: "error",
+   },
+   {
+      inputs: [],
+      name: "ReentrancyGuardReentrantCall",
+      type: "error",
+   },
+   {
+      inputs: [],
+      name: "SwapFailed",
+      type: "error",
+   },
+   {
+      inputs: [],
+      name: "TransferFailed",
       type: "error",
    },
    {
@@ -223,11 +121,17 @@ export const autoCompounderAbi = [
          {
             indexed: false,
             internalType: "uint256",
-            name: "depositedUnderlying",
+            name: "totalAssetsReinvested",
+            type: "uint256",
+         },
+         {
+            indexed: false,
+            internalType: "uint256",
+            name: "swapCount",
             type: "uint256",
          },
       ],
-      name: "Claim",
+      name: "AutoCompound",
       type: "event",
    },
    {
@@ -236,26 +140,7 @@ export const autoCompounderAbi = [
          {
             indexed: true,
             internalType: "address",
-            name: "createdToken",
-            type: "address",
-         },
-      ],
-      name: "CreatedToken",
-      type: "event",
-   },
-   {
-      anonymous: false,
-      inputs: [
-         {
-            indexed: true,
-            internalType: "address",
-            name: "caller",
-            type: "address",
-         },
-         {
-            indexed: true,
-            internalType: "address",
-            name: "receiver",
+            name: "user",
             type: "address",
          },
          {
@@ -267,7 +152,7 @@ export const autoCompounderAbi = [
          {
             indexed: false,
             internalType: "uint256",
-            name: "aTokenMinted",
+            name: "shares",
             type: "uint256",
          },
       ],
@@ -299,6 +184,81 @@ export const autoCompounderAbi = [
          {
             indexed: true,
             internalType: "address",
+            name: "user",
+            type: "address",
+         },
+         {
+            indexed: true,
+            internalType: "address",
+            name: "rewardToken",
+            type: "address",
+         },
+         {
+            indexed: false,
+            internalType: "uint256",
+            name: "amount",
+            type: "uint256",
+         },
+      ],
+      name: "RewardsClaimed",
+      type: "event",
+   },
+   {
+      anonymous: false,
+      inputs: [
+         {
+            indexed: true,
+            internalType: "address",
+            name: "rewardToken",
+            type: "address",
+         },
+         {
+            indexed: false,
+            internalType: "address[]",
+            name: "newPath",
+            type: "address[]",
+         },
+      ],
+      name: "SwapPathUpdated",
+      type: "event",
+   },
+   {
+      anonymous: false,
+      inputs: [
+         {
+            indexed: true,
+            internalType: "address",
+            name: "fromToken",
+            type: "address",
+         },
+         {
+            indexed: true,
+            internalType: "address",
+            name: "toToken",
+            type: "address",
+         },
+         {
+            indexed: false,
+            internalType: "uint256",
+            name: "amountIn",
+            type: "uint256",
+         },
+         {
+            indexed: false,
+            internalType: "uint256",
+            name: "amountOut",
+            type: "uint256",
+         },
+      ],
+      name: "TokenSwapped",
+      type: "event",
+   },
+   {
+      anonymous: false,
+      inputs: [
+         {
+            indexed: true,
+            internalType: "address",
             name: "from",
             type: "address",
          },
@@ -319,29 +279,28 @@ export const autoCompounderAbi = [
       type: "event",
    },
    {
-      anonymous: false,
       inputs: [
          {
-            indexed: true,
             internalType: "address",
-            name: "caller",
+            name: "user",
             type: "address",
-         },
-         {
-            indexed: true,
-            internalType: "address",
-            name: "receiver",
-            type: "address",
-         },
-         {
-            indexed: false,
-            internalType: "uint256",
-            name: "reward",
-            type: "uint256",
          },
       ],
-      name: "UserClaimedReward",
-      type: "event",
+      name: "getUserReward",
+      outputs: [
+         {
+            internalType: "address[]",
+            name: "tokens",
+            type: "address[]",
+         },
+         {
+            internalType: "uint256[]",
+            name: "amounts",
+            type: "uint256[]",
+         },
+      ],
+      stateMutability: "view",
+      type: "function",
    },
    {
       anonymous: false,
@@ -349,19 +308,19 @@ export const autoCompounderAbi = [
          {
             indexed: true,
             internalType: "address",
-            name: "caller",
+            name: "user",
             type: "address",
          },
          {
             indexed: false,
             internalType: "uint256",
-            name: "aTokenAmount",
+            name: "shares",
             type: "uint256",
          },
          {
             indexed: false,
             internalType: "uint256",
-            name: "underlyingAmount",
+            name: "assets",
             type: "uint256",
          },
       ],
@@ -369,15 +328,80 @@ export const autoCompounderAbi = [
       type: "event",
    },
    {
+      inputs: [],
+      name: "ASSET",
+      outputs: [
+         {
+            internalType: "contract IERC20",
+            name: "",
+            type: "address",
+         },
+      ],
+      stateMutability: "view",
+      type: "function",
+   },
+   {
+      inputs: [],
+      name: "DECIMALS",
+      outputs: [
+         {
+            internalType: "uint8",
+            name: "",
+            type: "uint8",
+         },
+      ],
+      stateMutability: "view",
+      type: "function",
+   },
+   {
+      inputs: [],
+      name: "INTERMEDIATE_TOKEN",
+      outputs: [
+         {
+            internalType: "address",
+            name: "",
+            type: "address",
+         },
+      ],
+      stateMutability: "view",
+      type: "function",
+   },
+   {
+      inputs: [],
+      name: "UNISWAP_ROUTER",
+      outputs: [
+         {
+            internalType: "contract IUniswapV2Router02",
+            name: "",
+            type: "address",
+         },
+      ],
+      stateMutability: "view",
+      type: "function",
+   },
+   {
+      inputs: [],
+      name: "VAULT",
+      outputs: [
+         {
+            internalType: "contract RewardsVault4626",
+            name: "",
+            type: "address",
+         },
+      ],
+      stateMutability: "view",
+      type: "function",
+   },
+   {
       inputs: [
          {
             internalType: "address",
-            name: "owner",
+            name: "",
             type: "address",
          },
          {
             internalType: "address",
-            name: "spender",
+            name: "",
             type: "address",
          },
       ],
@@ -401,7 +425,7 @@ export const autoCompounderAbi = [
          },
          {
             internalType: "uint256",
-            name: "value",
+            name: "amount",
             type: "uint256",
          },
       ],
@@ -433,7 +457,33 @@ export const autoCompounderAbi = [
       inputs: [
          {
             internalType: "address",
-            name: "account",
+            name: "user",
+            type: "address",
+         },
+      ],
+      name: "assetsOf",
+      outputs: [
+         {
+            internalType: "uint256",
+            name: "",
+            type: "uint256",
+         },
+      ],
+      stateMutability: "view",
+      type: "function",
+   },
+   {
+      inputs: [],
+      name: "autoCompound",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+   },
+   {
+      inputs: [
+         {
+            internalType: "address",
+            name: "",
             type: "address",
          },
       ],
@@ -449,21 +499,27 @@ export const autoCompounderAbi = [
       type: "function",
    },
    {
-      inputs: [],
-      name: "claim",
-      outputs: [],
-      stateMutability: "nonpayable",
-      type: "function",
-   },
-   {
       inputs: [
          {
             internalType: "address",
-            name: "receiver",
+            name: "user",
             type: "address",
          },
       ],
-      name: "claimExactUserReward",
+      name: "canWithdraw",
+      outputs: [
+         {
+            internalType: "bool",
+            name: "",
+            type: "bool",
+         },
+      ],
+      stateMutability: "view",
+      type: "function",
+   },
+   {
+      inputs: [],
+      name: "claimUserRewards",
       outputs: [],
       stateMutability: "nonpayable",
       type: "function",
@@ -498,10 +554,28 @@ export const autoCompounderAbi = [
       outputs: [
          {
             internalType: "uint256",
-            name: "amountToMint",
+            name: "shares",
             type: "uint256",
          },
       ],
+      stateMutability: "nonpayable",
+      type: "function",
+   },
+   {
+      inputs: [
+         {
+            internalType: "address",
+            name: "token",
+            type: "address",
+         },
+         {
+            internalType: "uint256",
+            name: "amount",
+            type: "uint256",
+         },
+      ],
+      name: "emergencyWithdraw",
+      outputs: [],
       stateMutability: "nonpayable",
       type: "function",
    },
@@ -522,19 +596,93 @@ export const autoCompounderAbi = [
       inputs: [
          {
             internalType: "address",
+            name: "rewardToken",
+            type: "address",
+         },
+      ],
+      name: "getSwapPath",
+      outputs: [
+         {
+            internalType: "address[]",
+            name: "path",
+            type: "address[]",
+         },
+      ],
+      stateMutability: "view",
+      type: "function",
+   },
+   {
+      inputs: [
+         {
+            internalType: "address",
             name: "user",
             type: "address",
          },
       ],
-      name: "getPendingReward",
+      name: "getUserInfo",
       outputs: [
          {
             internalType: "uint256",
-            name: "pendingReward",
+            name: "depositTimestamp",
+            type: "uint256",
+         },
+         {
+            internalType: "uint256",
+            name: "totalDeposited",
             type: "uint256",
          },
       ],
       stateMutability: "view",
+      type: "function",
+   },
+   {
+      inputs: [],
+      name: "maxSlippage",
+      outputs: [
+         {
+            internalType: "uint256",
+            name: "",
+            type: "uint256",
+         },
+      ],
+      stateMutability: "view",
+      type: "function",
+   },
+   {
+      inputs: [],
+      name: "minimumClaimThreshold",
+      outputs: [
+         {
+            internalType: "uint256",
+            name: "",
+            type: "uint256",
+         },
+      ],
+      stateMutability: "view",
+      type: "function",
+   },
+   {
+      inputs: [
+         {
+            internalType: "uint256",
+            name: "shares",
+            type: "uint256",
+         },
+         {
+            internalType: "address",
+            name: "receiver",
+            type: "address",
+         },
+      ],
+      name: "mint",
+      outputs: [
+         {
+            internalType: "uint256",
+            name: "assets",
+            type: "uint256",
+         },
+      ],
+      stateMutability: "nonpayable",
       type: "function",
    },
    {
@@ -564,8 +712,87 @@ export const autoCompounderAbi = [
       type: "function",
    },
    {
-      inputs: [],
-      name: "renounceOwnership",
+      inputs: [
+         {
+            internalType: "uint256",
+            name: "shares",
+            type: "uint256",
+         },
+         {
+            internalType: "address",
+            name: "receiver",
+            type: "address",
+         },
+         {
+            internalType: "address",
+            name: "owner_",
+            type: "address",
+         },
+      ],
+      name: "redeem",
+      outputs: [
+         {
+            internalType: "uint256",
+            name: "assets",
+            type: "uint256",
+         },
+      ],
+      stateMutability: "nonpayable",
+      type: "function",
+   },
+   {
+      inputs: [
+         {
+            internalType: "address",
+            name: "rewardToken",
+            type: "address",
+         },
+      ],
+      name: "removeSwapPath",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+   },
+   {
+      inputs: [
+         {
+            internalType: "uint256",
+            name: "newSlippage",
+            type: "uint256",
+         },
+      ],
+      name: "setMaxSlippage",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+   },
+   {
+      inputs: [
+         {
+            internalType: "uint256",
+            name: "newThreshold",
+            type: "uint256",
+         },
+      ],
+      name: "setMinimumClaimThreshold",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+   },
+   {
+      inputs: [
+         {
+            internalType: "address",
+            name: "rewardToken",
+            type: "address",
+         },
+         {
+            internalType: "address[]",
+            name: "path",
+            type: "address[]",
+         },
+      ],
+      name: "setSwapPath",
       outputs: [],
       stateMutability: "nonpayable",
       type: "function",
@@ -590,6 +817,30 @@ export const autoCompounderAbi = [
       type: "function",
    },
    {
+      inputs: [
+         {
+            internalType: "address",
+            name: "",
+            type: "address",
+         },
+         {
+            internalType: "uint256",
+            name: "",
+            type: "uint256",
+         },
+      ],
+      name: "swapPaths",
+      outputs: [
+         {
+            internalType: "address",
+            name: "",
+            type: "address",
+         },
+      ],
+      stateMutability: "view",
+      type: "function",
+   },
+   {
       inputs: [],
       name: "symbol",
       outputs: [
@@ -597,6 +848,43 @@ export const autoCompounderAbi = [
             internalType: "string",
             name: "",
             type: "string",
+         },
+      ],
+      stateMutability: "view",
+      type: "function",
+   },
+   {
+      inputs: [
+         {
+            internalType: "address",
+            name: "rewardToken",
+            type: "address",
+         },
+         {
+            internalType: "uint256",
+            name: "amount",
+            type: "uint256",
+         },
+      ],
+      name: "testSwap",
+      outputs: [
+         {
+            internalType: "uint256",
+            name: "amountOut",
+            type: "uint256",
+         },
+      ],
+      stateMutability: "view",
+      type: "function",
+   },
+   {
+      inputs: [],
+      name: "totalAssets",
+      outputs: [
+         {
+            internalType: "uint256",
+            name: "",
+            type: "uint256",
          },
       ],
       stateMutability: "view",
@@ -624,7 +912,7 @@ export const autoCompounderAbi = [
          },
          {
             internalType: "uint256",
-            name: "value",
+            name: "amount",
             type: "uint256",
          },
       ],
@@ -653,7 +941,7 @@ export const autoCompounderAbi = [
          },
          {
             internalType: "uint256",
-            name: "value",
+            name: "amount",
             type: "uint256",
          },
       ],
@@ -682,26 +970,24 @@ export const autoCompounderAbi = [
       type: "function",
    },
    {
-      inputs: [],
-      name: "uniswapV2Router",
-      outputs: [
+      inputs: [
          {
             internalType: "address",
             name: "",
             type: "address",
          },
       ],
-      stateMutability: "view",
-      type: "function",
-   },
-   {
-      inputs: [],
-      name: "usdc",
+      name: "userInfo",
       outputs: [
          {
-            internalType: "address",
-            name: "",
-            type: "address",
+            internalType: "uint256",
+            name: "depositTimestamp",
+            type: "uint256",
+         },
+         {
+            internalType: "uint256",
+            name: "totalDeposited",
+            type: "uint256",
          },
       ],
       stateMutability: "view",
@@ -724,7 +1010,7 @@ export const autoCompounderAbi = [
       inputs: [
          {
             internalType: "uint256",
-            name: "aTokenAmount",
+            name: "shares",
             type: "uint256",
          },
          {
@@ -737,7 +1023,7 @@ export const autoCompounderAbi = [
       outputs: [
          {
             internalType: "uint256",
-            name: "underlyingAmount",
+            name: "assets",
             type: "uint256",
          },
       ],

@@ -147,7 +147,7 @@ export default function InfoCard({
                         ${claimableRewards ? Number(claimableRewards).toFixed(2) : "0.00"}
                      </p>
                   </div>
-                  {!isEmpty(claimableRewards) && (
+                  {Number(claimableRewards).toFixed(2) !== "0.00" && (
                      <Button
                         size="sm"
                         variant="outline"
@@ -161,49 +161,42 @@ export default function InfoCard({
                   )}
                </div>
 
-               {autoCompounderAddress && (
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg gap-1">
-                     <div>
-                        <p className="font-semibold text-wrap text-gray-900">
-                           AutoCompounder Rewards
-                        </p>
-                        <p className="text-sm text-gray-600">
-                           $
-                           {autoCompounderRewards
-                              ? Number(autoCompounderRewards).toFixed(2)
-                              : "0.00"}
-                        </p>
-                     </div>
-                     {!isEmpty(autoCompounderRewards) && (
-                        <div className={cx("flex flex-wrap justify-end gap-1")}>
-                           <Button
-                              size="xs"
-                              variant="outline"
-                              className="bg-indigo-50 border-indigo-200 text-indigo-700"
-                              onClick={handleClaimAutoCompounderRewards}
-                              isLoading={isClaimingAutoCompounder}
-                              disabled={
-                                 isClaimingAutoCompounder || isClaimingAutoCompounderUserRewards
-                              }
-                           >
-                              Reinvest
-                           </Button>
-                           <Button
-                              size="xs"
-                              variant="outline"
-                              className="bg-indigo-50 border-indigo-200 text-indigo-700 "
-                              onClick={handleClaimAutoCompounderUserRewards}
-                              isLoading={isClaimingAutoCompounderUserRewards}
-                              disabled={
-                                 isClaimingAutoCompounderUserRewards || isClaimingAutoCompounder
-                              }
-                           >
-                              Claim
-                           </Button>
-                        </div>
-                     )}
+               <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg gap-1">
+                  <div>
+                     <p className="font-semibold text-wrap text-gray-900">AutoCompounder Rewards</p>
+                     <p className="text-sm text-gray-600">
+                        ${autoCompounderRewards ? Number(autoCompounderRewards).toFixed(2) : "0.00"}
+                     </p>
                   </div>
-               )}
+                  {Number(autoCompounderAddress).toFixed(2) !== "0.00" && (
+                     <div className={cx("flex flex-wrap justify-end gap-1")}>
+                        <Button
+                           size="xs"
+                           variant="outline"
+                           className="bg-indigo-50 border-indigo-200 text-indigo-700"
+                           onClick={handleClaimAutoCompounderRewards}
+                           isLoading={isClaimingAutoCompounder}
+                           disabled={
+                              isClaimingAutoCompounder || isClaimingAutoCompounderUserRewards
+                           }
+                        >
+                           Reinvest
+                        </Button>
+                        <Button
+                           size="xs"
+                           variant="outline"
+                           className="bg-indigo-50 border-indigo-200 text-indigo-700 "
+                           onClick={handleClaimAutoCompounderUserRewards}
+                           isLoading={isClaimingAutoCompounderUserRewards}
+                           disabled={
+                              isClaimingAutoCompounderUserRewards || isClaimingAutoCompounder
+                           }
+                        >
+                           Claim
+                        </Button>
+                     </div>
+                  )}
+               </div>
             </div>
 
             <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">

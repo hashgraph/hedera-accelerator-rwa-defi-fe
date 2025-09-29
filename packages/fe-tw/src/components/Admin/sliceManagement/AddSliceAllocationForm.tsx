@@ -291,7 +291,7 @@ export const AddSliceAllocationForm = ({
                               type="button"
                               variant="outline"
                               disabled={addMoreAllocationsDisabled}
-                              onClick={() => { 
+                              onClick={() => {
                                  handleAddNewAsset();
                                  confirmUserPassedStep();
                               }}

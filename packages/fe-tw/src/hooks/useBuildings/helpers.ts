@@ -68,11 +68,14 @@ export const fetchBuildingNFTsMetadata = async (
          .filter((address) => !buildings.find((build) => build.address === address))
          .map((address) => readBuildingDetails(address)),
    );
-   const buildingNFTsData = await Promise.all(
+   const buildingNFTsResults = await Promise.allSettled(
       buildingAddressesProxiesData
          .filter((proxy) => !!proxy[0][2])
          .map((proxy) => fetchJsonFromIpfs(proxy[0][2])),
    );
+   const buildingNFTsData = buildingNFTsResults
+      .filter((result): result is PromiseFulfilledResult<any> => result.status === "fulfilled")
+      .map((result) => result.value);
 
    return { buildingAddressesProxiesData, buildingNFTsData };
 };

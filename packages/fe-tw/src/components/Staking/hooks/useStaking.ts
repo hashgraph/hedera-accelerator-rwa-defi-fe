@@ -79,7 +79,6 @@ export const useStaking = ({ buildingId }: { buildingId: string }): StakingHookR
 
    const { vault: vaultRewards, autoCompounder: autoCompounderRewards } = useUserRewards(
       vaultAddress,
-      vaultInfo?.rewardTokens[0],
       autoCompounderAddress,
    );
 
