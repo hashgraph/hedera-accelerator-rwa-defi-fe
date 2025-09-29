@@ -43,6 +43,8 @@ export type SliceAllocationSmall = {
 
 export type SliceAllocation = {
    buildingToken: `0x${string}`;
+   buildingTokenName: string;
+   balance: number;
    aToken: `0x${string}`;
    aTokenName: string;
    idealAllocation: number;
