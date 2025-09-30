@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { watchContractEvent } from "@/services/contracts/watchContractEvent";
 import { autoCompounderAbi } from "@/services/contracts/abi/autoCompounderAbi";
 import { USDC_ADDRESS } from "@/services/contracts/addresses";
+import { find, isEmpty, zipObject } from "lodash";
 
 export const useUserRewards = (
    vaultAddress: string | undefined,
@@ -16,19 +17,22 @@ export const useUserRewards = (
    const { data: evmAddress } = useEvmAddress();
 
    const autoCompounderQuery = useQuery({
-      queryKey: ["AUTO_COMPOUNDER_REWARDS", autoCompounderAddress, vaultAddress],
-      retry: 5,
+      queryKey: ["AUTO_COMPOUNDER_REWARDS", autoCompounderAddress, evmAddress],
       queryFn: async () => {
-         const acRewards = await readContract({
-            address: vaultAddress as `0x${string}`,
-            abi: basicVaultAbi,
-            functionName: "getClaimableReward",
-            args: [autoCompounderAddress, USDC_ADDRESS],
-         });
+         const allRewards = (await readContract({
+            address: autoCompounderAddress as `0x${string}`,
+            abi: autoCompounderAbi,
+            functionName: "getUserReward",
+            args: [evmAddress],
+         })) as [`0x${string}`[], bigint[]];
 
-         return Number(ethers.formatUnits(acRewards as bigint, 6));
+         const zippedRewards = zipObject(allRewards[0], allRewards[1]);
+
+         return zippedRewards?.[USDC_ADDRESS]
+            ? Number(ethers.formatUnits(zippedRewards[USDC_ADDRESS] as bigint, 6))
+            : 0;
       },
-      enabled: Boolean(vaultAddress) && Boolean(autoCompounderAddress),
+      enabled: Boolean(evmAddress) && Boolean(autoCompounderAddress),
    });
 
    const vaultQuery = useQuery({
