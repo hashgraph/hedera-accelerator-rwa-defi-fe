@@ -6,59 +6,50 @@ import { useTokenInfo } from "@/hooks/useTokenInfo";
 import { useEffect } from "react";
 import { watchContractEvent } from "@/services/contracts/watchContractEvent";
 import { autoCompounderAbi } from "@/services/contracts/abi/autoCompounderAbi";
+import { USDC_ADDRESS } from "@/services/contracts/addresses";
+import { find, isEmpty, zipObject } from "lodash";
 
 export const useUserRewards = (
    vaultAddress: string | undefined,
-   rewardTokenAddress: string | undefined,
    autoCompounderAddress: string | undefined,
 ) => {
    const { readContract } = useReadContract();
    const { data: evmAddress } = useEvmAddress();
-   const { decimals: rewardsDecimals } = useTokenInfo(rewardTokenAddress as `0x${string}`);
 
    const autoCompounderQuery = useQuery({
-      queryKey: [
-         "AUTO_COMPOUNDER_REWARDS",
-         rewardTokenAddress,
-         autoCompounderAddress,
-         vaultAddress,
-      ],
+      queryKey: ["AUTO_COMPOUNDER_REWARDS", autoCompounderAddress, evmAddress],
       queryFn: async () => {
-         const rewards = await readContract({
+         const allRewards = (await readContract({
             address: autoCompounderAddress as `0x${string}`,
             abi: autoCompounderAbi,
-            functionName: "getPendingReward",
+            functionName: "getUserReward",
             args: [evmAddress],
-         });
+         })) as [`0x${string}`[], bigint[]];
 
-         return Number(ethers.formatUnits(BigInt(rewards as string), 6));
+         const zippedRewards = zipObject(allRewards[0], allRewards[1]);
+
+         return zippedRewards?.[USDC_ADDRESS]
+            ? Number(ethers.formatUnits(zippedRewards[USDC_ADDRESS] as bigint, 6))
+            : 0;
       },
-      enabled:
-         Boolean(vaultAddress) &&
-         Boolean(rewardTokenAddress) &&
-         Boolean(autoCompounderAddress) &&
-         Boolean(rewardsDecimals),
+      enabled: Boolean(evmAddress) && Boolean(autoCompounderAddress),
    });
 
    const vaultQuery = useQuery({
-      queryKey: ["VAULT_USER_REWARDS", evmAddress, rewardTokenAddress, vaultAddress],
+      queryKey: ["VAULT_USER_REWARDS", evmAddress, vaultAddress],
       queryFn: async () => {
-         if (!vaultAddress || !rewardTokenAddress || !evmAddress || !rewardsDecimals) return 0;
+         if (!vaultAddress || !evmAddress) return 0;
 
          const rewards = (await readContract({
             address: vaultAddress as `0x${string}`,
             abi: basicVaultAbi,
-            functionName: "getAllRewards",
-            args: [evmAddress],
-         })) as string[];
+            functionName: "getClaimableReward",
+            args: [evmAddress, USDC_ADDRESS],
+         })) as bigint;
 
-         return Number(ethers.formatUnits(BigInt(rewards[0]), 6));
+         return Number(ethers.formatUnits(rewards, 6));
       },
-      enabled:
-         Boolean(vaultAddress) &&
-         Boolean(rewardTokenAddress) &&
-         Boolean(evmAddress) &&
-         Boolean(rewardsDecimals),
+      enabled: Boolean(vaultAddress) && Boolean(evmAddress),
    });
 
    useEffect(() => {

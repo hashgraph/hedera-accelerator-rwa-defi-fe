@@ -3,330 +3,37 @@ export const basicVaultAbi = [
       inputs: [
          {
             internalType: "contract IERC20",
-            name: "underlying_",
+            name: "_asset",
             type: "address",
          },
          {
             internalType: "string",
-            name: "name_",
+            name: "_name",
             type: "string",
          },
          {
             internalType: "string",
-            name: "symbol_",
+            name: "_symbol",
             type: "string",
          },
          {
-            components: [
-               {
-                  internalType: "address",
-                  name: "receiver",
-                  type: "address",
-               },
-               {
-                  internalType: "address",
-                  name: "token",
-                  type: "address",
-               },
-               {
-                  internalType: "uint256",
-                  name: "feePercentage",
-                  type: "uint256",
-               },
-            ],
-            internalType: "struct FeeConfiguration.FeeConfig",
-            name: "feeConfig_",
-            type: "tuple",
+            internalType: "uint8",
+            name: "_decimals",
+            type: "uint8",
+         },
+         {
+            internalType: "uint256",
+            name: "_lockPeriod",
+            type: "uint256",
          },
          {
             internalType: "address",
-            name: "vaultRewardController_",
+            name: "_owner",
             type: "address",
-         },
-         {
-            internalType: "address",
-            name: "feeConfigController_",
-            type: "address",
-         },
-         {
-            internalType: "uint32",
-            name: "cliff_",
-            type: "uint32",
-         },
-         {
-            internalType: "uint32",
-            name: "unlockDuration_",
-            type: "uint32",
          },
       ],
-      stateMutability: "payable",
+      stateMutability: "nonpayable",
       type: "constructor",
-   },
-   {
-      inputs: [],
-      name: "AccessControlBadConfirmation",
-      type: "error",
-   },
-   {
-      inputs: [
-         {
-            internalType: "address",
-            name: "account",
-            type: "address",
-         },
-         {
-            internalType: "bytes32",
-            name: "neededRole",
-            type: "bytes32",
-         },
-      ],
-      name: "AccessControlUnauthorizedAccount",
-      type: "error",
-   },
-   {
-      inputs: [
-         {
-            internalType: "address",
-            name: "target",
-            type: "address",
-         },
-      ],
-      name: "AddressEmptyCode",
-      type: "error",
-   },
-   {
-      inputs: [
-         {
-            internalType: "address",
-            name: "account",
-            type: "address",
-         },
-      ],
-      name: "AddressInsufficientBalance",
-      type: "error",
-   },
-   {
-      inputs: [
-         {
-            internalType: "address",
-            name: "spender",
-            type: "address",
-         },
-         {
-            internalType: "uint256",
-            name: "allowance",
-            type: "uint256",
-         },
-         {
-            internalType: "uint256",
-            name: "needed",
-            type: "uint256",
-         },
-      ],
-      name: "ERC20InsufficientAllowance",
-      type: "error",
-   },
-   {
-      inputs: [
-         {
-            internalType: "address",
-            name: "sender",
-            type: "address",
-         },
-         {
-            internalType: "uint256",
-            name: "balance",
-            type: "uint256",
-         },
-         {
-            internalType: "uint256",
-            name: "needed",
-            type: "uint256",
-         },
-      ],
-      name: "ERC20InsufficientBalance",
-      type: "error",
-   },
-   {
-      inputs: [
-         {
-            internalType: "address",
-            name: "approver",
-            type: "address",
-         },
-      ],
-      name: "ERC20InvalidApprover",
-      type: "error",
-   },
-   {
-      inputs: [
-         {
-            internalType: "address",
-            name: "receiver",
-            type: "address",
-         },
-      ],
-      name: "ERC20InvalidReceiver",
-      type: "error",
-   },
-   {
-      inputs: [
-         {
-            internalType: "address",
-            name: "sender",
-            type: "address",
-         },
-      ],
-      name: "ERC20InvalidSender",
-      type: "error",
-   },
-   {
-      inputs: [
-         {
-            internalType: "address",
-            name: "spender",
-            type: "address",
-         },
-      ],
-      name: "ERC20InvalidSpender",
-      type: "error",
-   },
-   {
-      inputs: [
-         {
-            internalType: "address",
-            name: "receiver",
-            type: "address",
-         },
-         {
-            internalType: "uint256",
-            name: "assets",
-            type: "uint256",
-         },
-         {
-            internalType: "uint256",
-            name: "max",
-            type: "uint256",
-         },
-      ],
-      name: "ERC4626ExceededMaxDeposit",
-      type: "error",
-   },
-   {
-      inputs: [
-         {
-            internalType: "address",
-            name: "receiver",
-            type: "address",
-         },
-         {
-            internalType: "uint256",
-            name: "shares",
-            type: "uint256",
-         },
-         {
-            internalType: "uint256",
-            name: "max",
-            type: "uint256",
-         },
-      ],
-      name: "ERC4626ExceededMaxMint",
-      type: "error",
-   },
-   {
-      inputs: [
-         {
-            internalType: "address",
-            name: "owner",
-            type: "address",
-         },
-         {
-            internalType: "uint256",
-            name: "shares",
-            type: "uint256",
-         },
-         {
-            internalType: "uint256",
-            name: "max",
-            type: "uint256",
-         },
-      ],
-      name: "ERC4626ExceededMaxRedeem",
-      type: "error",
-   },
-   {
-      inputs: [
-         {
-            internalType: "address",
-            name: "owner",
-            type: "address",
-         },
-         {
-            internalType: "uint256",
-            name: "assets",
-            type: "uint256",
-         },
-         {
-            internalType: "uint256",
-            name: "max",
-            type: "uint256",
-         },
-      ],
-      name: "ERC4626ExceededMaxWithdraw",
-      type: "error",
-   },
-   {
-      inputs: [],
-      name: "FailedInnerCall",
-      type: "error",
-   },
-   {
-      inputs: [],
-      name: "MathOverflowedMulDiv",
-      type: "error",
-   },
-   {
-      inputs: [],
-      name: "MaxRewardTokensAmount",
-      type: "error",
-   },
-   {
-      inputs: [
-         {
-            internalType: "address",
-            name: "owner",
-            type: "address",
-         },
-      ],
-      name: "OwnableInvalidOwner",
-      type: "error",
-   },
-   {
-      inputs: [
-         {
-            internalType: "address",
-            name: "account",
-            type: "address",
-         },
-      ],
-      name: "OwnableUnauthorizedAccount",
-      type: "error",
-   },
-   {
-      inputs: [],
-      name: "ReentrancyGuardReentrantCall",
-      type: "error",
-   },
-   {
-      inputs: [
-         {
-            internalType: "address",
-            name: "token",
-            type: "address",
-         },
-      ],
-      name: "SafeERC20FailedOperation",
-      type: "error",
    },
    {
       anonymous: false,
@@ -346,7 +53,7 @@ export const basicVaultAbi = [
          {
             indexed: false,
             internalType: "uint256",
-            name: "value",
+            name: "amount",
             type: "uint256",
          },
       ],
@@ -359,19 +66,19 @@ export const basicVaultAbi = [
          {
             indexed: true,
             internalType: "address",
-            name: "sender",
+            name: "from",
             type: "address",
          },
          {
             indexed: true,
             internalType: "address",
-            name: "owner",
+            name: "to",
             type: "address",
          },
          {
             indexed: false,
             internalType: "uint256",
-            name: "assets",
+            name: "amount",
             type: "uint256",
          },
          {
@@ -382,36 +89,6 @@ export const basicVaultAbi = [
          },
       ],
       name: "Deposit",
-      type: "event",
-   },
-   {
-      anonymous: false,
-      inputs: [
-         {
-            components: [
-               {
-                  internalType: "address",
-                  name: "receiver",
-                  type: "address",
-               },
-               {
-                  internalType: "address",
-                  name: "token",
-                  type: "address",
-               },
-               {
-                  internalType: "uint256",
-                  name: "feePercentage",
-                  type: "uint256",
-               },
-            ],
-            indexed: false,
-            internalType: "struct FeeConfiguration.FeeConfig",
-            name: "feeConfig",
-            type: "tuple",
-         },
-      ],
-      name: "FeeConfigUpdated",
       type: "event",
    },
    {
@@ -439,7 +116,7 @@ export const basicVaultAbi = [
          {
             indexed: true,
             internalType: "address",
-            name: "rewardToken",
+            name: "token",
             type: "address",
          },
          {
@@ -458,13 +135,13 @@ export const basicVaultAbi = [
          {
             indexed: true,
             internalType: "address",
-            name: "rewardToken",
+            name: "user",
             type: "address",
          },
          {
             indexed: true,
             internalType: "address",
-            name: "receiver",
+            name: "token",
             type: "address",
          },
          {
@@ -482,87 +159,12 @@ export const basicVaultAbi = [
       inputs: [
          {
             indexed: true,
-            internalType: "bytes32",
-            name: "role",
-            type: "bytes32",
-         },
-         {
-            indexed: true,
-            internalType: "bytes32",
-            name: "previousAdminRole",
-            type: "bytes32",
-         },
-         {
-            indexed: true,
-            internalType: "bytes32",
-            name: "newAdminRole",
-            type: "bytes32",
-         },
-      ],
-      name: "RoleAdminChanged",
-      type: "event",
-   },
-   {
-      anonymous: false,
-      inputs: [
-         {
-            indexed: true,
-            internalType: "bytes32",
-            name: "role",
-            type: "bytes32",
-         },
-         {
-            indexed: true,
             internalType: "address",
-            name: "account",
-            type: "address",
-         },
-         {
-            indexed: true,
-            internalType: "address",
-            name: "sender",
+            name: "token",
             type: "address",
          },
       ],
-      name: "RoleGranted",
-      type: "event",
-   },
-   {
-      anonymous: false,
-      inputs: [
-         {
-            indexed: true,
-            internalType: "bytes32",
-            name: "role",
-            type: "bytes32",
-         },
-         {
-            indexed: true,
-            internalType: "address",
-            name: "account",
-            type: "address",
-         },
-         {
-            indexed: true,
-            internalType: "address",
-            name: "sender",
-            type: "address",
-         },
-      ],
-      name: "RoleRevoked",
-      type: "event",
-   },
-   {
-      anonymous: false,
-      inputs: [
-         {
-            indexed: false,
-            internalType: "uint32",
-            name: "time",
-            type: "uint32",
-         },
-      ],
-      name: "SetSharesLockTime",
+      name: "RewardTokenRegistered",
       type: "event",
    },
    {
@@ -583,7 +185,7 @@ export const basicVaultAbi = [
          {
             indexed: false,
             internalType: "uint256",
-            name: "value",
+            name: "amount",
             type: "uint256",
          },
       ],
@@ -591,30 +193,48 @@ export const basicVaultAbi = [
       type: "event",
    },
    {
+      inputs: [
+         {
+            internalType: "address",
+            name: "user",
+            type: "address",
+         },
+      ],
+      name: "getUserReward",
+      outputs: [
+         {
+            internalType: "address[]",
+            name: "tokens",
+            type: "address[]",
+         },
+         {
+            internalType: "uint256[]",
+            name: "amounts",
+            type: "uint256[]",
+         },
+      ],
+      stateMutability: "view",
+      type: "function",
+   },
+   {
       anonymous: false,
       inputs: [
          {
             indexed: true,
             internalType: "address",
-            name: "sender",
+            name: "from",
             type: "address",
          },
          {
             indexed: true,
             internalType: "address",
-            name: "receiver",
-            type: "address",
-         },
-         {
-            indexed: true,
-            internalType: "address",
-            name: "owner",
+            name: "to",
             type: "address",
          },
          {
             indexed: false,
             internalType: "uint256",
-            name: "assets",
+            name: "amount",
             type: "uint256",
          },
          {
@@ -629,33 +249,7 @@ export const basicVaultAbi = [
    },
    {
       inputs: [],
-      name: "DEFAULT_ADMIN_ROLE",
-      outputs: [
-         {
-            internalType: "bytes32",
-            name: "",
-            type: "bytes32",
-         },
-      ],
-      stateMutability: "view",
-      type: "function",
-   },
-   {
-      inputs: [],
-      name: "FEE_CONFIG_CONTROLLER_ROLE",
-      outputs: [
-         {
-            internalType: "bytes32",
-            name: "",
-            type: "bytes32",
-         },
-      ],
-      stateMutability: "view",
-      type: "function",
-   },
-   {
-      inputs: [],
-      name: "VAULT_REWARD_CONTROLLER_ROLE",
+      name: "DOMAIN_SEPARATOR",
       outputs: [
          {
             internalType: "bytes32",
@@ -670,30 +264,30 @@ export const basicVaultAbi = [
       inputs: [
          {
             internalType: "address",
-            name: "_token",
+            name: "token",
             type: "address",
          },
          {
             internalType: "uint256",
-            name: "_amount",
+            name: "amount",
             type: "uint256",
          },
       ],
       name: "addReward",
       outputs: [],
-      stateMutability: "payable",
+      stateMutability: "nonpayable",
       type: "function",
    },
    {
       inputs: [
          {
             internalType: "address",
-            name: "owner",
+            name: "",
             type: "address",
          },
          {
             internalType: "address",
-            name: "spender",
+            name: "",
             type: "address",
          },
       ],
@@ -717,7 +311,7 @@ export const basicVaultAbi = [
          },
          {
             internalType: "uint256",
-            name: "value",
+            name: "amount",
             type: "uint256",
          },
       ],
@@ -737,7 +331,7 @@ export const basicVaultAbi = [
       name: "asset",
       outputs: [
          {
-            internalType: "address",
+            internalType: "contract IERC20",
             name: "",
             type: "address",
          },
@@ -749,7 +343,39 @@ export const basicVaultAbi = [
       inputs: [
          {
             internalType: "address",
-            name: "account",
+            name: "user",
+            type: "address",
+         },
+      ],
+      name: "assetsOf",
+      outputs: [
+         {
+            internalType: "uint256",
+            name: "",
+            type: "uint256",
+         },
+      ],
+      stateMutability: "view",
+      type: "function",
+   },
+   {
+      inputs: [],
+      name: "assetsPerShare",
+      outputs: [
+         {
+            internalType: "uint256",
+            name: "",
+            type: "uint256",
+         },
+      ],
+      stateMutability: "view",
+      type: "function",
+   },
+   {
+      inputs: [
+         {
+            internalType: "address",
+            name: "",
             type: "address",
          },
       ],
@@ -765,79 +391,21 @@ export const basicVaultAbi = [
       type: "function",
    },
    {
-      inputs: [
-         {
-            internalType: "uint256",
-            name: "_startPosition",
-            type: "uint256",
-         },
-         {
-            internalType: "address",
-            name: "receiver",
-            type: "address",
-         },
-      ],
-      name: "claimAllReward",
-      outputs: [
-         {
-            internalType: "uint256",
-            name: "",
-            type: "uint256",
-         },
-         {
-            internalType: "uint256",
-            name: "",
-            type: "uint256",
-         },
-      ],
-      stateMutability: "nonpayable",
-      type: "function",
-   },
-   {
-      inputs: [
-         {
-            internalType: "address",
-            name: "rewardToken",
-            type: "address",
-         },
-         {
-            internalType: "address",
-            name: "receiver",
-            type: "address",
-         },
-         {
-            internalType: "uint256",
-            name: "amount",
-            type: "uint256",
-         },
-      ],
-      name: "claimExactReward",
+      inputs: [],
+      name: "claimAllRewards",
       outputs: [],
       stateMutability: "nonpayable",
       type: "function",
    },
    {
-      inputs: [],
-      name: "cliff",
-      outputs: [
-         {
-            internalType: "uint32",
-            name: "",
-            type: "uint32",
-         },
-      ],
-      stateMutability: "view",
-      type: "function",
-   },
-   {
       inputs: [
          {
-            internalType: "uint256",
-            name: "shares",
-            type: "uint256",
+            internalType: "address[]",
+            name: "tokens",
+            type: "address[]",
          },
       ],
-      name: "convertToAssets",
+      name: "claimSpecificsReward",
       outputs: [
          {
             internalType: "uint256",
@@ -845,26 +413,7 @@ export const basicVaultAbi = [
             type: "uint256",
          },
       ],
-      stateMutability: "view",
-      type: "function",
-   },
-   {
-      inputs: [
-         {
-            internalType: "uint256",
-            name: "assets",
-            type: "uint256",
-         },
-      ],
-      name: "convertToShares",
-      outputs: [
-         {
-            internalType: "uint256",
-            name: "",
-            type: "uint256",
-         },
-      ],
-      stateMutability: "view",
+      stateMutability: "nonpayable",
       type: "function",
    },
    {
@@ -905,12 +454,10 @@ export const basicVaultAbi = [
       type: "function",
    },
    {
-      inputs: [],
-      name: "feeConfig",
-      outputs: [
+      inputs: [
          {
             internalType: "address",
-            name: "receiver",
+            name: "user",
             type: "address",
          },
          {
@@ -918,9 +465,12 @@ export const basicVaultAbi = [
             name: "token",
             type: "address",
          },
+      ],
+      name: "getClaimableReward",
+      outputs: [
          {
             internalType: "uint256",
-            name: "feePercentage",
+            name: "",
             type: "uint256",
          },
       ],
@@ -931,16 +481,16 @@ export const basicVaultAbi = [
       inputs: [
          {
             internalType: "address",
-            name: "_user",
+            name: "user",
             type: "address",
          },
       ],
-      name: "getAllRewards",
+      name: "getLockedAmount",
       outputs: [
          {
-            internalType: "uint256[]",
-            name: "_rewards",
-            type: "uint256[]",
+            internalType: "uint256",
+            name: "",
+            type: "uint256",
          },
       ],
       stateMutability: "view",
@@ -948,54 +498,24 @@ export const basicVaultAbi = [
    },
    {
       inputs: [],
-      name: "getRewardTokens",
-      outputs: [
-         {
-            internalType: "address[]",
-            name: "",
-            type: "address[]",
-         },
-      ],
-      stateMutability: "view",
-      type: "function",
-   },
-   {
-      inputs: [
-         {
-            internalType: "bytes32",
-            name: "role",
-            type: "bytes32",
-         },
-      ],
-      name: "getRoleAdmin",
-      outputs: [
-         {
-            internalType: "bytes32",
-            name: "",
-            type: "bytes32",
-         },
-      ],
-      stateMutability: "view",
-      type: "function",
-   },
-   {
-      inputs: [
-         {
-            internalType: "address",
-            name: "_user",
-            type: "address",
-         },
-         {
-            internalType: "address",
-            name: "_rewardToken",
-            type: "address",
-         },
-      ],
-      name: "getUserReward",
+      name: "getRewardTokensLength",
       outputs: [
          {
             internalType: "uint256",
-            name: "unclaimedAmount",
+            name: "",
+            type: "uint256",
+         },
+      ],
+      stateMutability: "view",
+      type: "function",
+   },
+   {
+      inputs: [],
+      name: "getTVL",
+      outputs: [
+         {
+            internalType: "uint256",
+            name: "",
             type: "uint256",
          },
       ],
@@ -1005,35 +525,31 @@ export const basicVaultAbi = [
    {
       inputs: [
          {
-            internalType: "bytes32",
-            name: "role",
-            type: "bytes32",
-         },
-         {
             internalType: "address",
-            name: "account",
+            name: "user",
             type: "address",
          },
       ],
-      name: "grantRole",
-      outputs: [],
-      stateMutability: "nonpayable",
+      name: "getTimeUntilUnlock",
+      outputs: [
+         {
+            internalType: "uint256",
+            name: "",
+            type: "uint256",
+         },
+      ],
+      stateMutability: "view",
       type: "function",
    },
    {
       inputs: [
          {
-            internalType: "bytes32",
-            name: "role",
-            type: "bytes32",
-         },
-         {
             internalType: "address",
-            name: "account",
+            name: "user",
             type: "address",
          },
       ],
-      name: "hasRole",
+      name: "isUnlocked",
       outputs: [
          {
             internalType: "bool",
@@ -1045,14 +561,8 @@ export const basicVaultAbi = [
       type: "function",
    },
    {
-      inputs: [
-         {
-            internalType: "address",
-            name: "account",
-            type: "address",
-         },
-      ],
-      name: "lockedOf",
+      inputs: [],
+      name: "lockPeriod",
       outputs: [
          {
             internalType: "uint256",
@@ -1079,7 +589,7 @@ export const basicVaultAbi = [
             type: "uint256",
          },
       ],
-      stateMutability: "view",
+      stateMutability: "pure",
       type: "function",
    },
    {
@@ -1098,14 +608,14 @@ export const basicVaultAbi = [
             type: "uint256",
          },
       ],
-      stateMutability: "view",
+      stateMutability: "pure",
       type: "function",
    },
    {
       inputs: [
          {
             internalType: "address",
-            name: "owner",
+            name: "owner_",
             type: "address",
          },
       ],
@@ -1124,7 +634,7 @@ export const basicVaultAbi = [
       inputs: [
          {
             internalType: "address",
-            name: "owner",
+            name: "owner_",
             type: "address",
          },
       ],
@@ -1177,6 +687,25 @@ export const basicVaultAbi = [
       type: "function",
    },
    {
+      inputs: [
+         {
+            internalType: "address",
+            name: "",
+            type: "address",
+         },
+      ],
+      name: "nonces",
+      outputs: [
+         {
+            internalType: "uint256",
+            name: "",
+            type: "uint256",
+         },
+      ],
+      stateMutability: "view",
+      type: "function",
+   },
+   {
       inputs: [],
       name: "owner",
       outputs: [
@@ -1187,6 +716,49 @@ export const basicVaultAbi = [
          },
       ],
       stateMutability: "view",
+      type: "function",
+   },
+   {
+      inputs: [
+         {
+            internalType: "address",
+            name: "owner",
+            type: "address",
+         },
+         {
+            internalType: "address",
+            name: "spender",
+            type: "address",
+         },
+         {
+            internalType: "uint256",
+            name: "value",
+            type: "uint256",
+         },
+         {
+            internalType: "uint256",
+            name: "deadline",
+            type: "uint256",
+         },
+         {
+            internalType: "uint8",
+            name: "v",
+            type: "uint8",
+         },
+         {
+            internalType: "bytes32",
+            name: "r",
+            type: "bytes32",
+         },
+         {
+            internalType: "bytes32",
+            name: "s",
+            type: "bytes32",
+         },
+      ],
+      name: "permit",
+      outputs: [],
+      stateMutability: "nonpayable",
       type: "function",
    },
    {
@@ -1279,7 +851,7 @@ export const basicVaultAbi = [
          },
          {
             internalType: "address",
-            name: "owner",
+            name: "owner_",
             type: "address",
          },
       ],
@@ -1295,75 +867,43 @@ export const basicVaultAbi = [
       type: "function",
    },
    {
-      inputs: [],
-      name: "renounceOwnership",
-      outputs: [],
-      stateMutability: "nonpayable",
-      type: "function",
-   },
-   {
       inputs: [
          {
-            internalType: "bytes32",
-            name: "role",
-            type: "bytes32",
-         },
-         {
             internalType: "address",
-            name: "callerConfirmation",
+            name: "",
             type: "address",
          },
       ],
-      name: "renounceRole",
-      outputs: [],
-      stateMutability: "nonpayable",
-      type: "function",
-   },
-   {
-      inputs: [
-         {
-            internalType: "bytes32",
-            name: "role",
-            type: "bytes32",
-         },
-         {
-            internalType: "address",
-            name: "account",
-            type: "address",
-         },
-      ],
-      name: "revokeRole",
-      outputs: [],
-      stateMutability: "nonpayable",
-      type: "function",
-   },
-   {
-      inputs: [
-         {
-            internalType: "uint32",
-            name: "time",
-            type: "uint32",
-         },
-      ],
-      name: "setSharesLockTime",
-      outputs: [],
-      stateMutability: "nonpayable",
-      type: "function",
-   },
-   {
-      inputs: [
-         {
-            internalType: "bytes4",
-            name: "interfaceId",
-            type: "bytes4",
-         },
-      ],
-      name: "supportsInterface",
+      name: "rewardInfo",
       outputs: [
          {
+            internalType: "uint256",
+            name: "amount",
+            type: "uint256",
+         },
+         {
             internalType: "bool",
-            name: "",
+            name: "exists",
             type: "bool",
+         },
+      ],
+      stateMutability: "view",
+      type: "function",
+   },
+   {
+      inputs: [
+         {
+            internalType: "uint256",
+            name: "",
+            type: "uint256",
+         },
+      ],
+      name: "rewardTokens",
+      outputs: [
+         {
+            internalType: "address",
+            name: "",
+            type: "address",
          },
       ],
       stateMutability: "view",
@@ -1417,7 +957,7 @@ export const basicVaultAbi = [
          },
          {
             internalType: "uint256",
-            name: "value",
+            name: "amount",
             type: "uint256",
          },
       ],
@@ -1446,7 +986,7 @@ export const basicVaultAbi = [
          },
          {
             internalType: "uint256",
-            name: "value",
+            name: "amount",
             type: "uint256",
          },
       ],
@@ -1475,65 +1015,61 @@ export const basicVaultAbi = [
       type: "function",
    },
    {
-      inputs: [],
-      name: "unlockDuration",
-      outputs: [
-         {
-            internalType: "uint32",
-            name: "",
-            type: "uint32",
-         },
-      ],
-      stateMutability: "view",
-      type: "function",
-   },
-   {
       inputs: [
          {
-            internalType: "address",
-            name: "account",
-            type: "address",
+            internalType: "uint256",
+            name: "startPosition",
+            type: "uint256",
+         },
+         {
+            internalType: "uint256",
+            name: "assets",
+            type: "uint256",
          },
       ],
-      name: "unlockedOf",
+      name: "unlock",
       outputs: [
          {
             internalType: "uint256",
             name: "",
             type: "uint256",
          },
+         {
+            internalType: "uint256",
+            name: "",
+            type: "uint256",
+         },
+         {
+            internalType: "uint256",
+            name: "",
+            type: "uint256",
+         },
       ],
-      stateMutability: "view",
+      stateMutability: "nonpayable",
       type: "function",
    },
    {
       inputs: [
          {
-            components: [
-               {
-                  internalType: "address",
-                  name: "receiver",
-                  type: "address",
-               },
-               {
-                  internalType: "address",
-                  name: "token",
-                  type: "address",
-               },
-               {
-                  internalType: "uint256",
-                  name: "feePercentage",
-                  type: "uint256",
-               },
-            ],
-            internalType: "struct FeeConfiguration.FeeConfig",
-            name: "_feeConfig",
-            type: "tuple",
+            internalType: "address",
+            name: "",
+            type: "address",
          },
       ],
-      name: "updateFeeConfig",
-      outputs: [],
-      stateMutability: "nonpayable",
+      name: "userInfo",
+      outputs: [
+         {
+            internalType: "uint256",
+            name: "lockTimeStart",
+            type: "uint256",
+         },
+         {
+            internalType: "bool",
+            name: "exists",
+            type: "bool",
+         },
+      ],
+      stateMutability: "view",
       type: "function",
    },
    {
@@ -1550,7 +1086,7 @@ export const basicVaultAbi = [
          },
          {
             internalType: "address",
-            name: "owner",
+            name: "owner_",
             type: "address",
          },
       ],

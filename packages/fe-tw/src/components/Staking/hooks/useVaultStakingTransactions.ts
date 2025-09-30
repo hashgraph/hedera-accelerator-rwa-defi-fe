@@ -54,7 +54,7 @@ export const useVaultStakingTransactions = (
    const unstake = useMutation({
       mutationFn: async ({ amount }: { amount: number }) => {
          if (!vaultAddress || !evmAddress) {
-            throw new Error("Required addresses not available"); 
+            throw new Error("Required addresses not available");
          }
 
          const bigIntAmount = parseAmount(amount);
@@ -80,8 +80,8 @@ export const useVaultStakingTransactions = (
             writeContract({
                contractId: ContractId.fromEvmAddress(0, 0, vaultAddress),
                abi: basicVaultAbi,
-               functionName: "claimAllReward",
-               args: [0, evmAddress],
+               functionName: "claimAllRewards",
+               args: [],
             }),
          );
       },

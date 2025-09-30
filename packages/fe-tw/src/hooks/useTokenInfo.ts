@@ -55,8 +55,11 @@ export const useTokenInfo = (tokenAddress: `0x${string}` | undefined) => {
             }),
          ])) as [string[], bigint, bigint];
 
-         const convertedTokenAmount = Number(ethers.formatUnits(reserves[0], tokenDecimals));
-         const convertedUsdcAmount = Number(ethers.formatUnits(reserves[1], usdcDecimals));
+         const [usdcReserves, tokenReserves] =
+            reserves[0] < reserves[1] ? [reserves[0], reserves[1]] : [reserves[1], reserves[0]];
+
+         const convertedTokenAmount = Number(ethers.formatUnits(tokenReserves, tokenDecimals));
+         const convertedUsdcAmount = Number(ethers.formatUnits(usdcReserves, 6));
 
          return convertedUsdcAmount === 0 || convertedTokenAmount === 0
             ? 0

@@ -12,6 +12,8 @@ export const useTokenPermitSignature = () => {
       amount: bigint | number | string,
       spender: `0x${string}`,
       deadline?: number,
+      customTokenName?: string,
+      customTokenVersion?: string,
    ) => {
       const [tokenName, tokenDecimals, nonce] = (await Promise.all([
          readContract({
@@ -38,8 +40,8 @@ export const useTokenPermitSignature = () => {
          typeof amount === "bigint" ? amount : ethers.parseUnits(String(amount), tokenDecimals);
 
       const domain: TypedDataDomain = {
-         name: tokenName,
-         version: "1",
+         name: customTokenName || tokenName,
+         version: customTokenVersion || "1",
          chainId: chainData.chain.id,
          verifyingContract: tokenAddress,
       };

@@ -15,7 +15,7 @@ import { WalkthroughStep } from "../Walkthrough";
 import { on } from "events";
 import { useWalkthroughStore } from "../Walkthrough/WalkthroughStore";
 
-const MINT_AMOUNT = 10000;
+const MINT_AMOUNT = 1000000000;
 const DECIMALS = 6;
 
 export const MintUSDCButton = () => {

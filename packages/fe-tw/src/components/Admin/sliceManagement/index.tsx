@@ -65,6 +65,7 @@ const getCurrentStepState = (
 export const SliceManagement = () => {
    const [currentSetupStep, setCurrentSetupStep] = useState(1);
    const [isTransactionInProgress, setIsTransactionInProgress] = useState<boolean>(false);
+   const [deploymentStage, setDeploymentStage] = useState<"slice" | "allocation" | null>(null);
    const [assetsOptions, setAssetsOptions] = useState<any>();
    const [lastSliceDeployed, setLastSliceDeployed] = useState<`0x${string}`>();
    const { buildingsInfo } = useBuildings();
@@ -120,27 +121,19 @@ export const SliceManagement = () => {
 
    const handleSubmit = async (values: CreateSliceRequestData, e: { resetForm: () => void }) => {
       setIsTransactionInProgress(true);
+      setDeploymentStage("slice");
       e.resetForm();
       setCurrentSetupStep(1);
 
       const deployResult = await tryCatch(createSlice(values));
       const lastDeployedSliceResult = await tryCatch(waitForLastSliceDeployed());
 
-      if (deployResult.data) {
-         toast.success(
-            <TxResultToastView
-               title={`Slice ${values.slice.name} deployed`}
-               txSuccess={deployResult.data}
-            />,
-            { duration: Infinity, closeButton: true },
-         );
+      if (deployResult.data && lastDeployedSliceResult.data) {
+         // If there are allocations to add, deploy them
+         if (values.sliceAllocation?.tokenAssets?.length > 0) {
+            setDeploymentStage("allocation");
 
-         if (lastDeployedSliceResult.data) {
-            setLastSliceDeployed(lastDeployedSliceResult.data);
-         }
-
-         if (lastDeployedSliceResult.data && values.sliceAllocation?.tokenAssets?.length > 0) {
-            const { data } = await tryCatch(
+            const { data, error } = await tryCatch(
                addAllocationsToSliceMutation.mutateAsync({
                   deployedSliceAddress: lastDeployedSliceResult.data,
                   ...values,
@@ -148,21 +141,18 @@ export const SliceManagement = () => {
             );
 
             if (data?.every((tx) => !!tx)) {
-               toast.success(
-                  <TxResultToastView
-                     title={`Allocation added to ${values.slice?.name} slice`}
-                     txSuccess={{
-                        transaction_id: (data as unknown as string[])[0],
-                     }}
-                  />,
-                  { duration: Infinity, closeButton: true },
-               );
+               // Success - show the success dialog
+               setLastSliceDeployed(lastDeployedSliceResult.data);
             } else {
+               // Error during allocation
                toast.error(<TxResultToastView title="Error during adding allocation" txError />, {
                   duration: Infinity,
                   closeButton: true,
                });
             }
+         } else {
+            // No allocations, just show success dialog
+            setLastSliceDeployed(lastDeployedSliceResult.data);
          }
       } else {
          toast.error(
@@ -173,37 +163,15 @@ export const SliceManagement = () => {
             { duration: Infinity, closeButton: true },
          );
       }
+
       setIsTransactionInProgress(false);
+      setDeploymentStage(null);
    };
 
    return (
       <div>
          <h1 className="text-2xl font-bold mb-4">Slice Management</h1>
          <p className="mb-4">Create and manage slice, include deployment of new slice.</p>
-
-         <Dialog
-            open={!!lastSliceDeployed}
-            onOpenChange={() => {
-               setLastSliceDeployed(undefined);
-            }}
-         >
-            <DialogContent onInteractOutside={(e) => e.preventDefault()}>
-               <DialogHeader>
-                  <DialogTitle>Slice Successfully Deployed</DialogTitle>
-               </DialogHeader>
-
-               <DialogDescription className="flex flex-col text-xl items-center gap-4 p-10">
-                  <a
-                     className="text-blue-500"
-                     href={`/slices/${lastSliceDeployed}`}
-                     target="_blank"
-                     rel="noopener noreferrer"
-                  >
-                     View recently created slice
-                  </a>
-               </DialogDescription>
-            </DialogContent>
-         </Dialog>
 
          {isTransactionInProgress ? (
             <LoadingView isLoading />
@@ -304,20 +272,40 @@ export const SliceManagement = () => {
          )}
 
          <Dialog
-            open={isTransactionInProgress}
-            onOpenChange={(state) => setIsTransactionInProgress(state)}
+            open={isTransactionInProgress || !!lastSliceDeployed}
+            onOpenChange={(state) => {
+               if (!isTransactionInProgress) {
+                  setLastSliceDeployed(undefined);
+               }
+            }}
          >
             <DialogContent onInteractOutside={(e) => e.preventDefault()}>
                <DialogHeader>
                   <DialogTitle>
-                     {ipfsHashUploadingInProgress
-                        ? "Hash deployment in progress..."
-                        : "Slice deployment in progress..."}
+                     {isTransactionInProgress
+                        ? ipfsHashUploadingInProgress
+                           ? "Hash deployment in progress..."
+                           : deploymentStage === "allocation"
+                             ? "Deploying slice allocations..."
+                             : "Slice deployment in progress..."
+                        : "Slice Successfully Deployed"}
                   </DialogTitle>
-                  <DialogDescription className="flex flex-col justify-center text-xl items-center gap-4 p-10">
-                     <Loader size={64} className="animate-spin" />
-                  </DialogDescription>
                </DialogHeader>
+
+               <DialogDescription className="flex flex-col text-xl items-center gap-4 p-10">
+                  {isTransactionInProgress ? (
+                     <Loader size={64} className="animate-spin" />
+                  ) : (
+                     <a
+                        className="text-blue-500"
+                        href={`/slices/${lastSliceDeployed}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                     >
+                        View recently created slice
+                     </a>
+                  )}
+               </DialogDescription>
             </DialogContent>
          </Dialog>
       </div>

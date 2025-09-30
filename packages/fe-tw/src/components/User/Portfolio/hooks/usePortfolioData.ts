@@ -2,16 +2,16 @@ import { useQuery } from "@tanstack/react-query";
 import { filter, isEmpty, map } from "lodash";
 import { readBuildingDetails, readBuildingsList } from "@/services/buildingService";
 import { getTokenBalanceOf, getTokenDecimals, getTokenSymbol } from "@/services/erc20Service";
-import { useEvmAddress } from "@buidlerlabs/hashgraph-react-wallets";
 import { PortfolioToken } from "@/components/User/Portfolio/types";
 import { ethers } from "ethers";
 import { readContract } from "@/services/contracts/readContract";
 import { buildingTreasuryAbi } from "@/services/contracts/abi/buildingTreasuryAbi";
 import { basicVaultAbi } from "@/services/contracts/abi/basicVaultAbi";
 import { getUserReward } from "../helpers";
+import { useAccount } from "wagmi";
 
 export const usePortfolioData = () => {
-   const { data: evmAddress } = useEvmAddress();
+   const { address: evmAddress } = useAccount();
 
    return useQuery<PortfolioToken[] | null>({
       queryKey: ["PORTFOLIO_TOKENS", evmAddress],
@@ -36,18 +36,11 @@ export const usePortfolioData = () => {
                functionName: "vault",
             });
 
-            let rewardToken = await readContract({
-               address: vaultAddress,
-               abi: basicVaultAbi,
-               functionName: "getRewardTokens",
-            });
-            rewardToken = rewardToken[0];
-
             const [[tokenBalance], [tokenDecimals], symbol, pendingRewards] = await Promise.all([
                getTokenBalanceOf(tokenAddress, evmAddress),
                getTokenDecimals(tokenAddress),
                getTokenSymbol(tokenAddress),
-               getUserReward(vaultAddress, evmAddress, rewardToken),
+               getUserReward(vaultAddress, evmAddress),
             ]);
 
             const tokenBalanceFormatted = Number(ethers.formatUnits(tokenBalance, tokenDecimals));

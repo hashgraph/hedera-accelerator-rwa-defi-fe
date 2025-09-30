@@ -42,7 +42,11 @@ import { tryCatch } from "@/services/tryCatch";
 import { sliceRebalanceSchema } from "./helpers";
 import { DepositToSliceForm } from "../Admin/sliceManagement/DepositToSliceForm";
 import SliceDepositChart from "./SliceDepositChart";
-import { UNISWAP_FACTORY_ADDRESS, USDC_ADDRESS } from "@/services/contracts/addresses";
+import {
+   SLICE_FACTORY_ADDRESS,
+   UNISWAP_FACTORY_ADDRESS,
+   USDC_ADDRESS,
+} from "@/services/contracts/addresses";
 import { readBuildingDetails } from "@/services/buildingService";
 import { basicVaultAbi } from "@/services/contracts/abi/basicVaultAbi";
 import { Checkbox } from "../ui/checkbox";
@@ -54,6 +58,12 @@ import { AllocationBuildingCard } from "./AllocationBuildingCard";
 import { useQueryClient } from "@tanstack/react-query";
 import { useUSDCForSlice } from "@/hooks/useUSDCForSlice";
 import Image from "next/image";
+import { watchContractEvent } from "@/services/contracts/watchContractEvent";
+import { sliceAbi } from "@/services/contracts/abi/sliceAbi";
+import { ethers } from "ethers";
+import { map } from "lodash";
+import { Separator } from "../ui/separator";
+import { sliceFactoryAbi } from "@/services/contracts/abi/sliceFactoryAbi";
 
 type Props = {
    slice: SliceData;
@@ -66,13 +76,16 @@ export function SliceDetailPage({ slice, buildingId, isInBuildingContext = false
    const wallet = useWallet();
    const { readContract } = useReadContract();
    const { buildingsInfo } = useBuildings();
-   const { sliceAllocations, sliceBuildings, sliceBuildingsDetails, totalDeposits } = useSliceData(
-      slice.address,
-      buildingsInfo,
-   );
+   const {
+      sliceAllocations,
+      sliceBuildings,
+      sliceBuildingsDetails,
+      totalDeposits,
+      sliceTokenDeposits,
+   } = useSliceData(slice.address, buildingsInfo);
 
    const { data: evmAddress } = useEvmAddress();
-   const { rebalanceSliceMutation, addAllocationsToSliceMutation, depositWithPermits } =
+   const { rebalanceSliceMutation, addAllocationsToSliceMutation, depositWithPermits, deposit } =
       useCreateSlice(slice.address);
    const { investUSDCToSlice, currentStep, stepResults, steps, exchangeRates } = useUSDCForSlice(
       slice.address,
@@ -86,38 +99,6 @@ export function SliceDetailPage({ slice, buildingId, isInBuildingContext = false
    const [usdcAmount, setUsdcAmount] = useState<string>("");
    const [showUSDCDialog, setShowUSDCDialog] = useState(false);
    const [isUSDCLoading, setIsUSDCLoading] = useState(false);
-
-   const { data: rewardsAvailableData, isLoading: rewardsAvailableIsLoading } = useQuery({
-      queryKey: ["vaultRewardsAvailable"],
-      queryFn: async () => {
-         const sliceAllocationBuildings = await Promise.all(
-            sliceAllocations.map((alloc) =>
-               readBuildingDetails(
-                  buildingsInfo?.find((b) => b.tokenAddress === alloc.buildingToken)
-                     ?.buildingAddress,
-               ),
-            ),
-         );
-         const sliceAllocationVaults = sliceAllocationBuildings.map((detailLog) => ({
-            address: detailLog[0][0],
-            token: detailLog[0][4],
-            vault: detailLog[0][7],
-            ac: detailLog[0][8],
-         }));
-
-         return await Promise.all(
-            sliceAllocationVaults.map((vault, id) =>
-               readContract({
-                  address: vault.vault,
-                  abi: basicVaultAbi,
-                  functionName: "getAllRewards",
-                  args: [sliceAllocations[id].aToken],
-               }),
-            ),
-         );
-      },
-      enabled: sliceAllocations?.length > 0 && (buildingsInfo?.length || 0) > 0,
-   });
 
    useEffect(() => {
       setAssetOptionsAsync();
@@ -235,10 +216,6 @@ export function SliceDetailPage({ slice, buildingId, isInBuildingContext = false
       }
    };
 
-   const rebalanceDisabled = !!rewardsAvailableData?.length
-      ? !rewardsAvailableData.some((reward) => (reward as number) > 0)
-      : false;
-
    const handleUSDCInvestment = async () => {
       if (!usdcAmount || Number(usdcAmount) <= 0) {
          toast.error("Please enter a valid USDC amount");
@@ -322,12 +299,12 @@ export function SliceDetailPage({ slice, buildingId, isInBuildingContext = false
 
                      {evmAddress && (
                         <div className="flex flex-wrap gap-3 pt-4">
-                           <Button onClick={() => setIsAllocationOpen(true)} variant="outline">
+                           {/* <Button onClick={() => setIsAllocationOpen(true)} variant="outline">
                               <Settings className="w-4 h-4 mr-2" />
                               Manage Allocations
-                           </Button>
+                           </Button> */}
                            {allocationsExists && (
-                              <Button onClick={onHandleRebalance} disabled={rebalanceDisabled}>
+                              <Button onClick={onHandleRebalance}>
                                  <TrendingUp className="w-4 h-4 mr-2" />
                                  Rebalance
                               </Button>
@@ -477,31 +454,30 @@ export function SliceDetailPage({ slice, buildingId, isInBuildingContext = false
 
                {(Number(totalDeposits.total) !== 0 || Number(totalDeposits.user) !== 0) && (
                   <Card>
-                     <CardHeader icon={<BarChart3 />} title="Total Staked" />
-                     <CardContent className="flex justify-center items-start gap-2">
-                        <div>
-                           <div className="text-3xl font-bold text-emerald-600">
-                              {totalDeposits.total?.toLocaleString() || "0"}
+                     <CardHeader icon={<BarChart3 />} title="Portfolio actual allocation" />
+
+                     <CardContent>
+                        {map(sliceAllocations, (allocation) => (
+                           <div key={allocation.buildingToken} className="mb-2 last:mb-0">
+                              <div className="flex justify-between mb-1">
+                                 <span className="text-sm font-medium text-gray-700">
+                                    {allocation.buildingTokenName}
+                                 </span>
+                                 <span className="text-sm font-medium text-gray-700">
+                                    {Number(allocation.balance).toFixed(2)} tokens
+                                 </span>
+                              </div>
+
+                              <Separator className="mb-1" />
                            </div>
-                           <p className="text-sm text-gray-600 mt-1">Total value locked</p>
-                        </div>
-                        <span className="text-2xl text-indigo-400">/</span>
-                        <div>
-                           <div className="text-3xl font-bold text-indigo-600">
-                              {totalDeposits.user?.toLocaleString() || "0"}
-                           </div>
-                           <p className="text-sm text-gray-600 mt-1">Your contribution</p>
-                        </div>
+                        ))}
                      </CardContent>
 
                      <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
                         {(Number(totalDeposits.total) !== 0 ||
                            Number(totalDeposits.user) !== 0) && (
                            <div className="lg:col-span-1">
-                              <SliceDepositChart
-                                 totalStaked={totalDeposits.total}
-                                 totalUserStaked={totalDeposits.user}
-                              />
+                              <SliceDepositChart sliceAllocations={sliceAllocations} />
                            </div>
                         )}
                      </div>

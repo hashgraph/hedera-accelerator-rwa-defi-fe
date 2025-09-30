@@ -5,6 +5,7 @@ import { WalkthroughStep } from "@/components/Walkthrough";
 import { useBuildingInfo } from "@/hooks/useBuildingInfo";
 import { useTokenInfo } from "@/hooks/useTokenInfo";
 import type { BuildingInfo } from "@/types/erc3643/types";
+import { ethers } from "ethers";
 import { isNumber, map, reduce, zipObject } from "lodash";
 import { useParams } from "next/navigation";
 
@@ -36,8 +37,9 @@ const ScientificNotation = ({ value }: { value: number }) => {
 
 export const BuildingDetailInfo = (props: BuildingInfo) => {
    const { id } = useParams();
-   const { tokenAddress, treasuryAddress } = useBuildingInfo(id as string);
-   const { tokenPriceInUSDC, totalSupply, balanceOf, isLoading } = useTokenInfo(tokenAddress);
+   const { tokenAddress, treasuryAddress, autoCompounderAddress } = useBuildingInfo(id as string);
+   const { tokenPriceInUSDC, totalSupply, balanceOf, decimals, isLoading } =
+      useTokenInfo(tokenAddress);
    const { reserve } = useTreasuryData(treasuryAddress, id as string);
    const { userStakedTokens, aTokenBalance, userClaimedRewards } = useStaking({
       buildingId: id as string,
@@ -71,7 +73,7 @@ export const BuildingDetailInfo = (props: BuildingInfo) => {
             <div className="grid grid-cols-2 gap-2 mt-4">
                <span className="font-semibold text-sm">Tokens owned:</span>
                <span className="text-sm">
-                  <ScientificNotation value={Number(balanceOf)} />
+                  <ScientificNotation value={Number(ethers.formatUnits(balanceOf, decimals))} />
                </span>
                <span className="font-semibold text-sm">Percentage owned of Overall property:</span>
                <span className="text-sm">

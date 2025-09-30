@@ -4,6 +4,7 @@ import { ethers } from "ethers";
 import { isEmpty } from "lodash";
 import { HistoryPoint, TimeFrame } from "./types";
 import { readContract } from "@/services/contracts/readContract";
+import { USDC_ADDRESS } from "@/services/contracts/addresses";
 
 export const generateMockHistory = (tokenAddress: string, timeFrame: TimeFrame): HistoryPoint[] => {
    const endDate = new Date();
@@ -41,21 +42,17 @@ export const generateMockHistory = (tokenAddress: string, timeFrame: TimeFrame):
    return data;
 };
 
-export const getUserReward = async (
-   vaultAddress: string,
-   userAddress: string,
-   rewardToken: `0x${string}`[],
-) => {
-   if (isEmpty(vaultAddress) || isEmpty(userAddress) || isEmpty(rewardToken)) return 0;
+export const getUserReward = async (vaultAddress: string, userAddress: string) => {
+   if (isEmpty(vaultAddress) || isEmpty(userAddress)) return 0;
 
    const [[rewards], [decimals]] = await Promise.all([
       readContract({
          address: vaultAddress,
          abi: basicVaultAbi,
-         functionName: "getUserReward",
-         args: [userAddress, rewardToken[0]],
+         functionName: "getClaimableReward",
+         args: [userAddress, USDC_ADDRESS],
       }),
-      getTokenDecimals(rewardToken[0]),
+      getTokenDecimals(USDC_ADDRESS),
    ]);
 
    if (!rewards || !decimals) return 0;

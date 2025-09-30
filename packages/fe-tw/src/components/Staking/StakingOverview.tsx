@@ -50,7 +50,7 @@ export default function StakingOverview({ buildingId }: StakingOverviewProps) {
       buildingId,
    });
 
-   const equivalentATokenBalance = aTokenBalance! / aTokenExchangeRate!;
+   const equivalentATokenBalance = aTokenBalance! * aTokenExchangeRate!;
 
    const isLoading =
       loadingState.isFetchingTokenInfo ||

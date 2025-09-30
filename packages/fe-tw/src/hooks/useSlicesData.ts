@@ -36,32 +36,43 @@ export function useSlicesData() {
    const { data: slices = [] } = useQuery({
       queryKey: ["slices", sliceAddresses],
       enabled: sliceAddresses.length > 0,
-      staleTime: 60_000,
       queryFn: async (): Promise<SliceData[]> => {
-         const uris = await Promise.all(sliceAddresses.map((addr) => readSliceMetdataUri(addr)));
-         const metadatas = await Promise.all(
-            uris.map((uriArr: string[]) => fetchJsonFromIpfs(uriArr[0])),
+         const perSliceResults = await Promise.all(
+            sliceAddresses.map(async (addr) => {
+               try {
+                  const uriArr = await readSliceMetdataUri(addr);
+                  if (!uriArr || uriArr.length === 0) {
+                     return { addr, meta: null };
+                  }
+                  const primaryUri = uriArr[0];
+                  const meta = await fetchJsonFromIpfs(primaryUri);
+                  return { addr, meta };
+               } catch (e) {
+                  console.error("Failed to fetch slice metadata", { addr, error: e });
+                  return { addr, meta: null };
+               }
+            }),
          );
-
-         return metadatas.map((m, idx) => ({
-            id: sliceAddresses[idx],
-            address: sliceAddresses[idx],
-            name: m.name,
-            allocation: m.allocation,
-            description: m.description,
-            imageIpfsUrl: prepareStorageIPFSfileURL(
-               (m.sliceImageIpfsId || m.sliceImageIpfsHash)?.replace("ipfs://", ""),
-            ),
-            endDate: m.endDate,
-            estimatedPrice: 0,
-         }));
+         return perSliceResults
+            .filter((r) => !!r.meta)
+            .map(({ addr, meta }) => ({
+               id: addr,
+               address: addr,
+               name: meta.name,
+               allocation: meta.allocation,
+               description: meta.description,
+               imageIpfsUrl: prepareStorageIPFSfileURL(
+                  (meta.sliceImageIpfsId || meta.sliceImageIpfsHash)?.replace("ipfs://", "") || "",
+               ),
+               endDate: meta.endDate,
+               estimatedPrice: 0,
+            }));
       },
    });
 
    const { data: slicesAllocationsData = [] } = useQuery({
       queryKey: ["sliceAllocations", sliceAddresses.map((addr) => `alloc_${addr}`)],
       enabled: sliceAddresses.length > 0,
-      staleTime: 60_000,
       queryFn: async () => {
          const results = await Promise.allSettled(
             sliceAddresses.map((addr) => readSliceAllocations(addr)),

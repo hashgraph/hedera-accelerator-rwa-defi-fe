@@ -166,17 +166,19 @@ describe("useSliceData", () => {
 
    it("accumulates totalDeposits from Deposit logs (user and total)", async () => {
       // two deposits: one by current user (1.0), one by someone else (2.0)
+      (getTokenDecimals as jest.Mock).mockResolvedValue([18]);
+
       depositLogs = [
          {
             args: [
-               sliceAddress,
+               "0xTOK1000000000000000000000000000000000000",
                "0xme00000000000000000000000000000000000000",
                BigInt(10) ** BigInt(18),
             ],
          },
          {
             args: [
-               sliceAddress,
+               "0xTOK1000000000000000000000000000000000000",
                "0xother0000000000000000000000000000000000",
                BigInt(2) * BigInt(10) ** BigInt(18),
             ],
@@ -188,5 +190,14 @@ describe("useSliceData", () => {
 
       await waitFor(() => expect(result.current.totalDeposits.total).toBeGreaterThan(0));
       expect(result.current.totalDeposits).toEqual({ user: 1, total: 3 });
+      expect(result.current.sliceTokenDeposits).toEqual({
+         "0xTOK1000000000000000000000000000000000000": {
+            tokenAddress: "0xTOK1000000000000000000000000000000000000",
+            amountInSlice: {
+               total: 3,
+               user: 1,
+            },
+         },
+      });
    });
 });
