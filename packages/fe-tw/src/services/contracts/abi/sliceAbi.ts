@@ -496,37 +496,8 @@ export const sliceAbi = [
             type: "address",
          },
          {
-            internalType: "uint256",
-            name: "amountToWithdraw",
-            type: "uint256",
-         },
-         {
-            internalType: "uint256",
-            name: "exchangeRate",
-            type: "uint256",
-         },
-      ],
-      name: "_handleWithdraw",
-      outputs: [
-         {
-            internalType: "uint256",
-            name: "withdrawnAmount",
-            type: "uint256",
-         },
-      ],
-      stateMutability: "nonpayable",
-      type: "function",
-   },
-   {
-      inputs: [
-         {
             internalType: "address",
-            name: "aToken",
-            type: "address",
-         },
-         {
-            internalType: "address",
-            name: "priceFeed",
+            name: "priceFeedAddress",
             type: "address",
          },
          {
@@ -1101,7 +1072,7 @@ export const sliceAbi = [
             name: "from",
             type: "address",
          },
-         { 
+         {
             internalType: "address",
             name: "to",
             type: "address",

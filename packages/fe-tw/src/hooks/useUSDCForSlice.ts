@@ -113,7 +113,7 @@ export const useUSDCForSlice = (
             const tokenInfo = tokenInfoMap[alloc.buildingToken];
 
             const { data: outputAmounts } = await tryCatch(
-               getAmountsOut(ethers.parseUnits(usdcForToken.toString(), 6), [
+               getAmountsOut(ethers.parseUnits(String(usdcForToken.toFixed(6)), 6), [
                   USDC_ADDRESS,
                   alloc.buildingToken,
                ]),
