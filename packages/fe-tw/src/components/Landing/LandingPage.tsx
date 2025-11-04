@@ -5,52 +5,66 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, Building2, Users, Vote, TrendingUp, Shield, Zap } from "lucide-react";
 import Link from "next/link";
-import background from "./image.png";
-
-import Image from "next/image";
+import HeroAnimation from "./HeroAnimation";
 
 const LandingPage = () => {
    return (
       <div className="min-h-screen bg-white">
-         <section className="relative overflow-hidden bg-gradient-to-br from-indigo-900 via-indigo-800 to-purple-800">
-            <Image
-               className="blur-[1px]"
-               src={background}
-               alt="Background"
-               layout="fill"
-               objectFit="cover"
-               priority
-               quality={100}
-            />
+         <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-indigo-950 to-purple-950 min-h-[90vh]">
+            {/* Decorative background elements */}
+            <div className="absolute inset-0 overflow-hidden">
+               <div className="absolute -top-40 -right-40 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl" />
+               <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
+            </div>
 
-            <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-black/15 to-transparent" />
+            <div className="relative container mx-auto px-4 py-12 lg:py-20">
+               <div className="grid md:grid-cols-2 gap-12 items-center min-h-[80vh]">
+                  {/* Left side - Content */}
+                  <div className="place-self-center max-md:text-center z-10">
+                     <div className="relative">
+                        {/* Gradient backdrop similar to ethereum.org */}
+                        <div className="absolute -inset-4 bg-gradient-to-r from-indigo-600/20 to-purple-600/20 rounded-3xl blur-2xl" />
 
-            <div className="relative container mx-auto px-4 py-20 lg:py-32 text-white">
-               <div className="max-w-4xl">
-                  <div className="bg-black/15 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
-                     <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight text-white drop-shadow-xl">
-                        Tokenize Real Estate
-                        <br />
-                        <span className="text-indigo-200 drop-shadow-xl">
-                           Unlock Global Investment
-                        </span>
-                     </h1>
-                     <p className="text-xl md:text-2xl mb-8 max-w-3xl text-gray-50 drop-shadow-lg">
-                        Transform physical buildings into digital assets. Enable fractional
-                        ownership, earn rewards, and participate in decentralized governance of real
-                        estate investments.
-                     </p>
-                     <div className="flex flex-col sm:flex-row gap-4">
-                        <Link href="/building">
-                           <Button size="lg" variant="secondary" className="shadow-xl">
-                              Start Investing
-                              <ArrowRight className="ml-2 h-5 w-5" />
-                           </Button>
-                        </Link>
-                        <Link href="/explorer">
-                           <Button size="lg">Explore</Button>
-                        </Link>
+                        <div className="relative">
+                           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-white">
+                              Tokenize Real Estate
+                              <br />
+                              <span className="text-3xl md:text-4xl lg:text-5xl text-indigo-400">
+                                 Unlock Global Investment
+                              </span>
+                           </h1>
+                           <p className="text-xl md:text-2xl mb-8 text-gray-300 leading-relaxed">
+                              Transform physical buildings into digital assets. Enable fractional
+                              ownership, earn rewards, and participate in decentralized governance of real
+                              estate investments.
+                           </p>
+                           <div className="flex flex-col sm:flex-row gap-4 max-md:justify-center">
+                              <Link href="/building">
+                                 <Button
+                                    size="lg"
+                                    className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-xl shadow-indigo-500/25 text-lg px-8"
+                                 >
+                                    Start Investing
+                                    <ArrowRight className="ml-2 h-5 w-5" />
+                                 </Button>
+                              </Link>
+                              <Link href="/explorer">
+                                 <Button
+                                    size="lg"
+                                    variant="outline"
+                                    className="border-indigo-400/50 bg-indigo-950/50 text-white hover:bg-indigo-900/60 text-lg px-8"
+                                 >
+                                    Explore
+                                 </Button>
+                              </Link>
+                           </div>
+                        </div>
                      </div>
+                  </div>
+
+                  {/* Right side - Animation */}
+                  <div className="place-self-center w-full max-w-[600px] max-md:max-w-[400px]">
+                     <HeroAnimation />
                   </div>
                </div>
             </div>
