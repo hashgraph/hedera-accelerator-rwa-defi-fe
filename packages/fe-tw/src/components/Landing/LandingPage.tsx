@@ -3,9 +3,54 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowRight, Building2, Users, Vote, TrendingUp, Shield, Zap } from "lucide-react";
+import { ArrowRight, Building2, Users, Vote, TrendingUp, Shield, Zap, BookOpen, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import HeroAnimation from "./HeroAnimation";
+
+const blogPosts = [
+   {
+      title: "How Would We Build a REIT Today Using Web3 Technologies",
+      description: "Exploring the intersection of traditional REITs and blockchain technology to create more accessible and efficient real estate investment structures.",
+      url: "https://hedera.com/blog/how-would-we-build-a-reit-today-using-web3-technologies",
+      date: "2023"
+   },
+   {
+      title: "How Is Tokenization Changing the Way We Invest",
+      description: "Discover how tokenization is revolutionizing investment opportunities and creating new pathways for fractional ownership in real estate.",
+      url: "https://hedera.com/blog/how-is-tokenization-changing-the-way-we-invest",
+      date: "2023"
+   },
+   {
+      title: "How Can We Model a Building in Web3",
+      description: "A deep dive into representing physical real estate assets as digital tokens on the blockchain and the technical considerations involved.",
+      url: "https://hedera.com/blog/how-can-we-model-a-building-in-web3",
+      date: "2023"
+   },
+   {
+      title: "How Can We Model a Building in Web3 (Continued)",
+      description: "Continuing our exploration of building tokenization with advanced concepts and practical implementation strategies.",
+      url: "https://hedera.com/blog/how-can-we-model-a-building-in-web3-continued",
+      date: "2023"
+   },
+   {
+      title: "Reimagining REIT Cashflows",
+      description: "How blockchain technology enables more transparent, efficient, and immediate distribution of rental income to token holders.",
+      url: "https://hedera.com/blog/reimagining-reit-cashflows",
+      date: "2023"
+   },
+   {
+      title: "Governance & Jurisdiction in Tokenized Real Estate",
+      description: "Examining the legal and governance frameworks needed for decentralized real estate investment platforms.",
+      url: "https://hedera.com/blog/governance-jurisdiction-in-tokenized-real-estate",
+      date: "2023"
+   },
+   {
+      title: "Slices: Building the Web3 Real Estate Index Fund",
+      description: "Learn about Slices, an innovative approach to creating diversified real estate portfolios through tokenization and fractional ownership.",
+      url: "https://hedera.com/blog/slices-building-the-web3-real-estate-index-fund",
+      date: "2023"
+   }
+];
 
 const LandingPage = () => {
    return (
@@ -286,6 +331,58 @@ const LandingPage = () => {
                         </Card>
                      </div>
                   </div>
+               </div>
+            </div>
+         </section>
+
+         <section className="py-20 relative bg-white">
+            <div className="absolute inset-0 bg-gradient-to-b from-gray-50/50 to-white" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,_rgba(99,102,241,0.03)_1px,_transparent_1px)] bg-[length:40px_40px]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_70%,_rgba(168,85,247,0.02)_1px,_transparent_1px)] bg-[length:60px_60px] opacity-50" />
+
+            <div className="relative container mx-auto px-4">
+               <div className="max-w-3xl mx-auto text-center mb-16">
+                  <div className="flex items-center justify-center gap-2 mb-4">
+                     <BookOpen className="h-8 w-8 text-indigo-600" />
+                     <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+                        Learn More About Web3 Real Estate
+                     </h2>
+                  </div>
+                  <p className="text-xl text-gray-600">
+                     Explore our blog series on building the future of real estate investment
+                  </p>
+               </div>
+
+               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+                  {blogPosts.map((post, index) => (
+                     <Card
+                        key={index}
+                        className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50/50 overflow-hidden"
+                     >
+                        <CardContent className="relative h-full flex flex-col">
+                           <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-300" />
+
+                           <div className="relative flex-1">
+                              <h3 className="text-lg font-semibold mb-3 text-gray-900 line-clamp-2 group-hover:text-indigo-600 transition-colors">
+                                 {post.title}
+                              </h3>
+                              <p className="text-sm text-gray-600 line-clamp-3 mb-4">
+                                 {post.description}
+                              </p>
+                           </div>
+
+                           <a
+                              href={post.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center text-indigo-600 hover:text-indigo-700 font-medium text-sm mt-auto group-hover:gap-2 gap-1 transition-all"
+                           >
+                              Read Article
+                              <ExternalLink className="h-4 w-4" />
+                           </a>
+                        </CardContent>
+                     </Card>
+                  ))}
                </div>
             </div>
          </section>

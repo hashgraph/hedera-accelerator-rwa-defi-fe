@@ -9,13 +9,12 @@ import {
    SidebarMenuItem,
    useSidebar,
 } from "@/components/ui/sidebar";
-import { Building2, FileStack, Slice, Coins } from "lucide-react";
+import { Building2, Slice, Coins } from "lucide-react";
 import Link from "next/link";
 
 const ADMIN_LINKS = [
    { title: "Building Management", href: "/admin/buildingmanagement", icon: Building2 },
    { title: "Slice Management", href: "/admin/slicemanagement", icon: Slice },
-   { title: "Audit Management", href: "/admin/auditmanagement", icon: FileStack },
    { title: "Add Demo USDC", href: "/admin/demo-usdc", icon: Coins },
 ];
 
