@@ -2,6 +2,8 @@
 
 Welcome to the frontend of the **Hedera RWA DeFi Accelerator** – a reference dApp for building, managing, and interacting with tokenized real estate assets on Web3. This is the user interface layer for a modular REIT system that models real estate as on-chain assets, designed with composability, investor accessibility, and DeFi integration in mind.
 
+Powered by Hedera's [Asset Tokenization Studio](https://hedera.com/asset-tokenization-studio). 
+
 > 💡 This project is a **reference architecture** for tokenizing real-world assets (RWAs) on Hedera. It is not intended to run on mainnet or represent real financial instruments. 
 
 <br>
@@ -33,7 +35,7 @@ See a demo of current functionality and workflow here:
   - Unique NFT for each property with IPFS-backed metadata
   - Editable and freezable attributes (e.g. year built, COPE data)
 
-- **💸 Tokenized Ownership (ERC-20 or ERC-3643)**
+- **💸 Tokenized Ownership (ERC-1400 & ERC-3643)**
   - Regulated fungible tokens for shareholding
   - Geo and cap-based transfer restrictions
 
@@ -163,7 +165,7 @@ Features like **building creation**, **governance updates** and **vault deposits
 This project uses **Ethereum-compatible standards** like:
 
 - ERC-721 for unique buildings
-- ERC-20/ERC-3643 for compliant fungible shares
+- ERC-1400/ERC-3643 for compliant fungible shares - Powered by Hedera's Asset Tokenization Studio.
 - ERC-4626 and ERC-7540 for flexible DeFi vaults
 
 ---

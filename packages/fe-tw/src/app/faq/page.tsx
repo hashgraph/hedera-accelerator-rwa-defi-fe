@@ -12,12 +12,12 @@ export default function FAQPage() {
 
    const faqs = [
       {
-         question: "What is Buildings “R” Us?",
+         question: "What is RWA Defi Demo?",
          answer: `
-Buildings “R” Us is a reference platform demonstrating how real estate can be tokenized on Hedera. 
-We use DeFi tools like vaults, slices, and auto-compounders to illustrate how developers and enterprises 
-can build their own Real-World Asset (RWA) solutions. 
-You can think of it as a blueprint for tokenizing property ownership, 
+RWA Defi Demo is a reference platform demonstrating how real estate can be tokenized on Hedera.
+We use DeFi tools like vaults, slices, and auto-compounders to illustrate how developers and enterprises
+can build their own Real-World Asset (RWA) solutions.
+You can think of it as a blueprint for tokenizing property ownership,
 handling revenue distribution, and diversifying investments via smart contracts.
       `,
       },
@@ -106,8 +106,8 @@ rewards automatically, growing your stake over time without constant manual tran
       {
          question: "Where can I learn more or build my own solution?",
          answer: `
-Explore the blog posts, reference architecture, dev guides, and open-source code from 
-Buildings ‘R’ Us.
+Explore the blog posts, reference architecture, dev guides, and open-source code from
+RWA Defi Demo.
 Join our community or visit our GitHub for hands-on examples and updates.
       `,
       },
