@@ -9,6 +9,12 @@ const nextConfig: NextConfig = {
             port: "",
             pathname: "/**",
          },
+         {
+            protocol: "https",
+            hostname: "plum-famous-crane-874.mypinata.cloud",
+            port: "",
+            pathname: "/**",
+         },
       ],
    },
 };
