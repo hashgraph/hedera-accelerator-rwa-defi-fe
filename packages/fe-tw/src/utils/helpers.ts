@@ -1,8 +1,6 @@
 export const prepareStorageIPFSfileURL = (ipfsHash: string) => {
-    const gatewayUrl = process.env.NEXT_PUBLIC_PINATA_GATEWAY_URL || "ipfs.io/ipfs";
-    // Remove protocol if present in gateway URL
-    const cleanGatewayUrl = gatewayUrl.replace(/^https?:\/\//, "");
-    return `https://${cleanGatewayUrl}/ipfs/${ipfsHash}`;
+    // Use ipfs.io for browser-accessible images since Pinata gateway may require auth
+    return `https://ipfs.io/ipfs/${ipfsHash}`;
 };
 
 export const isValidIPFSImageUrl = (imageUrl?: string): boolean => {

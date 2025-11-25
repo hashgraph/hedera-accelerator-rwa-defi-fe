@@ -6,10 +6,9 @@ export async function fetchJsonFromIpfs(ipfsHash: string) {
    if (cid.startsWith("ipfs://")) {
       cid = cid.slice(7);
    }
-   const gatewayUrl = process.env.NEXT_PUBLIC_PINATA_GATEWAY_URL || "ipfs.io/ipfs";
-   const cleanGatewayUrl = gatewayUrl.replace(/^https?:\/\//, "");
-   const fullUrl = `https://${cleanGatewayUrl}/ipfs/${cid}`;
-   const res = await fetch(fullUrl);
+   // Use ipfs.io public gateway for reliable access
+   const gatewayUrl = `https://ipfs.io/ipfs/${cid}`;
+   const res = await fetch(gatewayUrl);
    if (!res.ok) {
       throw new Error(`Failed to fetch IPFS data: ${res.status}`);
    }
