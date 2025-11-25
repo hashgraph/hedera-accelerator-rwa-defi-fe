@@ -3,7 +3,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowRight, Building2, Users, Vote, TrendingUp, Shield, Zap, BookOpen, ExternalLink } from "lucide-react";
+import { ArrowRight, Building2, Vote, TrendingUp, BookOpen, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import HeroAnimation from "./HeroAnimation";
 
@@ -244,98 +244,6 @@ const LandingPage = () => {
          </section>
 
          <section className="py-20 relative bg-white">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,_rgba(99,102,241,0.03)_1px,_transparent_1px)] bg-[length:50px_50px]" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,_rgba(168,85,247,0.02)_1px,_transparent_1px)] bg-[length:40px_40px] opacity-70" />
-
-            <div className="relative container mx-auto px-4">
-               <div className="max-w-6xl mx-auto">
-                  <div className="grid lg:grid-cols-2 gap-12 items-center">
-                     <div>
-                        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-                           Built for the Future of Real Estate
-                        </h2>
-                        <p className="text-xl text-gray-600 mb-8">
-                           Our platform combines cutting-edge blockchain technology with traditional
-                           real estate expertise to create unprecedented opportunities.
-                        </p>
-
-                        <div className="space-y-6">
-                           <Card className="flex items-start border-0 bg-gradient-to-r from-indigo-50/50 to-transparent">
-                              <CardContent className="flex items-start relative">
-                                 <Shield className="h-6 w-6 text-indigo-600 mt-1 mr-4 flex-shrink-0" />
-                                 <div>
-                                    <h3 className="font-semibold text-gray-900 mb-2">
-                                       Secure & Transparent
-                                    </h3>
-                                    <p className="text-gray-600">
-                                       All transactions and ownership records are immutably stored
-                                       on the Hedera blockchain
-                                    </p>
-                                 </div>
-                              </CardContent>
-                           </Card>
-
-                           <Card className="flex items-start border-0 bg-gradient-to-r from-purple-50/50 to-transparent">
-                              <CardContent className="flex items-start relative">
-                                 <Zap className="h-6 w-6 text-indigo-600 mt-1 mr-4 flex-shrink-0" />
-                                 <div>
-                                    <h3 className="font-semibold text-gray-900 mb-2">
-                                       Instant Liquidity
-                                    </h3>
-                                    <p className="text-gray-600">
-                                       Trade your property tokens anytime without the hassle of
-                                       traditional real estate sales
-                                    </p>
-                                 </div>
-                              </CardContent>
-                           </Card>
-
-                           <Card className="flex items-start border-0 bg-gradient-to-r from-indigo-50/50 to-transparent">
-                              <CardContent className="flex items-start relative">
-                                 <Users className="h-6 w-6 text-indigo-600 mt-1 mr-4 flex-shrink-0" />
-                                 <div>
-                                    <h3 className="font-semibold text-gray-900 mb-2">
-                                       Community Driven
-                                    </h3>
-                                    <p className="text-gray-600">
-                                       Join a community of investors making collective decisions
-                                       about property management
-                                    </p>
-                                 </div>
-                              </CardContent>
-                           </Card>
-                        </div>
-                     </div>
-
-                     <div className="relative">
-                        <Card className="relative bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-2xl border-0">
-                           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,_rgba(255,255,255,0.1)_1px,_transparent_1px)] bg-[length:20px_20px] rounded-2xl" />
-                           <CardContent className="relative grid grid-cols-2 gap-6">
-                              <div className="text-center p-4 rounded-xl bg-white/10 backdrop-blur-sm">
-                                 <div className="relative text-3xl font-bold mb-2">$2.5M+</div>
-                                 <div className="text-indigo-200">Total Value Locked</div>
-                              </div>
-                              <div className="text-center p-4 rounded-xl bg-white/10 backdrop-blur-sm">
-                                 <div className="relative text-3xl font-bold mb-2">15+</div>
-                                 <div className="text-indigo-200">Properties Tokenized</div>
-                              </div>
-                              <div className="text-center p-4 rounded-xl bg-white/10 backdrop-blur-sm">
-                                 <div className="relative text-3xl font-bold mb-2">1,200+</div>
-                                 <div className="text-indigo-200">Active Investors</div>
-                              </div>
-                              <div className="text-center p-4 rounded-xl bg-white/10 backdrop-blur-sm">
-                                 <div className="relative text-3xl font-bold mb-2">8.5%</div>
-                                 <div className="text-indigo-200">Average APY</div>
-                              </div>
-                           </CardContent>
-                        </Card>
-                     </div>
-                  </div>
-               </div>
-            </div>
-         </section>
-
-         <section className="py-20 relative bg-white">
             <div className="absolute inset-0 bg-gradient-to-b from-gray-50/50 to-white" />
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,_rgba(99,102,241,0.03)_1px,_transparent_1px)] bg-[length:40px_40px]" />
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_70%,_rgba(168,85,247,0.02)_1px,_transparent_1px)] bg-[length:60px_60px] opacity-50" />
@@ -398,8 +306,7 @@ const LandingPage = () => {
                   Ready to Revolutionize Your Investment Portfolio?
                </h2>
                <p className="text-xl mb-8 text-indigo-100 max-w-2xl mx-auto">
-                  Join thousands of investors who are already earning passive income through
-                  tokenized real estate. Start with as little as $100.
+                  Start exploring the Demo now
                </p>
                <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link href="/building">

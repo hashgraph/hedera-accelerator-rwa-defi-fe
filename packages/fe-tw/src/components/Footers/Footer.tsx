@@ -32,7 +32,7 @@ export const Footer = () => {
 
                         <a
                            target="_blank"
-                           href="https://github.com/hashgraph/hedera-accelerator-rwa-re-ui"
+                           href="https://github.com/hashgraph/hedera-accelerator-rwa-defi-fe"
                            className="underline text-muted-foreground hover:text-primary transition-colors text-sm"
                         >
                            GitHub - Frontend
@@ -40,7 +40,7 @@ export const Footer = () => {
 
                         <a
                            target="_blank"
-                           href="https://github.com/hashgraph/hedera-accelerator-rwa-re-ui"
+                           href="https://discord.com/invite/hederahashgraph"
                            className="underline text-muted-foreground hover:text-primary transition-colors text-sm"
                         >
                            Discord
@@ -64,7 +64,7 @@ export const Footer = () => {
                            type="button"
                            onClick={() =>
                               window.open(
-                                 "https://github.com/hashgraph/hedera-accelerator-rwa-defi-ui",
+                                 "https://hedera.com/blog",
                                  "_blank",
                               )
                            }
