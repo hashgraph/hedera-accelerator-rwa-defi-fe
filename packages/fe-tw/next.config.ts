@@ -6,8 +6,6 @@ const nextConfig: NextConfig = {
          {
             protocol: "https",
             hostname: "ipfs.io",
-            port: "",
-            pathname: "/**",
          },
          {
             protocol: "https",
@@ -16,6 +14,7 @@ const nextConfig: NextConfig = {
             pathname: "/**",
          },
       ],
+      unoptimized: true,
    },
 };
 

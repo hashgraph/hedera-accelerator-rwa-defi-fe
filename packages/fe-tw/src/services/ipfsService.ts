@@ -6,6 +6,7 @@ export async function fetchJsonFromIpfs(ipfsHash: string) {
    if (cid.startsWith("ipfs://")) {
       cid = cid.slice(7);
    }
+   // Use ipfs.io public gateway for reliable access
    const gatewayUrl = `https://ipfs.io/ipfs/${cid}`;
    const res = await fetch(gatewayUrl);
    if (!res.ok) {
