@@ -8,26 +8,23 @@ Powered by Hedera's [Asset Tokenization Studio](https://hedera.com/asset-tokeniz
 
 <br>
 
-<img src="https://plum-famous-crane-874.mypinata.cloud/ipfs/bafybeic3xmbcef6eq76tookxgk2oxwqpw3vjsrp5cghhvmx6dugxkzzi5q?pinataGatewayToken=k5WJ6L2sEo6eMgjWXh4IlXiOGh-nNFBl-FqHTFnm6wt1cpPkgtpB0PfDVv0Lu9kF" 
-     alt="Building View" 
-     style="max-width: 200px; height: auto;">
+![Buildings](https://plum-famous-crane-874.mypinata.cloud/ipfs/bafybeia63a5ltcwsnkvoeydgd4n3pdsdrufgxrubjeyumrcdvz3qpvogv4?pinataGatewayToken=k5WJ6L2sEo6eMgjWXh4IlXiOGh-nNFBl-FqHTFnm6wt1cpPkgtpB0PfDVv0Lu9kF)
 
 
 ---
 
-## 📦 Features
-
-This frontend is structured around the idea that **each building is a unique NFT-backed identity**, with attached metadata, tokenized ownership, and integrated DeFi flows.
-
-### Demo
+## Demo
 
 See a demo of current functionality and workflow here: 
 <br>
-<a href="https://plum-famous-crane-874.mypinata.cloud/ipfs/bafybeia3mjf6pxbnz72mpohvqqhfukvpvz5oz47nai2xr5hxo4d3vjwewe?pinataGatewayToken=k5WJ6L2sEo6eMgjWXh4IlXiOGh-nNFBl-FqHTFnm6wt1cpPkgtpB0PfDVv0Lu9kF">
-  <img src="https://plum-famous-crane-874.mypinata.cloud/ipfs/bafkreidradkoipkazrgj3fdqz57t5bumjcjlupjdbkqpetxeanvlvpagvq?pinataGatewayToken=k5WJ6L2sEo6eMgjWXh4IlXiOGh-nNFBl-FqHTFnm6wt1cpPkgtpB0PfDVv0Lu9kF" alt="Watch the video" width="300">
+<a href="https://plum-famous-crane-874.mypinata.cloud/ipfs/bafybeigcorypgjhw2uwq6ytzylwfj3lpted47amc73lbhzej43q4g3gx7y?pinataGatewayToken=k5WJ6L2sEo6eMgjWXh4IlXiOGh-nNFBl-FqHTFnm6wt1cpPkgtpB0PfDVv0Lu9kF">
+  <img src="https://plum-famous-crane-874.mypinata.cloud/ipfs/bafybeic5iuvpeux2ehwnyqpq4rh5bq5pw7oromojuj34fm7ceh2ybvhxra?pinataGatewayToken=k5WJ6L2sEo6eMgjWXh4IlXiOGh-nNFBl-FqHTFnm6wt1cpPkgtpB0PfDVv0Lu9kF" alt="Watch the video" width="300">
 </a>
 
 
+## 📦 Features
+
+This frontend is structured around the idea that **each building is a unique NFT-backed identity**, with attached metadata, tokenized ownership, and integrated DeFi flows.
 
 ### ✅ Core Building Blocks
 
@@ -48,22 +45,26 @@ See a demo of current functionality and workflow here:
   - Automatic reinvestment of yield
   - Growth of token holdings without manual claiming
 
-- **🏛️ DAO Governance**
+- **🏛️ DAO Governance (tbc)** 
   - Proposals, voting, and treasury management
   - Multi-role controls for admin, investor, auditor
 
     ![Proposals](https://plum-famous-crane-874.mypinata.cloud/ipfs/bafkreibp2226etstgg3ow65ty55oizdzkbjeneeezhvuaef3acutwa3dwe?pinataGatewayToken=k5WJ6L2sEo6eMgjWXh4IlXiOGh-nNFBl-FqHTFnm6wt1cpPkgtpB0PfDVv0Lu9kF)
 
 - **📈 Pricing & Liquidity**
-  - One-sided and two-sided market support
+  - Add a liquidity pool to each building, and easily swap USDC for regulated building tokens
 
-    ![Trade](https://plum-famous-crane-874.mypinata.cloud/ipfs/bafybeid4jejmyqrarnyzmb4mzv4ml6kr6ylqa4rxjuuh2wykljo6s75yhe?pinataGatewayToken=k5WJ6L2sEo6eMgjWXh4IlXiOGh-nNFBl-FqHTFnm6wt1cpPkgtpB0PfDVv0Lu9kF)
+    ![Trade](https://plum-famous-crane-874.mypinata.cloud/ipfs/bafybeicgdslfvsvyjkr5e57grhbwozutano23ork6atc24u7pyxns3tykq?pinataGatewayToken=k5WJ6L2sEo6eMgjWXh4IlXiOGh-nNFBl-FqHTFnm6wt1cpPkgtpB0PfDVv0Lu9kF)
+
+    ![Liquidity](https://plum-famous-crane-874.mypinata.cloud/ipfs/bafkreidshil34qqmq4w674cz3yw2chdsduwvcalws6ekp6zetjxbf4caoe?pinataGatewayToken=k5WJ6L2sEo6eMgjWXh4IlXiOGh-nNFBl-FqHTFnm6wt1cpPkgtpB0PfDVv0Lu9kF)
+
+
 
 - **🏗️ Slices**
   - Curated investment baskets (eg. luxury, regional, hi-rise..)
   - Built for diversification and tailored exposure
 
-    ![Slice](https://plum-famous-crane-874.mypinata.cloud/ipfs/bafkreiazx7epxl36eky5hi7rjubb57qrgrup7d5ooocyxm3stwhshh5wfm?pinataGatewayToken=k5WJ6L2sEo6eMgjWXh4IlXiOGh-nNFBl-FqHTFnm6wt1cpPkgtpB0PfDVv0Lu9kF)
+    ![Slice](https://plum-famous-crane-874.mypinata.cloud/ipfs/bafybeib2map22yetpxe3ivt6rswhf63fazbp6f6q7xjw5nvj66vfkhdue4?pinataGatewayToken=k5WJ6L2sEo6eMgjWXh4IlXiOGh-nNFBl-FqHTFnm6wt1cpPkgtpB0PfDVv0Lu9kF)
 
 ---
 
@@ -155,6 +156,8 @@ Features like **building creation**, **governance updates** and **vault deposits
 - Swap building tokens for USDC (AMM)
 - Stake tokens into vaults for streaming rewards
 - Let autocompounders grow your stake over time
+
+  ![Staking](https://plum-famous-crane-874.mypinata.cloud/ipfs/bafybeihjoq2qkwb4idaxl4owj7gn6x65yjngqueukuvhimct7gkqenmftq?pinataGatewayToken=k5WJ6L2sEo6eMgjWXh4IlXiOGh-nNFBl-FqHTFnm6wt1cpPkgtpB0PfDVv0Lu9kF) 
 
   ![Staking](https://plum-famous-crane-874.mypinata.cloud/ipfs/bafkreid4g3uhgqdgl6tdc672isujmdy7qhwt3gf56bnazijku7bzxwg4im?pinataGatewayToken=k5WJ6L2sEo6eMgjWXh4IlXiOGh-nNFBl-FqHTFnm6wt1cpPkgtpB0PfDVv0Lu9kF)
 

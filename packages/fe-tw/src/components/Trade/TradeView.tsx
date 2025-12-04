@@ -49,7 +49,7 @@ export default function TradeView({ building, displayOnBuildingPage = false }: P
    );
 
    return (
-      <div className="grid grid-cols-2 lg:flex-row gap-8">
+      <div className="grid grid-cols-2 lg:flex-row gap-8 items-start">
          {/* <Tabs className="w-full" value={currentTab}>
             <TabsList className="grid w-full grid-cols-2">
                <TabsTrigger
@@ -88,14 +88,12 @@ export default function TradeView({ building, displayOnBuildingPage = false }: P
                displayOnBuildingPage={displayOnBuildingPage}
                buildingTokenOptions={buildingTokenOptions}
                onTokensPairSelected={(tokenA, tokenB) => {
-                  setSelectedTokensPair(
-                     (prev) =>
-                        ({
-                           ...prev,
-                           ...(!!tokenA && { tokenA }),
-                           ...(!!tokenB && { tokenB }),
-                        }) as SwapLiquidityPair,
-                  );
+                  setSelectedTokensPair((prev) => {
+                     const updated = { ...prev };
+                     if (tokenA) updated.tokenA = tokenA;
+                     if (tokenB) updated.tokenB = tokenB;
+                     return updated as SwapLiquidityPair;
+                  });
                }}
             />
          </WalkthroughStep>

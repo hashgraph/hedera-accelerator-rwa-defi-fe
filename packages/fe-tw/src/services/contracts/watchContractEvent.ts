@@ -5,6 +5,14 @@ import type {
    WatchContractEventReturnType as viem_WatchContractEventReturnType,
 } from "viem/actions";
 
+// Raw log data from the Hedera mirror node
+export type RawLogData = {
+   timestamp: string;
+   transaction_hash: string;
+   block_number: number;
+   index: number;
+};
+
 // Custom type for Ethers.js LogDescription with proper args typing
 export type EthersLogDescription<TArgs = any[]> = {
    fragment: ethers.EventFragment;
@@ -12,6 +20,7 @@ export type EthersLogDescription<TArgs = any[]> = {
    signature: string;
    topic: string;
    args: TArgs;
+   rawLog?: RawLogData;
 };
 
 // Override the onLogs callback to use our custom log type with generic args
@@ -59,12 +68,31 @@ export function watchContractEvent<
       if (result && result.length > 0) {
          lastTimestamp = Number.parseInt(result.slice(-1)[0].timestamp) + 1 || 0;
          const decodeResults = result.map(
-            (item: { topics: ReadonlyArray<string>; data: string }) => {
-               return contractInterface.parseLog(item);
+            (item: {
+               topics: ReadonlyArray<string>;
+               data: string;
+               timestamp: string;
+               transaction_hash: string;
+               block_number: number;
+               index: number;
+            }) => {
+               const parsed = contractInterface.parseLog(item);
+               if (parsed) {
+                  return {
+                     ...parsed,
+                     rawLog: {
+                        timestamp: item.timestamp,
+                        transaction_hash: item.transaction_hash,
+                        block_number: item.block_number,
+                        index: item.index,
+                     },
+                  };
+               }
+               return null;
             },
          );
          const decodeResultsFiltered = decodeResults.filter(
-            (item: { name: eventName | ContractEventName<abi> | undefined }) => {
+            (item: { name: eventName | ContractEventName<abi> | undefined } | null) => {
                return item?.name === parameters.eventName;
             },
          );
