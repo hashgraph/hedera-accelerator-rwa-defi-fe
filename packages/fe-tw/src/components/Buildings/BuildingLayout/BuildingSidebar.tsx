@@ -33,7 +33,6 @@ import {
    HandCoins,
    ReceiptText,
    Slice,
-   Vote,
    Asterisk,
    CoinsIcon,
    Droplet,
@@ -59,7 +58,6 @@ export const PROTECTED_BUILDING_NAV_ITEMS = [
 
 const ADVANCED_NAV_ITEMS = [
    { title: "Staking", href: "staking", icon: Blocks },
-   { title: "Proposals", href: "proposals", icon: Vote },
    { title: "Slices", href: "slices", icon: Slice },
 ];
 
@@ -154,6 +152,7 @@ export function BuildingSidebar() {
                         if (!identityData.isDeployed && item.title === "Trade") {
                            return (
                               <WalkthroughStep
+                                 key={item.title}
                                  guideId="USER_INVESTING_GUIDE"
                                  stepIndex={5}
                                  title="We are getting closer!"
@@ -187,6 +186,7 @@ export function BuildingSidebar() {
                         if (!identityData.isIdentityRegistered && item.title === "Trade") {
                            return (
                               <WalkthroughStep
+                                 key={item.title}
                                  guideId="USER_INVESTING_GUIDE"
                                  stepIndex={8}
                                  title="We are getting closer!"
@@ -222,6 +222,7 @@ export function BuildingSidebar() {
                         ) {
                            return (
                               <WalkthroughStep
+                                 key={item.title}
                                  guideId="USER_INVESTING_GUIDE"
                                  stepIndex={10}
                                  title="Now we can properly invest!"

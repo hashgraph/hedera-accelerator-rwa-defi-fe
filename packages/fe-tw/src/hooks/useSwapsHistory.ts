@@ -102,29 +102,38 @@ export const useSwapsHistory = (
    useEffect(() => {
       if (
          Boolean(pairAddressData?.pairAddress) &&
-         pairAddressData?.pairAddress !== ethers.ZeroAddress
+         pairAddressData?.pairAddress !== ethers.ZeroAddress &&
+         token0Info.symbol &&
+         token1Info.symbol
       ) {
+         // Reset history when pair changes
+         setUniswapExchangeHistory([]);
+
          const unwatch = watchContractEvent({
             address: pairAddressData?.pairAddress,
             abi: uniswapPairAbi,
             eventName: "Swap",
             onLogs: (data) => {
-               setUniswapExchangeHistory(
-                  data.map((log, logId) => ({
-                     isSell: log.args[1] !== BigInt(0),
-                     tokenA: token0Info.symbol,
-                     tokenB: token1Info.symbol,
-                     tokenAAmount:
-                        log.args[1] !== BigInt(0)
-                           ? ethers.formatUnits(log.args[1], token0Info.decimals).toString()
-                           : ethers.formatUnits(log.args[3], token0Info.decimals).toString(),
-                     tokenBAmount:
-                        log.args[2] !== BigInt(0)
-                           ? ethers.formatUnits(log.args[2], 6).toString()
-                           : ethers.formatUnits(log.args[4], 6).toString(),
-                     id: logId.toString(),
-                  })),
-               );
+               const newSwaps = data.map((log) => ({
+                  isSell: log.args[1] !== BigInt(0),
+                  tokenA: token0Info.symbol,
+                  tokenB: token1Info.symbol,
+                  tokenAAmount:
+                     log.args[1] !== BigInt(0)
+                        ? ethers.formatUnits(log.args[1], token0Info.decimals).toString()
+                        : ethers.formatUnits(log.args[3], token0Info.decimals).toString(),
+                  tokenBAmount:
+                     log.args[2] !== BigInt(0)
+                        ? ethers.formatUnits(log.args[2], 6).toString()
+                        : ethers.formatUnits(log.args[4], 6).toString(),
+                  id: log.rawLog?.transaction_hash || log.rawLog?.timestamp || Math.random().toString(),
+               }));
+               setUniswapExchangeHistory((prev) => {
+                  // Avoid duplicates by checking if we already have these swaps
+                  const existingIds = new Set(prev.map((s) => s.id));
+                  const uniqueNewSwaps = newSwaps.filter((s) => !existingIds.has(s.id));
+                  return [...prev, ...uniqueNewSwaps];
+               });
             },
          });
 
@@ -132,9 +141,11 @@ export const useSwapsHistory = (
             unwatch();
          };
       }
-   }, [pairAddressData]);
+   }, [pairAddressData, token0Info.symbol, token1Info.symbol, token0Info.decimals]);
 
    useEffect(() => {
+      if (!evmAddress) return;
+
       const unwatch = watchContractEvent({
          address: ONE_SIDED_EXCHANGE_ADDRESS as `0x${string}`,
          abi: useOneSidedExchangeFactoryAbi,
@@ -150,7 +161,7 @@ export const useSwapsHistory = (
       return () => {
          unwatch();
       };
-   }, []);
+   }, [evmAddress]);
 
    // useEffect(() => {
    //    if (selectedTokensPair?.tokenA && selectedTokensPair?.tokenB) {

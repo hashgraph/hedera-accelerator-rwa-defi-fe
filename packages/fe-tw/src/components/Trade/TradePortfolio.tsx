@@ -27,7 +27,9 @@ const TradePortfolioItem = (props: SwapTradeItem) => {
       <div className="bg-white border border-gray-200 rounded-lg hover:border-indigo-300 transition-colors shadow-sm">
          <div className="p-4">
             <div className="flex items-center justify-between mb-3">
-               <p className="text-sm text-gray-900 font-semibold">Trade #{props.id}</p>
+               <p className="text-sm text-gray-900 font-semibold" title={props.id}>
+                  Trade #{props.id?.slice(0, 10)}...
+               </p>
                {props.isSell !== undefined && (
                   <Badge color={isSelling ? "red" : "green"}>{isSelling ? "SELL" : "BUY"}</Badge>
                )}
