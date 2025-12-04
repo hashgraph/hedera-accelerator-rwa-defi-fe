@@ -1,7 +1,7 @@
 "use client";
 
 import { ethers } from "ethers";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
 import { Form, Formik } from "formik";
 import * as Yup from "yup";
@@ -54,6 +54,14 @@ export default function TradeFormUniswapPool({
          })),
       [buildingTokenOptions],
    );
+
+   // Initialize the selected tokens pair on mount with default form values
+   useEffect(() => {
+      const initialTokenB = buildingTokenOptions[0]?.tokenAddress;
+      if (initialTokenB) {
+         onTokensPairSelected(USDC_ADDRESS, initialTokenB);
+      }
+   }, [buildingTokenOptions[0]?.tokenAddress]);
 
    const handleSwapSubmit = async (values: TradeFormPayload, resetForm: () => void) => {
       setSwapTokensAmountOutput(undefined);

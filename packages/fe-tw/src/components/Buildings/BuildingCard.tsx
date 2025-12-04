@@ -29,7 +29,7 @@ export function BuildingCard({ building, onClick }: BuildingCardProps) {
          <Link prefetch={true} href={`/building/${building.id}`}>
             <>
                <Image
-                  src={building.imageUrl ?? "assets/dome.jpeg"}
+                  src={building.imageUrl ?? "/assets/dome.jpeg"}
                   alt={building.title ?? "Building Image"}
                   width={300}
                   height={300}
