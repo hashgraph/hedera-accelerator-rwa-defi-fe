@@ -6,13 +6,7 @@ const nextConfig: NextConfig = {
          {
             protocol: "https",
             hostname: "ipfs.io",
-         },
-         {
-            protocol: "https",
-            hostname: "plum-famous-crane-874.mypinata.cloud",
-            port: "",
-            pathname: "/**",
-         },
+         }
       ],
       unoptimized: true,
    },
