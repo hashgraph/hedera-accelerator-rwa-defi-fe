@@ -74,6 +74,19 @@ export function ProposalsView(props: Props) {
          }));
    }, [governanceCreatedProposals, proposalStates, governanceDefinedProposals]);
 
+   useEffect(() => {
+      if (!isLoading) {
+         if (buildingGovernance === ethers.ZeroAddress) {
+            toast.warning(
+               "Governance needs to be deployed before you can start submitting proposals",
+            );
+            replace(`/admin/buildingmanagement?governance=true&bAddress=${props.buildingAddress}`);
+         } else {
+            setPageLoading(false);
+         }
+      }
+   }, [buildingGovernance, isLoading, props.buildingAddress, replace]);
+
    const handleDelegate = async () => {
       try {
          const result = await delegateTokens();

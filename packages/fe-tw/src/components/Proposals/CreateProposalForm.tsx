@@ -45,7 +45,9 @@ export function CreateProposalForm({
          );
          onProposalSuccesseed();
       } else {
-         toast.error(`Proposal submission ${error?.message}`);
+         const errorMessage = error?.message || error?.reason || (typeof error === 'string' ? error : 'Unknown error');
+         console.error("Proposal submission error:", error);
+         toast.error(`Proposal submission failed: ${errorMessage}`);
       }
    };
 

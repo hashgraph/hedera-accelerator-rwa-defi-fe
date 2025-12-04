@@ -171,6 +171,10 @@ export const useGovernanceProposals = (
    const createProposal = async (
       proposalPayload: CreateProposalPayload & { title?: string },
    ): Promise<TransactionExtended | undefined> => {
+      if (!buildingGovernanceAddress) {
+         throw new Error("No governance contract address available");
+      }
+
       // Combine title and description into JSON if title exists
       const processedPayload: CreateProposalPayload = {
          ...proposalPayload,
