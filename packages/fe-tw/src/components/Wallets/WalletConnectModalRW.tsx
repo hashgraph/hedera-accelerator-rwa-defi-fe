@@ -65,44 +65,46 @@ export function WalletConnectModalRW() {
             <DialogContent className="">
                <DialogHeader>
                   <DialogTitle>Connect Wallet</DialogTitle>
-                  <DialogDescription>Choose a wallet to connect</DialogDescription>
-               </DialogHeader>
-               <WalkthroughStep
-                  guideId={"USER_LOGIN_FLOW"}
-                  stepIndex={2}
-                  title={"Select wallet of your choice"}
-                  description={
-                     "You can choose between Hashpack and Metamask.Both are supported."
-                  }
-               >
-                  <div className="flex gap-2">
-                     <Button variant="outline" onClick={handleConnectHashpack}>
-                        <Image
-                           alt="hashpack icon"
-                           src="/assets/hashpack-icon.png"
-                           width={24}
-                           height={24}
-                        />
-                        Hashpack
-                     </Button>
-                     <Button
-                        variant="outline"
-                        onClick={() => {
-                           connectMetamask();
-                           setModalOpen(false);
-                           confirmUserPassedStep(2);
-                        }}
+                  <DialogDescription className="flex flex-col gap-2 mt-4">
+                     Choose a wallet to connect
+                     <WalkthroughStep
+                        guideId={"USER_LOGIN_FLOW"}
+                        stepIndex={2}
+                        title={"Select wallet of your choice"}
+                        description={
+                           "You can choose between Hashpack and Metamask.Both are supported."
+                        }
                      >
-                        <Image
-                           alt="metamask icon"
-                           src="/assets/metamask-icon.png"
-                           width={32}
-                           height={32}
-                        />
-                        Metamask
-                     </Button>
-                  </div>
-               </WalkthroughStep>
+                        <div className="flex gap-2">
+                           <Button variant="outline" onClick={handleConnectHashpack}>
+                              <Image
+                                 alt="hashpack icon"
+                                 src="/assets/hashpack-icon.png"
+                                 width={24}
+                                 height={24}
+                              />
+                              Hashpack
+                           </Button>
+                           <Button
+                              variant="outline"
+                              onClick={() => {
+                                 connectMetamask();
+                                 setModalOpen(false);
+                                 confirmUserPassedStep(2);
+                              }}
+                           >
+                              <Image
+                                 alt="metamask icon"
+                                 src="/assets/metamask-icon.png"
+                                 width={32}
+                                 height={32}
+                              />
+                              Metamask
+                           </Button>
+                        </div>
+                     </WalkthroughStep>
+                  </DialogDescription>
+               </DialogHeader>
             </DialogContent>
          </Dialog>
          <WalkthroughPromptCard
