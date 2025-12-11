@@ -252,16 +252,16 @@ const BuildingManagement = () => {
                                     : `${MAJOR_STEP_TO_FRIENDLY_NAME[majorDeploymentStep!]} Deployment`}
                               </DialogTitle>
 
-                              <DialogDescription className="flex flex-col justify-center text-xl items-center gap-4 p-10">
-                                 {newBuildingAddress ? (
-                                    <Check size={64} className="text-violet-500" />
-                                 ) : error ? (
-                                    <TriangleAlert size={64} className="text-red-500" />
-                                 ) : (
-                                    <Loader size={64} className="animate-spin" />
-                                 )}
-                                 {newBuildingAddress ? (
-                                    <>
+                              <DialogDescription asChild>
+                                 <div className="flex flex-col justify-center text-xl items-center gap-4 p-10 text-sm text-muted-foreground">
+                                    {newBuildingAddress ? (
+                                       <Check size={64} className="text-violet-500" />
+                                    ) : error ? (
+                                       <TriangleAlert size={64} className="text-red-500" />
+                                    ) : (
+                                       <Loader size={64} className="animate-spin" />
+                                    )}
+                                    {newBuildingAddress ? (
                                        <span>
                                           Deployment of the building and its parts was successful!
                                           <br />
@@ -284,14 +284,14 @@ const BuildingManagement = () => {
                                              )}
                                           </WalkthroughStep>
                                        </span>
-                                    </>
-                                 ) : error ? (
-                                    ERROR_TO_DESCRIPTION[error]
-                                 ) : (
-                                    MINOR_STEP_TO_FRIENDLY_NAME[(majorDeploymentStep as 100)!][
-                                       (minorDeploymentStep as 1 | 2 | 3)!
-                                    ]
-                                 )}
+                                    ) : error ? (
+                                       ERROR_TO_DESCRIPTION[error]
+                                    ) : (
+                                       MINOR_STEP_TO_FRIENDLY_NAME[(majorDeploymentStep as 100)!][
+                                          (minorDeploymentStep as 1 | 2 | 3)!
+                                       ]
+                                    )}
+                                 </div>
                               </DialogDescription>
                            </DialogHeader>
                         </DialogContent>
