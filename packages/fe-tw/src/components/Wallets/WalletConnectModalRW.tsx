@@ -73,7 +73,7 @@ export function WalletConnectModalRW() {
                            stepIndex={2}
                            title={"Select wallet of your choice"}
                            description={
-                              "You can choose between Hashpack and Metamask.Both are supported."
+                              "You can choose between Hashpack and Metamask."
                            }
                         >
                            <div className="flex gap-2">
