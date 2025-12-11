@@ -36,8 +36,8 @@ export interface TokenFormProps {
 }
 
 export interface TreasuryAndGovernanceFormProps {
-   reserve?: number;
-   npercentage?: number;
+   reserve: number | "";
+   npercentage: number | "";
    governanceName: string;
    shareTokenName: string;
    shareTokenSymbol: string;
