@@ -1,5 +1,6 @@
 [build]
   command = "yarn install --frozen-lockfile && yarn workspace fe-tw run build"
+  base = "."
   publish = "packages/fe-tw/.next"
 
 [[plugins]]
@@ -9,9 +10,3 @@
   NODE_VERSION = "20"
   YARN_VERSION = "1.22.22"
   NPM_FLAGS = "--legacy-peer-deps"
-
-# Redirect all requests to index.html for client-side routing
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
