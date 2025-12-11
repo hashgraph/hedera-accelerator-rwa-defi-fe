@@ -292,19 +292,21 @@ export const SliceManagement = () => {
                   </DialogTitle>
                </DialogHeader>
 
-               <DialogDescription className="flex flex-col text-xl items-center gap-4 p-10">
-                  {isTransactionInProgress ? (
-                     <Loader size={64} className="animate-spin" />
-                  ) : (
-                     <a
-                        className="text-blue-500"
-                        href={`/slices/${lastSliceDeployed}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                     >
-                        View recently created slice
-                     </a>
-                  )}
+               <DialogDescription asChild>
+                  <div className="flex flex-col text-xl items-center gap-4 p-10 text-sm text-muted-foreground">
+                     {isTransactionInProgress ? (
+                        <Loader size={64} className="animate-spin" />
+                     ) : (
+                        <a
+                           className="text-blue-500"
+                           href={`/slices/${lastSliceDeployed}`}
+                           target="_blank"
+                           rel="noopener noreferrer"
+                        >
+                           View recently created slice
+                        </a>
+                     )}
+                  </div>
                </DialogDescription>
             </DialogContent>
          </Dialog>

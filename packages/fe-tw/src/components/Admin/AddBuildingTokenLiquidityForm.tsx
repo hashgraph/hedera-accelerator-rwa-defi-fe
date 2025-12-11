@@ -143,19 +143,20 @@ export function AddBuildingTokenLiquidityForm({ buildingAddress }: Props) {
       actions.resetForm();
    }
 
-   const tokenSelectOptions = useMemo(
-      () => [
-         {
+   const tokenSelectOptions = useMemo(() => {
+      const options = [];
+      if (tokenAddress && tokenAddress !== USDC_ADDRESS) {
+         options.push({
             value: tokenAddress,
-            label: `${tokenName} (${tokenAddress})`,
-         },
-         {
-            value: USDC_ADDRESS,
-            label: `USDC (${USDC_ADDRESS})`,
-         },
-      ],
-      [tokenAddress, tokenName],
-   );
+            label: `${tokenName || "Building Token"} (${tokenAddress})`,
+         });
+      }
+      options.push({
+         value: USDC_ADDRESS,
+         label: `USDC (${USDC_ADDRESS})`,
+      });
+      return options;
+   }, [tokenAddress, tokenName]);
 
    const formatAmount = (amount: bigint, decimals: number) => {
       return ethers.formatUnits(amount, decimals);

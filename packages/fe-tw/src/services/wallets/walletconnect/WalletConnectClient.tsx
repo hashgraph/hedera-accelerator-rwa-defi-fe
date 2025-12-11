@@ -68,7 +68,16 @@ const dappConnector = new DAppConnector(
 let walletConnectInitPromise: Promise<void> | undefined = undefined;
 const initializeWalletConnect = async () => {
    if (walletConnectInitPromise === undefined) {
-      walletConnectInitPromise = dappConnector.init();
+      walletConnectInitPromise = dappConnector.init().catch((error) => {
+         console.warn("WalletConnect init error, clearing stale sessions:", error);
+         // Clear stale WalletConnect sessions from localStorage
+         if (typeof window !== "undefined") {
+            Object.keys(localStorage)
+               .filter((key) => key.startsWith("wc@"))
+               .forEach((key) => localStorage.removeItem(key));
+         }
+         walletConnectInitPromise = undefined;
+      });
    }
    await walletConnectInitPromise;
 };
