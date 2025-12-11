@@ -272,12 +272,6 @@ export function Navbar() {
 
                      <NavigationMenuItem>
                         <NavigationMenuLink className={navigationMenuTriggerStyle()} asChild>
-                           <Link href="/trade">Trade</Link>
-                        </NavigationMenuLink>
-                     </NavigationMenuItem>
-
-                     <NavigationMenuItem>
-                        <NavigationMenuLink className={navigationMenuTriggerStyle()} asChild>
                            <Link href="/faq">FAQ</Link>
                         </NavigationMenuLink>
                      </NavigationMenuItem>

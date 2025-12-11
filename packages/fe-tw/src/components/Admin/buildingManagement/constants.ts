@@ -56,8 +56,8 @@ export const tokenFormInitialValues: TokenFormProps = {
 };
 
 export const treasuryAndGovernanceFormInitialValues: TreasuryAndGovernanceFormProps = {
-   reserve: undefined,
-   npercentage: undefined,
+   reserve: "",
+   npercentage: "",
    governanceName: "",
    shareTokenName: "",
    shareTokenSymbol: "",
