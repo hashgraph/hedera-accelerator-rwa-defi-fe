@@ -34,7 +34,6 @@ import {
    ReceiptText,
    Slice,
    Asterisk,
-   CoinsIcon,
    Droplet,
    ShieldAlert,
    ShieldCheck,
@@ -64,7 +63,6 @@ const ADVANCED_NAV_ITEMS = [
 export const OWNER_NAV_ITEMS = [
    { title: "Payments", href: "payments", icon: HandCoins },
    { title: "Expenses", href: "expenses", icon: ReceiptText },
-   { title: "Mint", href: "mint", icon: CoinsIcon },
    { title: "Liquidity", href: "liquidity", icon: Droplet },
    { title: "Compliances", href: "compliances", icon: FileCheck2 },
 ];
